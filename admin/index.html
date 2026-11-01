@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة المعلمة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6FB;
+    --ink:#18213F;
+    --muted:#5B6585;
+    --card:#FFFFFF;
+    --line:#E2E6F0;
+    --brand:#5B57D9;
+    --soft:#EEEDFC;
+    --ok:#16A34A;
+    --warn:#D97706;
+    --bad:#DC2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+
+  /* الرأس */
+  .top{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  .top-in{max-width:1200px;margin:auto;padding:14px 16px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+  .brand{display:flex;align-items:center;gap:12px;margin-inline-end:auto}
+  .brand .logo{width:46px;height:46px;border-radius:14px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:24px}
+  .brand b{display:block;font-size:22px;font-weight:900}
+  .brand small{color:var(--muted);font-size:15px;font-weight:700}
+  .tools{display:flex;gap:8px;flex-wrap:wrap}
+  .tabs{width:100%;display:flex;gap:4px;overflow-x:auto}
+  .tab{border:none;background:none;padding:10px 16px 12px;font-size:17px;font-weight:800;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
+  .tab.on{color:var(--brand);border-color:var(--brand)}
+  .tab:hover{color:var(--ink)}
+
+  main{max-width:1200px;margin:auto;padding:24px 16px 60px}
+  h2{font-size:26px;font-weight:900;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:16px;margin-bottom:20px}
+
+  /* عناصر عامة */
+  .btn{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 14px;font-size:15px;font-weight:800;transition:background .15s,border-color .15s}
+  .btn:hover{border-color:var(--brand);background:var(--soft)}
+  .btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.pri:hover{filter:brightness(1.08)}
+  .btn.ghost{border-color:transparent;background:none}
+  .btn.danger:hover{border-color:var(--bad);background:#FDECEC;color:var(--bad)}
+  .btn.sm{padding:5px 10px;font-size:14px;border-radius:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 4px 14px rgba(24,33,63,.05)}
+  .inp{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fff;font-size:16px;min-width:0}
+  .inp:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 16px;font-size:16px;font-weight:800;display:inline-flex;align-items:center;gap:8px}
+  .chip .dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
+  .chip.on{border-color:var(--c,var(--brand));background:color-mix(in srgb,var(--c,var(--brand)) 12%,white)}
+  .badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 10px;font-size:14px;font-weight:800}
+  .badge.ok{background:#DCFCE7;color:var(--ok)}
+  .badge.warn{background:#FEF3C7;color:var(--warn)}
+  .empty{text-align:center;color:var(--muted);padding:40px 16px;font-size:17px}
+  .empty b{display:block;font-size:40px;margin-bottom:8px}
+
+  /* الرئيسية */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+  .stat{padding:18px 20px;display:flex;align-items:center;gap:14px}
+  .stat i{font-style:normal;font-size:34px}
+  .stat b{display:block;font-size:30px;font-weight:900;line-height:1.1}
+  .stat span{color:var(--muted);font-weight:700}
+  .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .gcard{padding:18px 20px;border-top:6px solid var(--c);display:flex;flex-direction:column;gap:12px}
+  .gcard h3{font-size:22px;font-weight:900}
+  .gcard .meta{display:flex;gap:14px;color:var(--muted);font-weight:700;flex-wrap:wrap}
+  .gcard .secs{display:flex;gap:6px;flex-wrap:wrap}
+  .gcard .secs span{background:color-mix(in srgb,var(--c) 12%,white);color:var(--ink);border-radius:8px;padding:2px 10px;font-weight:800;font-size:14px}
+  .gcard .acts{display:flex;gap:8px;margin-top:auto}
+  .mini-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--line)}
+
+  /* الصفوف والشعب */
+  .add-row{display:flex;gap:8px;flex-wrap:wrap;padding:14px 16px;margin-bottom:18px;align-items:center}
+  .add-row .inp{flex:1;min-width:180px}
+  .glist{display:flex;flex-direction:column;gap:16px}
+  .gbox{padding:16px 18px;border-inline-start:6px solid var(--c)}
+  .gbox-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .gbox-h .inp{font-size:20px;font-weight:900;flex:1;min-width:160px;border-color:transparent;background:transparent}
+  .gbox-h .inp:hover{border-color:var(--line)}
+  .gbox-h input[type=color]{width:38px;height:38px;border:none;background:none;padding:0;border-radius:10px}
+  .sec-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+  .sec{border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;background:#FBFBFE}
+  .sec .nm{width:42px;height:42px;border-radius:12px;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:900;font-size:20px;flex:none}
+  .sec .info{flex:1;min-width:0}
+  .sec .info b{display:block;font-size:17px}
+  .sec .info small{color:var(--muted);font-weight:700}
+  .sec-add{border:2px dashed var(--line);border-radius:14px;background:none;color:var(--muted);font-weight:800;font-size:16px;min-height:64px}
+  .sec-add:hover{border-color:var(--c);color:var(--ink)}
+
+  /* نافذة الطالبات */
+  dialog{border:none;border-radius:20px;padding:0;width:min(620px,calc(100vw - 32px));max-height:calc(100vh - 40px);box-shadow:0 30px 80px rgba(24,33,63,.35)}
+  dialog::backdrop{background:rgba(24,33,63,.45)}
+  .dlg{display:flex;flex-direction:column;max-height:calc(100vh - 40px)}
+  .dlg-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .dlg-h h3{flex:1;font-size:20px;font-weight:900}
+  .dlg-b{padding:16px 20px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+  .stu-list{display:flex;flex-direction:column;gap:6px;counter-reset:n}
+  .stu{display:flex;align-items:center;gap:8px}
+  .stu::before{counter-increment:n;content:counter(n);width:30px;text-align:center;color:var(--muted);font-weight:800;flex:none}
+  .stu .inp{flex:1}
+  textarea.inp{width:100%;min-height:110px;resize:vertical;line-height:1.7}
+  .hint{color:var(--muted);font-size:14px}
+
+  /* توزيع الدرجات */
+  .wgrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+  .wlist{padding:8px 0}
+  .wrow{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line)}
+  .wrow:last-child{border-bottom:none}
+  .wrow .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--k) 14%,white)}
+  .wrow b{font-size:18px;font-weight:800}
+  .step{display:flex;align-items:center;gap:6px}
+  .step .btn{width:38px;height:38px;justify-content:center;padding:0;font-size:20px}
+  .wrow .inp{width:72px;text-align:center;font-weight:900;font-size:18px;border-color:color-mix(in srgb,var(--k) 40%,white)}
+  .wside{padding:20px;display:flex;flex-direction:column;gap:16px;position:sticky;top:130px}
+  .total{text-align:center}
+  .total b{font-size:56px;font-weight:900;line-height:1}
+  .total span{display:block;color:var(--muted);font-weight:700;margin-top:4px}
+  .total.ok b{color:var(--ok)}
+  .total.warn b{color:var(--warn)}
+  .bar{display:flex;height:28px;border-radius:10px;overflow:hidden;background:var(--line)}
+  .bar i{display:block;height:100%;transition:width .2s}
+  .legend{display:flex;flex-direction:column;gap:6px;font-size:15px;font-weight:700}
+  .legend div{display:flex;align-items:center;gap:8px}
+  .legend i{width:12px;height:12px;border-radius:4px;flex:none}
+  .legend span{margin-inline-start:auto;color:var(--muted)}
+  .wside .acts{display:flex;flex-direction:column;gap:8px}
+
+  /* رصد الدرجات */
+  .tbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .tbar .sp{margin-inline-start:auto}
+  .twrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:900px;font-size:16px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:center;white-space:nowrap}
+  thead th{background:#F7F7FC;font-weight:800;font-size:15px;position:sticky;top:0}
+  thead th small{display:block;color:var(--muted);font-weight:700}
+  td.name,th.name{text-align:right;font-weight:800}
+  td.n{color:var(--muted);width:40px}
+  td input{width:64px;text-align:center;border:1px solid var(--line);border-radius:8px;padding:5px 4px;font-weight:700;background:#fff}
+  td input:focus{outline:2px solid var(--brand);border-color:transparent}
+  td input.over{border-color:var(--bad);background:#FDECEC;color:var(--bad)}
+  td.tot{font-weight:900;font-size:18px}
+  tfoot td{background:#F7F7FC;font-weight:800;color:var(--muted)}
+  .lvl{border-radius:8px;padding:2px 10px;font-weight:800;font-size:14px}
+  .l5{background:#DCFCE7;color:#15803D}.l4{background:#DBEAFE;color:#1D4ED8}.l3{background:#FEF3C7;color:#B45309}
+  .l2{background:#FFEDD5;color:#C2410C}.l1{background:#FEE2E2;color:#B91C1C}.l0{color:var(--muted)}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,40px);opacity:0;background:var(--ink);color:#fff;padding:10px 20px;border-radius:12px;font-weight:800;transition:.25s;z-index:50;pointer-events:none}
+  .toast.on{transform:translate(-50%,0);opacity:1}
+
+  @media (max-width:820px){
+    .wgrid{grid-template-columns:minmax(0,1fr)}
+    .wside{position:static}
+    .wrow{grid-template-columns:40px 1fr auto;padding:10px 12px;gap:8px}
+    .wrow b{font-size:16px}
+    .brand{margin-inline-end:0}
+  }
+  @media print{
+    .top,.tbar,.chips,.no-print{display:none!important}
+    body{background:#fff}
+    .card{box-shadow:none;border:none}
+    td input{border:none;width:auto}
+  }
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-in">
+      <div class="brand">
+        <span class="logo">📚</span>
+        <div><b>لوحة المعلمة</b><small>أثيل القرني · مدارس دينا العالمية</small></div>
+      </div>
+      <div class="tools">
+        <button class="btn sm" data-act="export">⬇️ نسخة احتياطية</button>
+        <button class="btn sm" data-act="import">⬆️ استرجاع</button>
+        <a class="btn sm" href="../index.html">🏠 الدروس</a>
+        <input type="file" id="file" accept=".json,application/json" hidden>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button class="tab" data-view="home">الرئيسية</button>
+        <button class="tab" data-view="classes">الصفوف والشعب</button>
+        <button class="tab" data-view="weights">توزيع الدرجات</button>
+        <button class="tab" data-view="grades">رصد الدرجات</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main"></main>
+
+  <dialog id="dlg"></dialog>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   البيانات
+   ========================================================= */
+const CATS = [
+  { k: 'part',      name: 'المشاركة',             icon: '🙋‍♀️', color: '#0EA5E9' },
+  { k: 'hw',        name: 'الواجبات',             icon: '📝', color: '#8B5CF6' },
+  { k: 'perf',      name: 'المهام الأدائية',       icon: '🎯', color: '#F59E0B' },
+  { k: 'proj',      name: 'المشاريع',             icon: '🧩', color: '#EC4899' },
+  { k: 'practical', name: 'الاختبارات العملية',    icon: '💻', color: '#10B981' },
+  { k: 'written',   name: 'الاختبارات التحريرية',  icon: '✍️', color: '#5B57D9' }
+];
+const DEF_W = { part: 10, hw: 10, perf: 15, proj: 15, practical: 20, written: 30 };
+const SEC_NAMES = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح', 'ط', 'ي'];
+const KEY = 'atheel-admin-v1';
+
+const $ = (q, el = document) => el.querySelector(q);
+const $$ = (q, el = document) => [...el.querySelectorAll(q)];
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sum = arr => arr.reduce((a, b) => a + (+b || 0), 0);
+const fmt = n => Math.round(n * 10) / 10;
+
+function seed() {
+  return {
+    grades: [
+      ['الصف الخامس', '#0fa797'], ['الصف السادس', '#F59E0B'], ['الأول متوسط', '#16A34A'],
+      ['الثاني متوسط', '#2563EB'], ['الأول ثانوي', '#5B57D9']
+    ].map(([name, color]) => ({ id: uid(), name, color, weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] }))
+  };
+}
+
+let db = null;
+try { db = JSON.parse(localStorage.getItem(KEY)); } catch {}
+if (!db || !Array.isArray(db.grades)) db = seed();
+
+let saveTimer;
+function save(msg) {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch { toast('⚠️ تعذّر الحفظ في المتصفح، صدّري نسخة احتياطية'); return; }
+  if (msg) toast(msg);
+}
+
+/* الحالة الحالية للواجهة */
+const ui = { view: 'home', g: db.grades[0]?.id, s: null };
+const grade = id => db.grades.find(g => g.id === id);
+const curGrade = () => grade(ui.g) || db.grades[0];
+const curSection = g => g && (g.sections.find(s => s.id === ui.s) || g.sections[0]);
+const wTotal = g => sum(CATS.map(c => g.weights[c.k]));
+const stuCount = g => sum(g.sections.map(s => s.students.length));
+const stuTotal = st => sum(CATS.map(c => st.scores?.[c.k]));
+const hasScores = st => CATS.some(c => st.scores?.[c.k] !== undefined && st.scores[c.k] !== '');
+
+function level(t) {
+  if (t >= 90) return ['ممتاز', 'l5'];
+  if (t >= 80) return ['جيد جدًا', 'l4'];
+  if (t >= 70) return ['جيد', 'l3'];
+  if (t >= 50) return ['مقبول', 'l2'];
+  return ['غير مجتازة', 'l1'];
+}
+
+function toast(t) {
+  const el = $('#toast');
+  el.textContent = t; el.classList.add('on');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 1800);
+}
+
+/* =========================================================
+   العرض
+   ========================================================= */
+const VIEWS = {
+  home() {
+    const secs = sum(db.grades.map(g => g.sections.length));
+    const stus = sum(db.grades.map(stuCount));
+    return `<h2>مرحبًا أ. أثيل 👋</h2><p class="sub">نظرة سريعة على صفوفك وشعبك وتوزيع الدرجات.</p>
+      <div class="stats">
+        <div class="card stat"><i>🏫</i><div><b>${db.grades.length}</b><span>صفوف</span></div></div>
+        <div class="card stat"><i>🚪</i><div><b>${secs}</b><span>شُعب</span></div></div>
+        <div class="card stat"><i>👩‍🎓</i><div><b>${stus}</b><span>طالبة</span></div></div>
+      </div>
+      ${db.grades.length ? `<div class="gcards">${db.grades.map(g => {
+        const t = wTotal(g);
+        return `<div class="card gcard" style="--c:${g.color}">
+          <h3>${esc(g.name)}</h3>
+          <div class="meta"><span>🚪 ${g.sections.length} شعبة</span><span>👩‍🎓 ${stuCount(g)} طالبة</span>
+            <span class="badge ${t === 100 ? 'ok' : 'warn'}">${t === 100 ? '✓ التوزيع ١٠٠' : '⚠ التوزيع ' + t}</span></div>
+          <div class="secs">${g.sections.map(s => `<span>${esc(s.name)}</span>`).join('')}</div>
+          <div class="mini-bar">${CATS.map(c => `<i style="width:${g.weights[c.k]}%;background:${c.color}" title="${c.name}: ${g.weights[c.k]}"></i>`).join('')}</div>
+          <div class="acts">
+            <button class="btn sm" data-act="goto" data-view="grades" data-g="${g.id}">📋 رصد الدرجات</button>
+            <button class="btn sm ghost" data-act="goto" data-view="weights" data-g="${g.id}">⚖️ التوزيع</button>
+          </div></div>`;
+      }).join('')}</div>` : emptyGrades()}`;
+  },
+
+  classes() {
+    return `<h2>الصفوف والشعب</h2><p class="sub">أضيفي الصفوف التي تدرّسينها، ولكل صف شعبة أو أكثر، ثم أضيفي أسماء الطالبات.</p>
+      <div class="card add-row">
+        <input class="inp" id="newGrade" placeholder="اسم الصف الجديد، مثل: الثاني ثانوي">
+        <button class="btn pri" data-act="addGrade">＋ إضافة صف</button>
+      </div>
+      <div class="glist">${db.grades.map(g => `
+        <div class="card gbox" style="--c:${g.color}">
+          <div class="gbox-h">
+            <input type="color" value="${g.color}" data-edit="gcolor" data-g="${g.id}" title="لون الصف">
+            <input class="inp" value="${esc(g.name)}" data-edit="gname" data-g="${g.id}" aria-label="اسم الصف">
+            <button class="btn sm danger" data-act="delGrade" data-g="${g.id}">🗑️ حذف الصف</button>
+          </div>
+          <div class="sec-list">${g.sections.map(s => `
+            <div class="sec">
+              <span class="nm">${esc(s.name)}</span>
+              <div class="info"><b>شعبة ${esc(s.name)}</b><small>${s.students.length} طالبة</small></div>
+              <button class="btn sm" data-act="students" data-g="${g.id}" data-s="${s.id}" title="الطالبات">👩‍🎓</button>
+              <button class="btn sm ghost danger" data-act="delSec" data-g="${g.id}" data-s="${s.id}" title="حذف الشعبة">✕</button>
+            </div>`).join('')}
+            <button class="sec-add" data-act="addSec" data-g="${g.id}">＋ شعبة جديدة</button>
+          </div>
+        </div>`).join('')}</div>
+      ${db.grades.length ? '' : emptyGrades()}`;
+  },
+
+  weights() {
+    const g = curGrade();
+    if (!g) return emptyGrades();
+    return `<h2>توزيع الدرجات</h2><p class="sub">وزّعي ١٠٠ درجة على بنود التقييم لكل صف.</p>
+      ${gradeChips(g)}
+      <div class="wgrid">
+        <div class="card wlist">${CATS.map(c => `
+          <div class="wrow" style="--k:${c.color}">
+            <span class="ic">${c.icon}</span><b>${c.name}</b>
+            <div class="step">
+              <button class="btn" data-act="wStep" data-k="${c.k}" data-d="5" aria-label="زيادة">＋</button>
+              <input class="inp" type="number" min="0" max="100" value="${g.weights[c.k]}" data-w="${c.k}" aria-label="${c.name}">
+              <button class="btn" data-act="wStep" data-k="${c.k}" data-d="-5" aria-label="نقص">−</button>
+            </div>
+          </div>`).join('')}
+        </div>
+        <div class="card wside">
+          <div class="total" id="wTotal"></div>
+          <div class="bar" id="wBar"></div>
+          <div class="legend" id="wLegend"></div>
+          <div class="acts">
+            <button class="btn" data-act="wAll">📌 تطبيق هذا التوزيع على كل الصفوف</button>
+            <button class="btn ghost" data-act="wReset">↺ التوزيع الافتراضي</button>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  grades() {
+    const g = curGrade();
+    if (!g) return emptyGrades();
+    const s = curSection(g);
+    const t = wTotal(g);
+    return `<h2>رصد الدرجات</h2><p class="sub">اختاري الصف والشعبة، ثم أدخلي درجات كل بند. الحفظ تلقائي.</p>
+      ${gradeChips(g)}
+      <div class="chips">${g.sections.map(x => `<button class="chip ${x.id === s?.id ? 'on' : ''}" style="--c:${g.color}" data-act="pickSec" data-s="${x.id}">شعبة ${esc(x.name)} <small>(${x.students.length})</small></button>`).join('')}</div>
+      ${t !== 100 ? `<p class="badge warn" style="margin-bottom:12px">⚠ مجموع توزيع درجات هذا الصف ${t} وليس ١٠٠. <button class="btn sm ghost" data-act="goto" data-view="weights" data-g="${g.id}">تعديل التوزيع</button></p>` : ''}
+      ${!s ? `<div class="card empty"><b>🚪</b>لا توجد شعب في هذا الصف.<br><br><button class="btn pri" data-act="goto" data-view="classes">إضافة شعبة</button></div>`
+        : !s.students.length ? `<div class="card empty"><b>👩‍🎓</b>لا توجد طالبات في شعبة ${esc(s.name)} بعد.<br><br><button class="btn pri" data-act="students" data-g="${g.id}" data-s="${s.id}">إضافة الطالبات</button></div>`
+        : `<div class="tbar">
+            <button class="btn sm" data-act="students" data-g="${g.id}" data-s="${s.id}">👩‍🎓 الطالبات</button>
+            <span class="sp"></span>
+            <button class="btn sm" data-act="csv">📊 تصدير Excel</button>
+            <button class="btn sm" data-act="print">🖨️ طباعة</button>
+          </div>
+          <div class="card twrap"><table>
+            <thead><tr><th>#</th><th class="name">اسم الطالبة</th>
+              ${CATS.map(c => `<th>${c.icon} ${c.name}<small>من ${g.weights[c.k]}</small></th>`).join('')}
+              <th>المجموع<small>من ${t}</small></th><th>التقدير</th></tr></thead>
+            <tbody>${s.students.map((st, i) => `<tr data-st="${st.id}">
+              <td class="n">${i + 1}</td><td class="name">${esc(st.name)}</td>
+              ${CATS.map(c => `<td><input type="number" inputmode="decimal" min="0" max="${g.weights[c.k]}" step="0.5" data-sc="${c.k}" value="${st.scores?.[c.k] ?? ''}"></td>`).join('')}
+              <td class="tot"></td><td class="lv"></td></tr>`).join('')}</tbody>
+            <tfoot><tr><td></td><td class="name">متوسط الشعبة</td>${CATS.map(c => `<td data-avg="${c.k}"></td>`).join('')}<td data-avg="tot"></td><td></td></tr></tfoot>
+          </table></div>`}`;
+  }
+};
+
+const gradeChips = g => `<div class="chips">${db.grades.map(x => `<button class="chip ${x.id === g.id ? 'on' : ''}" style="--c:${x.color}" data-act="pickGrade" data-g="${x.id}"><span class="dot"></span>${esc(x.name)}</button>`).join('')}</div>`;
+const emptyGrades = () => `<div class="card empty"><b>🏫</b>لم تُضف أي صفوف بعد.<br><br><button class="btn pri" data-act="goto" data-view="classes">إضافة صف</button></div>`;
+
+function render() {
+  $$('#tabs .tab').forEach(t => t.classList.toggle('on', t.dataset.view === ui.view));
+  $('#main').innerHTML = VIEWS[ui.view]();
+  if (ui.view === 'weights') refreshWeights();
+  if (ui.view === 'grades') refreshTable();
+  try { localStorage.setItem(KEY + ':ui', JSON.stringify(ui)); } catch {}
+}
+
+/* تحديث ملخّص التوزيع دون إعادة رسم الحقول */
+function refreshWeights() {
+  const g = curGrade(), t = wTotal(g);
+  const box = $('#wTotal');
+  if (!box) return;
+  box.className = 'total ' + (t === 100 ? 'ok' : 'warn');
+  box.innerHTML = `<b>${t}</b><span>${t === 100 ? '✓ المجموع مكتمل' : t < 100 ? `متبقٍ ${100 - t} درجة` : `زيادة ${t - 100} درجة`}</span>`;
+  $('#wBar').innerHTML = CATS.map(c => `<i style="width:${Math.min(g.weights[c.k], 100) / Math.max(t, 100) * 100}%;background:${c.color}"></i>`).join('');
+  $('#wLegend').innerHTML = CATS.map(c => `<div><i style="background:${c.color}"></i>${c.name}<span>${g.weights[c.k]}</span></div>`).join('');
+}
+
+/* تحديث المجاميع والمتوسطات في جدول الرصد */
+function refreshTable() {
+  const g = curGrade(), s = curSection(g);
+  if (!s || !$('tbody')) return;
+  $$('tbody tr').forEach(tr => {
+    const st = s.students.find(x => x.id === tr.dataset.st);
+    $$('input', tr).forEach(inp => inp.classList.toggle('over', +inp.value > g.weights[inp.dataset.sc] || +inp.value < 0));
+    if (!hasScores(st)) { $('.tot', tr).textContent = '—'; $('.lv', tr).innerHTML = '<span class="lvl l0">—</span>'; return; }
+    const t = stuTotal(st), [txt, cls] = level(t);
+    $('.tot', tr).textContent = fmt(t);
+    $('.lv', tr).innerHTML = `<span class="lvl ${cls}">${txt}</span>`;
+  });
+  const avg = vals => { const v = vals.filter(x => x !== undefined && x !== ''); return v.length ? fmt(sum(v) / v.length) : '—'; };
+  CATS.forEach(c => $(`[data-avg="${c.k}"]`).textContent = avg(s.students.map(st => st.scores?.[c.k])));
+  $('[data-avg="tot"]').textContent = avg(s.students.filter(hasScores).map(stuTotal));
+}
+
+/* =========================================================
+   نافذة الطالبات
+   ========================================================= */
+function openStudents(gid, sid) {
+  const g = grade(gid), s = g.sections.find(x => x.id === sid);
+  const dlg = $('#dlg');
+  dlg.dataset.g = gid; dlg.dataset.s = sid;
+  dlg.innerHTML = `<div class="dlg">
+    <div class="dlg-h"><h3>👩‍🎓 طالبات ${esc(g.name)} – شعبة ${esc(s.name)}</h3><button class="btn sm ghost" data-act="close">✕</button></div>
+    <div class="dlg-b">
+      <div>
+        <textarea class="inp" id="bulk" placeholder="الصقي أسماء الطالبات هنا، كل اسم في سطر"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <button class="btn pri" data-act="addStu">＋ إضافة</button>
+          <span class="hint">يمكنك نسخ عمود الأسماء من Excel ولصقه مباشرة.</span>
+        </div>
+      </div>
+      ${s.students.length ? `<div class="stu-list">${s.students.map(st => `
+        <div class="stu"><input class="inp" value="${esc(st.name)}" data-edit="sname" data-st="${st.id}">
+          <button class="btn sm ghost danger" data-act="delStu" data-st="${st.id}" title="حذف">✕</button></div>`).join('')}</div>
+        <div style="display:flex;gap:8px"><button class="btn sm" data-act="sortStu">ترتيب أبجدي</button></div>`
+      : '<p class="hint">لا توجد طالبات بعد.</p>'}
+    </div></div>`;
+  if (!dlg.open) dlg.showModal();
+  $('#bulk').focus();
+}
+const dlgSection = () => { const d = $('#dlg'); return grade(d.dataset.g).sections.find(x => x.id === d.dataset.s); };
+$('#dlg').addEventListener('close', render);
+
+/* =========================================================
+   الأحداث
+   ========================================================= */
+const ACTS = {
+  goto(d) { ui.view = d.view; if (d.g) { ui.g = d.g; ui.s = null; } render(); scrollTo(0, 0); },
+  pickGrade(d) { ui.g = d.g; ui.s = null; render(); },
+  pickSec(d) { ui.s = d.s; render(); },
+  addGrade() {
+    const name = $('#newGrade').value.trim();
+    if (!name) { $('#newGrade').focus(); return; }
+    const palette = ['#0fa797', '#F59E0B', '#16A34A', '#2563EB', '#5B57D9', '#EC4899', '#EF4444', '#0EA5E9'];
+    db.grades.push({ id: uid(), name, color: palette[db.grades.length % palette.length], weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] });
+    save('تمت إضافة ' + name); render();
+  },
+  delGrade(d) {
+    const g = grade(d.g);
+    if (!confirm(`حذف «${g.name}» بكل شعبه وطالباته ودرجاته؟`)) return;
+    db.grades = db.grades.filter(x => x !== g);
+    save('تم حذف الصف'); render();
+  },
+  addSec(d) {
+    const g = grade(d.g);
+    const used = g.sections.map(s => s.name);
+    const name = prompt('اسم الشعبة:', SEC_NAMES.find(n => !used.includes(n)) || String(g.sections.length + 1));
+    if (!name || !name.trim()) return;
+    g.sections.push({ id: uid(), name: name.trim(), students: [] });
+    save('تمت إضافة شعبة ' + name.trim()); render();
+  },
+  delSec(d) {
+    const g = grade(d.g), s = g.sections.find(x => x.id === d.s);
+    if (s.students.length && !confirm(`حذف شعبة ${s.name} وفيها ${s.students.length} طالبة ودرجاتهن؟`)) return;
+    g.sections = g.sections.filter(x => x !== s);
+    save('تم حذف الشعبة'); render();
+  },
+  students(d) { openStudents(d.g, d.s); },
+  close() { $('#dlg').close(); },
+  addStu() {
+    const s = dlgSection();
+    const names = $('#bulk').value.split(/\r?\n/).map(n => n.split('\t')[0].trim()).filter(Boolean);
+    if (!names.length) { $('#bulk').focus(); return; }
+    names.forEach(name => s.students.push({ id: uid(), name, scores: {} }));
+    save(`تمت إضافة ${names.length} طالبة`);
+    openStudents($('#dlg').dataset.g, s.id);
+  },
+  delStu(d) {
+    const s = dlgSection(), st = s.students.find(x => x.id === d.st);
+    if (hasScores(st) && !confirm(`حذف ${st.name} ودرجاتها؟`)) return;
+    s.students = s.students.filter(x => x !== st);
+    save(); openStudents($('#dlg').dataset.g, s.id);
+  },
+  sortStu() {
+    const s = dlgSection();
+    s.students.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+    save('تم الترتيب'); openStudents($('#dlg').dataset.g, s.id);
+  },
+  wAll() {
+    const g = curGrade();
+    if (!confirm('تطبيق توزيع «' + g.name + '» على جميع الصفوف؟')) return;
+    db.grades.forEach(x => x.weights = { ...g.weights });
+    save('تم تطبيق التوزيع على كل الصفوف'); render();
+  },
+  wStep(d) {
+    const g = curGrade();
+    g.weights[d.k] = Math.max(0, Math.min(100, g.weights[d.k] + +d.d));
+    $(`[data-w="${d.k}"]`).value = g.weights[d.k];
+    refreshWeights(); save();
+  },
+  wReset() { curGrade().weights = { ...DEF_W }; save('تمت استعادة التوزيع الافتراضي'); render(); },
+  csv() {
+    const g = curGrade(), s = curSection(g);
+    const q = v => `"${String(v).replace(/"/g, '""')}"`;
+    const rows = [['#', 'اسم الطالبة', ...CATS.map(c => `${c.name} (${g.weights[c.k]})`), 'المجموع', 'التقدير']];
+    s.students.forEach((st, i) => {
+      const t = stuTotal(st);
+      rows.push([i + 1, st.name, ...CATS.map(c => st.scores?.[c.k] ?? ''), hasScores(st) ? fmt(t) : '', hasScores(st) ? level(t)[0] : '']);
+    });
+    download(`${g.name} - شعبة ${s.name}.csv`, '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+  },
+  print() { print(); },
+  export() {
+    const d = new Date().toISOString().slice(0, 10);
+    download(`لوحة-المعلمة-${d}.json`, JSON.stringify(db, null, 2), 'application/json');
+    toast('تم تنزيل النسخة الاحتياطية');
+  },
+  import() { $('#file').click(); }
+};
+
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+document.addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (tab) { ui.view = tab.dataset.view; render(); return; }
+  const b = e.target.closest('[data-act]');
+  if (b && ACTS[b.dataset.act]) ACTS[b.dataset.act](b.dataset);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'newGrade') ACTS.addGrade();
+  /* Enter في جدول الرصد ينقل للطالبة التالية في نفس البند */
+  if (e.key === 'Enter' && e.target.dataset.sc) {
+    e.preventDefault();
+    const next = e.target.closest('tr').nextElementSibling;
+    const inp = next && $(`[data-sc="${e.target.dataset.sc}"]`, next);
+    if (inp) { inp.focus(); inp.select(); }
+  }
+});
+
+document.addEventListener('input', e => {
+  const el = e.target, d = el.dataset;
+  if (d.w) {
+    const g = curGrade();
+    g.weights[d.w] = Math.max(0, Math.min(100, Math.round(+el.value || 0)));
+    refreshWeights(); save();
+  }
+  if (d.sc) {
+    const s = curSection(curGrade());
+    const st = s.students.find(x => x.id === el.closest('tr').dataset.st);
+    st.scores = st.scores || {};
+    if (el.value === '') delete st.scores[d.sc]; else st.scores[d.sc] = +el.value;
+    refreshTable(); save();
+  }
+});
+
+document.addEventListener('change', e => {
+  const el = e.target, d = el.dataset;
+  if (d.edit === 'gname' && el.value.trim()) { grade(d.g).name = el.value.trim(); save('تم الحفظ'); }
+  if (d.edit === 'gcolor') { grade(d.g).color = el.value; save(); render(); }
+  if (d.edit === 'sname' && el.value.trim()) { dlgSection().students.find(x => x.id === d.st).name = el.value.trim(); save('تم الحفظ'); }
+  if (d.w) el.value = curGrade().weights[d.w];
+});
+
+$('#file').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data.grades)) throw 0;
+    if (!confirm('سيتم استبدال البيانات الحالية بالنسخة الاحتياطية. متابعة؟')) return;
+    db = data; ui.g = db.grades[0]?.id; ui.s = null;
+    save('تم استرجاع النسخة الاحتياطية'); render();
+  } catch { alert('الملف غير صالح.'); }
+});
+
+/* استعادة آخر شاشة مفتوحة */
+try { Object.assign(ui, JSON.parse(localStorage.getItem(KEY + ':ui')) || {}); } catch {}
+if (!VIEWS[ui.view]) ui.view = 'home';
+render();
+</script>
+</body>
+</html>
