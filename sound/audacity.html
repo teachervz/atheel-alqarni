@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاكي أوداسيتي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
+<!-- النشيد الوطني (اختياري): إن وُجد الملف بجانب هذه الصفحة يُفتح بضغطة زر -->
+<script src="anthem.js"></script>
+<style>
+/* =====================================================================
+   الألوان والمقاسات
+   ===================================================================== */
+:root{
+  --bg:#d9d8e2; --bar:#f4f3f8; --bar2:#ebe9f2; --line:#cbc8d8; --ink:#25203a; --muted:#6b6782;
+  --accent:#6d3fd6; --accent-2:#8b5cf6; --accent-l:#efe9ff;
+  --wave:#3b57d6; --rms:#8296f3; --selbg:#d3dbff; --trackbg:#ffffff; --trackbg-sel:#f3f5ff;
+  --play:#159b55; --rec:#e0364f; --amber:#f59e0b; --mint:#0fa797; --mint-l:#d3f8f2;
+  --fh:'Cairo','Segoe UI',Tahoma,'Geeza Pro',sans-serif;
+  --hw:15rem; /* عرض رأس المسار */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:clamp(12px,1vw,19px)}
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;font-family:var(--fh);background:var(--bg);color:var(--ink);-webkit-user-select:none;user-select:none}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit}
+.hidden{display:none !important}
+.ltr{direction:ltr;unicode-bidi:isolate}
+
+/* ---------- شريط العنوان ---------- */
+.titlebar{display:flex;align-items:center;gap:.8rem;padding:.45rem 1rem;background:#2c2342;color:#fff;font-weight:800;font-size:1.05rem}
+.titlebar .dots i{display:inline-block;width:.8rem;height:.8rem;border-radius:50%;background:#ff5f57;margin-left:.35rem}
+.titlebar .dots i:nth-child(2){background:#febc2e}.titlebar .dots i:nth-child(3){background:#28c840}
+.titlebar .ttl{flex:1;text-align:center;direction:ltr}
+.titlebar a{color:#d9ccff;text-decoration:none;font-size:.9rem}
+
+/* ---------- شريط القوائم ---------- */
+.menubar{display:flex;gap:.2rem;padding:.2rem .6rem;background:#fff;border-bottom:1px solid var(--line);direction:ltr;position:relative;z-index:30}
+.menu{position:relative}
+.menu > button{padding:.35rem .9rem;border-radius:.5rem;font-weight:800;font-size:.95rem}
+.menu > button small{color:var(--muted);font-weight:700}
+.menu.open > button,.menu > button:hover{background:var(--accent-l);color:var(--accent)}
+.dropdown{position:absolute;top:100%;left:0;min-width:19rem;background:#fff;border:1px solid var(--line);border-radius:.8rem;box-shadow:0 18px 40px -16px rgba(30,20,70,.45);padding:.35rem;display:none}
+.menu.open .dropdown{display:block;animation:dd .15s ease}
+@keyframes dd{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.dropdown button{display:flex;width:100%;align-items:center;gap:.6rem;padding:.5rem .7rem;border-radius:.5rem;font-weight:700;font-size:.95rem;text-align:left}
+.dropdown button:hover{background:var(--accent-l)}
+.dropdown button .ar{color:var(--muted);font-size:.85rem;margin-left:auto;direction:rtl}
+.dropdown button kbd{font-family:inherit;font-size:.75rem;color:var(--muted);background:var(--bar2);border-radius:.3rem;padding:0 .35rem;min-width:3.5rem;text-align:center}
+.dropdown hr{border:none;border-top:1px solid var(--bar2);margin:.3rem 0}
+
+/* ---------- شريط الأدوات ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;padding:.5rem .7rem;background:var(--bar);border-bottom:1px solid var(--line);direction:ltr}
+.tgroup{display:flex;align-items:center;gap:.3rem;background:#fff;border:1px solid var(--line);border-radius:.8rem;padding:.25rem .35rem}
+.tb{width:2.8rem;height:2.8rem;border-radius:.6rem;display:grid;place-items:center;background:var(--bar2);color:#3a3354;transition:transform .1s,background .15s;position:relative}
+.tb svg{width:1.45rem;height:1.45rem}
+.tb:hover{background:#ddd8ec}
+.tb:active{transform:scale(.92)}
+.tb:disabled{opacity:.35;cursor:default}
+.tb.big{width:3.3rem;height:3.3rem}
+.tb.big svg{width:1.75rem;height:1.75rem}
+.tb[data-a=play]{color:var(--play)} .tb[data-a=record]{color:var(--rec)}
+.tb.on{background:var(--play);color:#fff !important}
+.tb.recording{background:var(--rec);color:#fff !important;animation:pulse 1s infinite}
+.tb.toggled{background:var(--accent);color:#fff}
+@keyframes pulse{50%{box-shadow:0 0 0 .45rem rgba(224,54,79,.25)}}
+.tb[title]:hover::after{content:attr(title);position:absolute;top:110%;left:50%;transform:translateX(-50%);background:#2c2342;color:#fff;font-size:.75rem;font-weight:700;padding:.25rem .55rem;border-radius:.4rem;white-space:nowrap;z-index:40;pointer-events:none;direction:rtl}
+.meter{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:800;color:var(--muted)}
+.meter canvas{width:11rem;height:1.6rem;border-radius:.4rem;background:#2c2342}
+.tsep{flex:1}
+.guide-toggle{padding:.55rem 1rem;border-radius:.7rem;background:var(--accent);color:#fff;font-weight:800;font-size:.95rem;direction:rtl}
+.guide-toggle:hover{background:#5a2fc0}
+
+/* ---------- منطقة العمل ---------- */
+.main{flex:1;display:flex;min-height:0}
+.workspace{flex:1;display:flex;flex-direction:column;min-width:0;direction:ltr;position:relative}
+.ruler-row{display:flex;background:var(--bar);border-bottom:1px solid var(--line)}
+.ruler-spacer{width:var(--hw);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:var(--muted);border-right:1px solid var(--line)}
+.ruler{flex:1;height:2.2rem;display:block;cursor:pointer;min-width:0}
+.tracks{flex:1;overflow-y:auto;overflow-x:hidden;padding:.4rem 0;position:relative}
+.track{display:flex;margin:0 .4rem .4rem;border-radius:.6rem;overflow:hidden;box-shadow:0 2px 6px -3px rgba(30,20,70,.3);border:2px solid transparent}
+.track.sel{border-color:var(--accent-2)}
+.th{width:calc(var(--hw) - .4rem);flex-shrink:0;background:var(--bar);padding:.45rem .55rem;display:flex;flex-direction:column;gap:.35rem;border-right:5px solid var(--c);font-size:.85rem}
+.track.sel .th{background:#e7e1fb}
+.th-top{display:flex;align-items:center;gap:.4rem}
+.th-top .close{width:1.6rem;height:1.6rem;border-radius:.4rem;background:#fff;font-weight:900;color:var(--muted);flex-shrink:0}
+.th-top .close:hover{background:#ffd6dd;color:var(--rec)}
+.tname{font-weight:800;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:auto}
+.th-btns{display:flex;gap:.3rem}
+.th-btns button{flex:1;padding:.25rem;border-radius:.4rem;background:#fff;font-weight:800;font-size:.78rem;border:1px solid var(--line)}
+.th-btns button.on-m{background:#ffe0a8;border-color:var(--amber)}
+.th-btns button.on-s{background:var(--mint-l);border-color:var(--mint)}
+.gain-row{display:flex;align-items:center;gap:.35rem;font-weight:700;font-size:.75rem;color:var(--muted)}
+.gain-row input{flex:1;accent-color:var(--accent);min-width:0}
+.gain-row b{min-width:3rem;text-align:right;color:var(--ink)}
+.th .tsel{margin-top:auto;padding:.25rem;border-radius:.4rem;background:var(--accent-l);color:var(--accent);font-weight:800;font-size:.78rem}
+.wave{flex:1;display:block;height:9.5rem;cursor:text;touch-action:none;min-width:0;background:var(--trackbg)}
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;color:var(--muted);font-weight:800;font-size:1.2rem;direction:rtl;text-align:center;pointer-events:none}
+.empty b{font-size:3.5rem}
+/* ---------- بطاقة نص التسجيل (رسالة لوطني) ---------- */
+.prompter{position:absolute;top:2.8rem;left:0;right:0;margin:0 auto;width:min(56rem,95%);max-height:calc(100% - 4.2rem);overflow-y:auto;z-index:15;direction:rtl;
+  background:linear-gradient(165deg,#ffffff,#f4fbf6);border:3px solid #9fd8b4;border-radius:1.3rem;box-shadow:0 26px 60px -24px rgba(0,60,30,.45);padding:1rem 1.5rem 1.2rem;animation:pop .3s cubic-bezier(.2,1.3,.4,1)}
+.prompter.rec{border-color:var(--rec);box-shadow:0 0 0 .4rem rgba(224,54,79,.15),0 26px 60px -24px rgba(0,0,0,.4)}
+.pr-head{display:flex;align-items:center;gap:.5rem}
+.pr-head h3{flex:1;font-size:1.35rem;font-weight:900;color:#006c35}
+.pr-head button{width:2.3rem;height:2.3rem;border-radius:.6rem;background:#eef7f1;font-weight:900;font-size:1.05rem;color:#0b5a30}
+.pr-head button:hover{background:#d7efe0}
+.pr-article{margin-top:.7rem;background:#006c35;color:#fff;border-radius:1rem;padding:.7rem 1.1rem;line-height:1.9}
+.pr-article small{display:block;font-size:.85rem;font-weight:800;opacity:.85}
+.pr-article q{font-size:calc(var(--pf) * .82);font-weight:800;quotes:"«" "»"}
+.pr-body{margin-top:.8rem;display:flex;flex-direction:column;gap:.35rem}
+.pr-body p{font-size:var(--pf);font-weight:800;line-height:1.95;color:var(--ink);padding:.1rem .6rem;border-radius:.6rem;border-right:5px solid transparent;transition:background .3s,border-color .3s}
+.pr-body p.hl{background:#fff7d6;border-right-color:var(--amber)}
+.pr-dua{margin-top:.6rem;background:#fff7e0;border-radius:1rem;padding:.7rem 1.1rem;font-size:calc(var(--pf) * .92);font-weight:800;line-height:1.95;color:#5b3d00}
+.pr-dua b{display:block;font-size:.95rem;color:#a06400}
+.pr-foot{margin-top:.9rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;position:sticky;bottom:-1.2rem;background:linear-gradient(transparent,#f4fbf6 25%);padding:1rem 0 .4rem}
+.pr-foot .btn{font-size:1.05rem;padding:.65rem 1.5rem}
+.pr-foot .btn.rec{background:var(--rec)}
+.pr-foot .btn.green{background:#006c35}
+.pr-state{font-weight:900;font-size:1.05rem;color:var(--rec)}
+.pr-note{font-size:.85rem;font-weight:700;color:var(--muted);flex-basis:100%}
+.tb-script{padding:.55rem 1rem;border-radius:.7rem;background:#006c35;color:#fff;font-weight:800;font-size:.95rem;direction:rtl}
+.tb-script:hover{background:#00562a}
+.drop-hint{position:absolute;inset:.6rem;border:4px dashed var(--accent-2);border-radius:1rem;background:rgba(139,92,246,.12);display:grid;place-items:center;font-size:1.6rem;font-weight:900;color:var(--accent);z-index:20;direction:rtl}
+.hscroll{display:flex;align-items:center;gap:.5rem;padding:.25rem .6rem;background:var(--bar);border-top:1px solid var(--line)}
+.hscroll span{font-size:.75rem;font-weight:800;color:var(--muted);width:calc(var(--hw) - 1.2rem)}
+.hscroll input{flex:1;accent-color:var(--accent)}
+
+/* ---------- شريط التحديد + الحالة ---------- */
+.selbar{display:flex;align-items:center;gap:1.4rem;padding:.45rem 1rem;background:var(--bar);border-top:1px solid var(--line);direction:ltr;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;font-size:.72rem;font-weight:800;color:var(--muted)}
+.field output{font-size:1.05rem;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:.4rem;padding:.1rem .6rem;min-width:8.5rem;font-variant-numeric:tabular-nums}
+.status{flex:1;text-align:right;font-weight:800;font-size:.95rem;color:var(--accent);direction:rtl}
+
+/* ---------- لوحة الدليل والمهام ---------- */
+.guide{width:22rem;flex-shrink:0;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;padding:.9rem;gap:.6rem;overflow-y:auto}
+.guide h3{font-size:1.25rem;font-weight:900;color:#40208a}
+.guide .prog{height:.7rem;border-radius:1rem;background:var(--accent-l);overflow:hidden}
+.guide .prog span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),#5eead4);transition:width .5s}
+.guide .pct{font-size:.85rem;font-weight:800;color:var(--muted)}
+.task{display:flex;gap:.6rem;align-items:flex-start;padding:.5rem .55rem;border-radius:.7rem;background:#faf9fd;border:1px solid #efedf6;transition:all .3s}
+.task .chk{width:1.6rem;height:1.6rem;border-radius:.5rem;border:2px solid #cfc6ef;flex-shrink:0;display:grid;place-items:center;color:#fff;font-weight:900;margin-top:.1rem}
+.task b{display:block;font-size:.95rem;font-weight:800}
+.task small{display:block;font-size:.78rem;font-weight:700;color:var(--muted);line-height:1.5}
+.task.done{background:var(--mint-l);border-color:#a7eee3}
+.task.done .chk{background:var(--mint);border-color:var(--mint)}
+.task.done .chk::after{content:"✓"}
+.task.bonus b::before{content:"⭐ "}
+.tip-box{font-size:.82rem;font-weight:700;line-height:1.7;background:#fff7e0;border-radius:.7rem;padding:.6rem .8rem;color:#6b4a00}
+
+/* ---------- النوافذ المنبثقة ---------- */
+.modal{position:fixed;inset:0;background:rgba(32,22,60,.45);display:grid;place-items:center;z-index:60;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.dlg{background:#fff;border-radius:1.1rem;width:min(36rem,92vw);box-shadow:0 30px 70px -20px rgba(0,0,0,.5);overflow:hidden;animation:pop .25s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.dlg-h{background:var(--bar2);padding:.6rem 1rem;font-weight:900;font-size:1rem;display:flex;justify-content:space-between;align-items:center}
+.dlg-h .x{font-size:1.2rem;font-weight:900;color:var(--muted);width:2rem;height:2rem;border-radius:.5rem}
+.dlg-h .x:hover{background:#ffd6dd;color:var(--rec)}
+.dlg-b{padding:1.1rem 1.3rem;display:flex;flex-direction:column;gap:.8rem;font-weight:700;font-size:1rem;line-height:1.7}
+.dlg-b label{font-weight:800;font-size:.9rem;color:var(--muted)}
+.dlg-b input[type=text],.dlg-b input[type=number],.dlg-b select{width:100%;padding:.55rem .8rem;border:2px solid var(--line);border-radius:.6rem;font-size:1rem;font-weight:700;outline:none;-webkit-user-select:text;user-select:text}
+.dlg-b input:focus,.dlg-b select:focus{border-color:var(--accent-2)}
+.dlg-b input[type=range]{width:100%;accent-color:var(--accent)}
+.big-val{font-size:2.3rem;font-weight:900;color:var(--accent);text-align:center;direction:ltr}
+.dlg-f{display:flex;gap:.6rem;justify-content:flex-end;padding:.8rem 1.2rem;background:var(--bar)}
+.btn{padding:.55rem 1.3rem;border-radius:.7rem;font-weight:800;font-size:.95rem;background:var(--accent);color:#fff;transition:transform .1s}
+.btn:active{transform:scale(.95)}
+.btn.ghost{background:#fff;color:var(--accent);box-shadow:inset 0 0 0 2px #d8cdfa}
+.btn.amber{background:var(--amber)}
+.folders{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.folders button{padding:.6rem .3rem;border-radius:.7rem;border:2px solid var(--line);font-weight:800;font-size:.85rem;display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.folders button span{font-size:1.7rem}
+.folders button.on{border-color:var(--accent);background:var(--accent-l)}
+.warn-ic{font-size:2.6rem;text-align:center}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-size:.92rem}
+.keys kbd{font-family:inherit;background:var(--bar2);border-radius:.35rem;padding:0 .5rem;font-weight:800;direction:ltr;text-align:center}
+
+/* ---------- شاشة البداية ---------- */
+.splash{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:radial-gradient(circle at 80% 10%,#e7dcff,transparent 40%),radial-gradient(circle at 10% 90%,#d6f6f0,transparent 35%),linear-gradient(160deg,#fdfbff,#f1ebff)}
+.splash-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem;padding:2rem}
+.splash .logo{font-size:6rem;animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-14px)}}
+.splash h1{font-size:3.4rem;font-weight:900;background:linear-gradient(120deg,#40208a,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.splash p{font-size:1.3rem;font-weight:700;color:var(--muted)}
+.splash .opts{display:grid;grid-template-columns:repeat(2,minmax(17rem,1fr));gap:1rem;margin-top:1rem}
+.splash .opt{background:#fff;border-radius:1.2rem;padding:1.1rem 1.4rem;font-size:1.25rem;font-weight:900;box-shadow:0 14px 30px -16px rgba(76,29,149,.45);border:3px solid transparent;display:flex;align-items:center;gap:.8rem;transition:transform .15s,border-color .15s}
+.splash .opt span{font-size:2.2rem}
+.splash .opt:hover{transform:translateY(-4px);border-color:#c4b1fb}
+.splash .opt.main-opt{background:linear-gradient(120deg,#5530b0,#8b5cf6);color:#fff}
+.splash small{font-size:1rem;font-weight:700;color:var(--muted)}
+
+/* ---------- رسائل + احتفال ---------- */
+#toast{position:fixed;top:4.5rem;left:50%;transform:translate(-50%,-30px);opacity:0;background:#2c2342;color:#fff;font-weight:800;font-size:1.05rem;padding:.6rem 1.4rem;border-radius:2rem;z-index:80;transition:all .35s cubic-bezier(.2,1.2,.4,1);pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{transform:translate(-50%,0);opacity:1}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:75}
+@media (max-width:900px){.guide{position:fixed;inset:auto 0 0 0;width:auto;height:45vh;z-index:25;border-top:1px solid var(--line)} :root{--hw:11rem}}
+</style>
+</head>
+<body>
+
+<!-- ===== شريط العنوان ===== -->
+<div class="titlebar">
+  <span class="dots"><i></i><i></i><i></i></span>
+  <span class="ttl" id="title">Audacity — مشروعي</span>
+  <a href="index.html" title="العودة إلى العرض">↩ العرض التقديمي</a>
+</div>
+
+<!-- ===== شريط القوائم ===== -->
+<nav class="menubar" id="menubar">
+  <div class="menu"><button>File <small>ملف</small></button><div class="dropdown">
+    <button data-a="open">Open… <span class="ar">فتح</span><kbd>Ctrl+O</kbd></button>
+    <button data-a="import">Import › Audio… <span class="ar">استيراد صوت</span><kbd>Ctrl+Shift+I</kbd></button>
+    <button data-a="anthem">Open National Anthem <span class="ar">فتح النشيد الوطني</span><kbd>🇸🇦</kbd></button>
+    <hr>
+    <button data-a="save">Save Project As… <span class="ar">حفظ المشروع باسم</span><kbd>Ctrl+S</kbd></button>
+    <button data-a="export">Export as WAV… <span class="ar">تصدير ملف صوتي</span><kbd>Ctrl+E</kbd></button>
+    <hr>
+    <button data-a="new">New <span class="ar">مشروع جديد</span><kbd>Ctrl+N</kbd></button>
+  </div></div>
+  <div class="menu"><button>Edit <small>تحرير</small></button><div class="dropdown">
+    <button data-a="undo">Undo <span class="ar">تراجع</span><kbd>Ctrl+Z</kbd></button>
+    <button data-a="redo">Redo <span class="ar">كرّر</span><kbd>Ctrl+Y</kbd></button>
+    <hr>
+    <button data-a="cut">Cut <span class="ar">قص</span><kbd>Ctrl+X</kbd></button>
+    <button data-a="copy">Copy <span class="ar">نسخ</span><kbd>Ctrl+C</kbd></button>
+    <button data-a="paste">Paste <span class="ar">لصق</span><kbd>Ctrl+V</kbd></button>
+    <button data-a="delete">Delete <span class="ar">حذف</span><kbd>Delete</kbd></button>
+    <button data-a="silence">Silence Audio <span class="ar">كتم الجزء المحدد</span><kbd>Ctrl+L</kbd></button>
+    <hr>
+    <button data-a="selall">Select All <span class="ar">تحديد الكل</span><kbd>Ctrl+A</kbd></button>
+    <button data-a="selnone">Select None <span class="ar">إلغاء التحديد</span><kbd>Esc</kbd></button>
+  </div></div>
+  <div class="menu"><button>Generate <small>توليد</small></button><div class="dropdown">
+    <button data-a="gen-rhythm">Rhythm Track… <span class="ar">مسار إيقاع</span><kbd>🥁</kbd></button>
+    <button data-a="gen-tone">Tone… <span class="ar">نغمة</span><kbd>🎵</kbd></button>
+    <button data-a="gen-noise">Noise… <span class="ar">ضوضاء</span><kbd>📻</kbd></button>
+    <button data-a="gen-silence">Silence (2s) <span class="ar">إدراج صمت</span><kbd>🤫</kbd></button>
+  </div></div>
+  <div class="menu"><button>Effect <small>تأثيرات</small></button><div class="dropdown">
+    <button data-a="fadein">Fade In <span class="ar">التلاشي (ظهور تدريجي)</span><kbd>↗</kbd></button>
+    <button data-a="fadeout">Fade Out <span class="ar">الاختفاء التدريجي</span><kbd>↘</kbd></button>
+    <button data-a="speed">Change Speed… <span class="ar">تغيير السرعة</span><kbd>⏩</kbd></button>
+    <button data-a="amplify">Amplify… <span class="ar">تضخيم</span><kbd>🔊</kbd></button>
+    <button data-a="normalize">Normalize <span class="ar">موازنة الصوت</span><kbd>⚖️</kbd></button>
+    <button data-a="echo">Echo <span class="ar">صدى</span><kbd>🏔️</kbd></button>
+    <button data-a="reverse">Reverse <span class="ar">عكس الصوت</span><kbd>🔁</kbd></button>
+  </div></div>
+  <div class="menu"><button>View <small>عرض</small></button><div class="dropdown">
+    <button data-a="zoomin">Zoom In <span class="ar">تكبير</span><kbd>Ctrl+1</kbd></button>
+    <button data-a="zoomout">Zoom Out <span class="ar">تصغير</span><kbd>Ctrl+3</kbd></button>
+    <button data-a="zoomfit">Fit to Width <span class="ar">ملاءمة العرض</span><kbd>Ctrl+F</kbd></button>
+    <hr>
+    <button data-a="guide">Tasks Panel <span class="ar">لوحة المهام</span><kbd>📘</kbd></button>
+    <button data-a="script">Recording Script <span class="ar">نص التسجيل: رسالة لوطني</span><kbd>📜</kbd></button>
+  </div></div>
+  <div class="menu"><button>Help <small>مساعدة</small></button><div class="dropdown">
+    <button data-a="help">Keyboard Shortcuts <span class="ar">اختصارات لوحة المفاتيح</span><kbd>?</kbd></button>
+  </div></div>
+</nav>
+
+<!-- ===== شريط الأدوات ===== -->
+<div class="toolbar">
+  <div class="tgroup">
+    <button class="tb big" data-a="pause" title="إيقاف مؤقت Pause (P)"></button>
+    <button class="tb big" data-a="play" title="شغّل Play (Space)"></button>
+    <button class="tb big" data-a="stop" title="توقف Stop"></button>
+    <button class="tb big" data-a="start" title="إلى البداية (Home)"></button>
+    <button class="tb big" data-a="end" title="إلى النهاية (End)"></button>
+    <button class="tb big" data-a="record" title="سجّل Record (R)"></button>
+    <button class="tb big" data-a="loop" title="تكرار التشغيل Loop (L)"></button>
+  </div>
+  <div class="tgroup">
+    <button class="tb" data-a="undo" title="تراجع Undo (Ctrl+Z)"></button>
+    <button class="tb" data-a="redo" title="كرّر Redo (Ctrl+Y)"></button>
+  </div>
+  <div class="tgroup">
+    <button class="tb" data-a="cut" title="قص Cut"></button>
+    <button class="tb" data-a="copy" title="نسخ Copy"></button>
+    <button class="tb" data-a="paste" title="لصق Paste"></button>
+    <button class="tb" data-a="delete" title="حذف Delete"></button>
+    <button class="tb" data-a="silence" title="كتم Silence"></button>
+  </div>
+  <div class="tgroup">
+    <button class="tb" data-a="zoomin" title="تكبير Zoom In"></button>
+    <button class="tb" data-a="zoomout" title="تصغير Zoom Out"></button>
+    <button class="tb" data-a="zoomfit" title="ملاءمة Fit"></button>
+  </div>
+  <div class="tgroup meter" title="مقياس التشغيل Playback meter"><span>🔊</span><canvas id="meter" width="220" height="32"></canvas></div>
+  <span class="tsep"></span>
+  <button class="tb-script" data-a="script">📜 رسالة لوطني</button>
+  <button class="guide-toggle" data-a="guide">📘 المهام</button>
+</div>
+
+<!-- ===== منطقة العمل + لوحة المهام ===== -->
+<div class="main">
+  <div class="workspace" id="workspace">
+    <div class="ruler-row"><div class="ruler-spacer">⏱ Timeline</div><canvas class="ruler" id="ruler"></canvas></div>
+    <div class="tracks" id="tracks"></div>
+    <div class="empty" id="empty"><b>🎧</b>افتحي ملفاً صوتياً من <span class="ltr">File › Open</span><br>أو اسحبي ملفاً صوتياً وأفلتيه هنا</div>
+    <div class="hscroll"><span>↔ Scroll</span><input type="range" id="hscroll" min="0" max="1000" value="0"></div>
+    <div class="prompter hidden" id="prompter" style="--pf:1.45rem"></div>
+    <div class="drop-hint hidden" id="dropHint">📥 أفلتي الملف هنا لإضافته كمسار جديد</div>
+  </div>
+
+  <aside class="guide" id="guide" dir="rtl">
+    <h3>📘 مهامّكِ في أوداسيتي</h3>
+    <div class="prog"><span id="progBar"></span></div>
+    <div class="pct" id="pct">0 من 0 مهام</div>
+    <div id="taskList"></div>
+    <div class="tip-box">💡 <b>تلميحات:</b><br>• اسحبي بالفأرة على الموجة لتحديد جزء.<br>• مفتاح المسافة <span class="ltr">Space</span> للتشغيل والإيقاف.<br>• مفتاح <span class="ltr">Delete</span> لحذف الجزء المحدد.<br>• اضغطي على المسطرة الزمنية للتشغيل من أي نقطة.<br>• <span class="ltr">Ctrl + عجلة الفأرة</span> للتكبير والتصغير.</div>
+  </aside>
+</div>
+
+<!-- ===== شريط التحديد والحالة ===== -->
+<div class="selbar">
+  <div class="field">Selection Start · بداية التحديد<output id="fStart">00:00.000</output></div>
+  <div class="field">Selection End · نهاية التحديد<output id="fEnd">00:00.000</output></div>
+  <div class="field">Length · المدة<output id="fLen">00:00.000</output></div>
+  <div class="field">Audio Position · موضع التشغيل<output id="fPos">00:00.000</output></div>
+  <div class="status" id="status">مرحباً بكِ في أوداسيتي 🎧</div>
+</div>
+
+<!-- ===== شاشة البداية ===== -->
+<div class="splash" id="splash">
+  <div class="splash-card">
+    <div class="logo">🎧</div>
+    <h1>محاكي برنامج أوداسيتي</h1>
+    <p>تدرّبي على تشغيل المقاطع الصوتية وتحريرها ودمجها وحفظها — تماماً كما في البرنامج الحقيقي</p>
+    <div class="opts">
+      <button class="opt main-opt" data-a="anthem" id="anthemOpt"><span>🇸🇦</span>افتحي النشيد الوطني</button>
+      <button class="opt" data-a="open"><span>📂</span>افتحي ملفاً من جهازكِ</button>
+      <button class="opt" data-a="script"><span>🎙️</span>سجّلي رسالة لوطني</button>
+      <button class="opt" data-a="blank"><span>📄</span>مشروع فارغ</button>
+    </div>
+    <small>يمكنكِ أيضاً سحب ملف صوتي (mp3 / m4a / wav) وإفلاته في البرنامج</small>
+  </div>
+</div>
+
+<div class="modal hidden" id="modal"><div class="dlg" id="dlg"></div></div>
+<input type="file" id="fileOpen" accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac" class="hidden">
+<input type="file" id="fileImport" accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac" class="hidden" multiple>
+<div id="toast"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* #####################################################################
+   ⚙️ إعدادات قابلة للتعديل: قائمة المهام التي تظهر في لوحة «مهامّكِ»
+   ##################################################################### */
+/* نص التسجيل الذي تقرؤه الطالبة (عدّلي النصوص من هنا) */
+const RECORD_SCRIPT = {
+  title: '🇸🇦 رسالتي لوطني — اقرئي النص بصوت واضح',
+  article: {
+    label: '📜 المادة الرابعة والثلاثون من النظام الأساسي للحكم',
+    text: 'الدفاع عن العقيدة الإسلامية والمجتمع والوطن واجب على كل مواطن، ويبين النظام أحكام الخدمة العسكرية.'
+  },
+  lines: [
+    'وطني الغالي… أنا ابنتكَ، وأعرف أن الدفاع عنكَ واجبٌ عليّ.',
+    'سأقف أدافع عنكَ يا وطني بكلّ ما أستطيع.',
+    'ولن أصدّق ما يُنشر من إشاعاتٍ تهدف إلى نشر الخوف، وسأستقي أخباري من المصادر الرسمية.',
+    'أحبّكَ يا وطني ❤️'
+  ],
+  dua: {
+    label: '🤲 دعاء لجنودنا البواسل',
+    text: 'اللهم احفظ جنودنا المرابطين على حدود وطننا، وانصرهم، وثبّت أقدامهم، وسدّد رميهم، وردّهم إلى أهلهم سالمين غانمين، واحفظ بلادنا وقيادتنا من كل سوء. آمين.'
+  },
+  trackName: 'رسالتي لوطني 🎙️'
+};
+
+const TASKS = [
+  { id: 'open',     title: 'افتحي ملفاً صوتياً',         hint: 'File › Open، أو اسحبي الملف إلى نافذة البرنامج' },
+  { id: 'play',     title: 'شغّلي المقطع الصوتي',          hint: 'زر التشغيل ▶ أو مفتاح المسافة Space' },
+  { id: 'playSel',  title: 'شغّلي جزءاً محدداً فقط',       hint: 'اسحبي بالفأرة لتحديد جزء ثم اضغطي تشغيل' },
+  { id: 'delete',   title: 'احذفي جزءاً من المقطع',        hint: 'حدّدي الجزء ثم اضغطي مفتاح Delete' },
+  { id: 'copy',     title: 'انسخي جزءاً والصقيه',          hint: 'Ctrl+C ثم ضعي المؤشر في مكان آخر و Ctrl+V' },
+  { id: 'fade',     title: 'طبّقي تأثير التلاشي',          hint: 'حدّدي جزءاً ثم Effect › Fade In' },
+  { id: 'speed',    title: 'غيّري سرعة الصوت',             hint: 'حدّدي جزءاً ثم Effect › Change Speed' },
+  { id: 'merge',    title: 'ادمجي مقطعاً صوتياً آخر',      hint: 'File › Import › Audio أو Generate › Rhythm Track' },
+  { id: 'gain',     title: 'اضبطي مستوى الصوت Gain',       hint: 'حرّكي شريط Gain في رأس المسار' },
+  { id: 'save',     title: 'احفظي المشروع',                hint: 'File › Save Project As ثم اختاري مجلد Music' },
+  { id: 'export',   title: 'صدّري الملف الصوتي',           hint: 'File › Export ليُحفظ ملف صوتي يعمل في أي مشغّل', bonus: true },
+  { id: 'record',   title: 'سجّلي صوتكِ',                   hint: 'زر التسجيل ⏺ ثم زر التوقف ⏹', bonus: true },
+  { id: 'effect2',  title: 'جرّبي تأثيراً آخر',             hint: 'الصدى Echo أو العكس Reverse أو التضخيم Amplify', bonus: true },
+  { id: 'vmsg',     title: 'رسالة لوطني بخلفية النشيد',     hint: 'سجّلي «رسالة لوطني» ثم افتحي النشيد كمسار ثانٍ واخفضي Gain النشيد', bonus: true }
+];
+
+/* #####################################################################
+   أدوات مساعدة
+   ##################################################################### */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const dbToLin = db => Math.pow(10, db / 20);
+const fmt = t => { t = Math.max(0, t || 0); const m = Math.floor(t / 60), s = t - m * 60; return `${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`; };
+let toastT;
+function toast(msg, ms = 2600) { const t = $('#toast'); t.innerHTML = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms); }
+function status(msg) { $('#status').textContent = msg; }
+
+/* أيقونات SVG لشريط الأدوات */
+const sv = (p, stroke) => `<svg viewBox="0 0 24 24" ${stroke ? 'fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"' : 'fill="currentColor"'}>${p}</svg>`;
+const ICONS = {
+  play: sv('<path d="M7 4.5v15l13-7.5z"/>'),
+  pause: sv('<rect x="5.5" y="4" width="4.5" height="16" rx="1.2"/><rect x="14" y="4" width="4.5" height="16" rx="1.2"/>'),
+  stop: sv('<rect x="5" y="5" width="14" height="14" rx="2.5"/>'),
+  start: sv('<rect x="4" y="5" width="3" height="14" rx="1"/><path d="M20 5v14L8.5 12z"/>'),
+  end: sv('<rect x="17" y="5" width="3" height="14" rx="1"/><path d="M4 5v14l11.5-7z"/>'),
+  record: sv('<circle cx="12" cy="12" r="7.5"/>'),
+  loop: sv('<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>', true),
+  undo: sv('<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>', true),
+  redo: sv('<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>', true),
+  cut: sv('<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>', true),
+  copy: sv('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', true),
+  paste: sv('<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>', true),
+  delete: sv('<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>', true),
+  silence: sv('<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m23 9-6 6M17 9l6 6"/>', true),
+  zoomin: sv('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>', true),
+  zoomout: sv('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6"/>', true),
+  zoomfit: sv('<path d="M3 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4"/>', true)
+};
+$$('.toolbar .tb').forEach(b => (b.innerHTML = ICONS[b.dataset.a] || ''));
+
+/* #####################################################################
+   🔊 الصوت: سياق Web Audio + مقياس المستوى
+   ##################################################################### */
+let ctx, master, analyser;
+function ac() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+    master.connect(analyser); analyser.connect(ctx.destination);
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+const SR = () => ac().sampleRate;
+function toBuf(data) { const b = ac().createBuffer(1, Math.max(1, data.length), SR()); b.copyToChannel(data, 0); return b; }
+function chime() { const c = ac(); [660, 880, 1320].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + i * .08; o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.15, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + .3); o.connect(g).connect(c.destination); o.start(t); o.stop(t + .35); }); }
+
+/* فك ترميز ملف صوتي إلى مسار أحادي */
+async function decodeToMono(arrayBuffer) {
+  const dec = await ac().decodeAudioData(arrayBuffer);
+  const out = new Float32Array(dec.length);
+  for (let ch = 0; ch < dec.numberOfChannels; ch++) { const d = dec.getChannelData(ch); for (let i = 0; i < d.length; i++) out[i] += d[i] / dec.numberOfChannels; }
+  return out;
+}
+function anthemArrayBuffer() {
+  const bin = atob(window.ANTHEM_B64), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return u8.buffer;
+}
+
+/* #####################################################################
+   📦 بيانات المشروع
+   ##################################################################### */
+const COLORS = ['#3b57d6', '#0fa797', '#e0364f', '#f59e0b', '#8b5cf6', '#0ea5e9'];
+let tracks = [];           /* [{id,name,data,gain,mute,solo,color}] */
+let nextId = 1;
+let sel = null;            /* {a, b, ids:Set} بالثواني */
+let cursor = 0;            /* موضع المؤشر بالثواني */
+let focusId = null;        /* آخر مسار تم الضغط عليه */
+let clipboard = null;
+let undoStack = [], redoStack = [];
+let view = { start: 0, pps: 40 };  /* بداية العرض + عدد البكسلات لكل ثانية */
+let play = null, loopOn = false, recState = null;
+let projectName = 'مشروعي';
+const done = new Set();
+
+const duration = () => tracks.reduce((m, t) => Math.max(m, t.data.length), 0) / SR();
+const waveWidth = () => { const c = $('#ruler'); return c.clientWidth || 800; };
+
+function addTrack(name, data, opts = {}) {
+  const t = { id: nextId++, name, data, gain: 0, mute: false, solo: false, color: COLORS[(nextId - 2) % COLORS.length] };
+  tracks.push(t); focusId = t.id;
+  buildTracks();
+  if (tracks.length === 1 || opts.fit) zoomFit(); else render();
+  return t;
+}
+
+/* ----- التراجع والتكرار (كل التعديلات تنشئ مصفوفات جديدة، فاللقطة خفيفة) ----- */
+function snapshot() { return { tracks: tracks.map(t => ({ ...t })), sel: sel ? { a: sel.a, b: sel.b, ids: new Set(sel.ids) } : null, cursor }; }
+function restore(s) { tracks = s.tracks.map(t => ({ ...t })); sel = s.sel; cursor = s.cursor; buildTracks(); render(); }
+function pushUndo(label) { undoStack.push({ s: snapshot(), label }); if (undoStack.length > 40) undoStack.shift(); redoStack = []; updateButtons(); }
+function undo() { stopPlay(); if (!undoStack.length) return toast('لا يوجد ما يمكن التراجع عنه'); const u = undoStack.pop(); redoStack.push({ s: snapshot(), label: u.label }); restore(u.s); status('↶ تراجع عن: ' + u.label); updateButtons(); }
+function redo() { stopPlay(); if (!redoStack.length) return toast('لا يوجد ما يمكن تكراره'); const r = redoStack.pop(); undoStack.push({ s: snapshot(), label: r.label }); restore(r.s); status('↷ تكرار: ' + r.label); updateButtons(); }
+function updateButtons() {
+  $$('[data-a=undo].tb').forEach(b => (b.disabled = !undoStack.length));
+  $$('[data-a=redo].tb').forEach(b => (b.disabled = !redoStack.length));
+  $('#empty').classList.toggle('hidden', tracks.length > 0);
+}
+
+/* #####################################################################
+   ✅ المهام
+   ##################################################################### */
+function buildTasks() {
+  $('#taskList').innerHTML = TASKS.map(t => `<div class="task ${t.bonus ? 'bonus' : ''}" data-task="${t.id}"><span class="chk"></span><div><b>${t.title}</b><small>${t.hint}</small></div></div>`).join('');
+  updateProgress();
+}
+function updateProgress() {
+  const core = TASKS.filter(t => !t.bonus), n = core.filter(t => done.has(t.id)).length;
+  $('#progBar').style.width = (n / core.length * 100) + '%';
+  $('#pct').textContent = `أنجزتِ ${n} من ${core.length} مهام أساسية`;
+  return n === core.length;
+}
+function mark(id) {
+  if (done.has(id)) return; done.add(id);
+  const el = $(`.task[data-task="${id}"]`); if (el) el.classList.add('done');
+  chime();
+  if (updateProgress() && !mark.celebrated) { mark.celebrated = true; setTimeout(() => { confetti(); toast('🎉 أحسنتِ! أنجزتِ جميع المهام الأساسية — أنتِ خبيرة أوداسيتي 🎧', 4500); }, 500); }
+}
+
+/* #####################################################################
+   🖼️ بناء المسارات والرسم
+   ##################################################################### */
+function buildTracks() {
+  const box = $('#tracks');
+  box.innerHTML = tracks.map(t => `
+    <div class="track" data-id="${t.id}" style="--c:${t.color}">
+      <div class="th">
+        <div class="th-top"><button class="close" data-tclose title="إغلاق المسار">×</button><span class="tname" title="${t.name}">${t.name}</span></div>
+        <div class="th-btns"><button data-mute class="${t.mute ? 'on-m' : ''}" title="كتم المسار">Mute</button><button data-solo class="${t.solo ? 'on-s' : ''}" title="تشغيل هذا المسار وحده">Solo</button></div>
+        <div class="gain-row" title="تضخيم الصوت Gain"><span>Gain</span><input type="range" min="-24" max="12" step="1" value="${t.gain}" data-gain><b>${t.gain > 0 ? '+' : ''}${t.gain} dB</b></div>
+        <button class="tsel" data-tsel>Select · تحديد المسار</button>
+      </div>
+      <canvas class="wave"></canvas>
+    </div>`).join('');
+  $$('.track', box).forEach(row => bindTrack(row));
+  resizeCanvases(); updateButtons();
+}
+const trackById = id => tracks.find(t => t.id === id);
+
+function resizeCanvases() {
+  const dpr = window.devicePixelRatio || 1;
+  $$('canvas.wave, #ruler').forEach(c => { c.width = Math.round(c.clientWidth * dpr); c.height = Math.round(c.clientHeight * dpr); });
+  syncScroll();
+}
+
+const timeToX = t => (t - view.start) * view.pps;
+const xToTime = x => view.start + x / view.pps;
+
+function drawRuler() {
+  const c = $('#ruler'), g = c.getContext('2d'), dpr = window.devicePixelRatio || 1, W = c.width / dpr, H = c.height / dpr;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  g.fillStyle = '#f4f3f8'; g.fillRect(0, 0, W, H);
+  const steps = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120];
+  const step = steps.find(s => s * view.pps >= 80) || 300;
+  g.fillStyle = '#6b6782'; g.strokeStyle = '#a9a5bd'; g.font = '700 11px Cairo, sans-serif'; g.textBaseline = 'top';
+  const first = Math.floor(view.start / step) * step;
+  for (let t = first; t < view.start + W / view.pps; t += step) {
+    const x = Math.round(timeToX(t)) + .5; if (x < 0) continue;
+    g.beginPath(); g.moveTo(x, H * .45); g.lineTo(x, H); g.stroke();
+    const lab = step < 1 ? t.toFixed(step < 0.1 ? 2 : 1) : (t >= 60 ? `${Math.floor(t / 60)}:${String(Math.round(t % 60)).padStart(2, '0')}` : Math.round(t));
+    g.fillText(lab + (step < 60 && t < 60 ? 's' : ''), x + 3, 2);
+    for (let k = 1; k < 5; k++) { const xm = Math.round(timeToX(t + step * k / 5)) + .5; g.beginPath(); g.moveTo(xm, H * .75); g.lineTo(xm, H); g.stroke(); }
+  }
+  if (sel) { g.fillStyle = 'rgba(109,63,214,.25)'; g.fillRect(timeToX(sel.a), H - 6, (sel.b - sel.a) * view.pps, 6); }
+  const ph = play ? playPos() : null;
+  if (ph != null) { const x = timeToX(ph); g.fillStyle = '#159b55'; g.beginPath(); g.moveTo(x - 6, 0); g.lineTo(x + 6, 0); g.lineTo(x, 10); g.fill(); }
+}
+
+function drawTrack(row, t) {
+  const c = $('canvas', row), g = c.getContext('2d'), dpr = window.devicePixelRatio || 1, W = c.width, H = c.height;
+  const selected = sel && sel.ids.has(t.id);
+  row.classList.toggle('sel', !!selected);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.fillStyle = selected ? '#f3f5ff' : '#ffffff'; g.fillRect(0, 0, W, H);
+  if (selected) { g.fillStyle = '#cdd6ff'; g.fillRect(timeToX(sel.a) * dpr, 0, (sel.b - sel.a) * view.pps * dpr, H); }
+  /* خط المنتصف + خطوط مساعدة */
+  g.fillStyle = 'rgba(80,70,120,.15)'; g.fillRect(0, H / 2, W, 1); g.fillRect(0, H * .25, W, 1); g.fillRect(0, H * .75, W, 1);
+  const sr = SR(), data = t.data, len = data.length, spp = sr / (view.pps * dpr);
+  g.globalAlpha = (t.mute || (tracks.some(x => x.solo) && !t.solo)) ? .35 : 1;
+  const amp = H * .47, mid = H / 2;
+  for (let x = 0; x < W; x++) {
+    const s = Math.floor((view.start * sr) + x * spp), e = Math.floor((view.start * sr) + (x + 1) * spp);
+    if (s >= len) break; if (e <= 0) continue;
+    const s0 = Math.max(0, s), e0 = Math.min(len, Math.max(s0 + 1, e));
+    const stride = Math.max(1, Math.floor((e0 - s0) / 64));
+    let mn = 0, mx = 0, sq = 0, n = 0;
+    for (let i = s0; i < e0; i += stride) { const v = data[i]; if (v < mn) mn = v; if (v > mx) mx = v; sq += v * v; n++; }
+    const rms = Math.sqrt(sq / Math.max(1, n));
+    g.fillStyle = t.color; g.fillRect(x, mid - mx * amp, 1, Math.max(1, (mx - mn) * amp));
+    g.fillStyle = 'rgba(255,255,255,.38)'; g.fillRect(x, mid - rms * amp, 1, Math.max(1, rms * 2 * amp));
+  }
+  g.globalAlpha = 1;
+  /* نهاية المسار */
+  const endX = timeToX(len / sr) * dpr; if (endX < W) { g.fillStyle = 'rgba(120,110,160,.12)'; g.fillRect(endX, 0, W - endX, H); }
+  /* المؤشر أو مؤشر التشغيل */
+  const ph = play ? playPos() : null;
+  if (ph != null) { g.fillStyle = '#159b55'; g.fillRect(timeToX(ph) * dpr - dpr, 0, 2 * dpr, H); }
+  else if (!sel || sel.b - sel.a < 1e-4) { g.fillStyle = '#25203a'; for (let y = 0; y < H; y += 8 * dpr) g.fillRect(timeToX(cursor) * dpr, y, dpr, 4 * dpr); }
+}
+
+let rafQueued = false;
+function render() {
+  if (rafQueued) return; rafQueued = true;
+  requestAnimationFrame(() => {
+    rafQueued = false;
+    drawRuler();
+    $$('#tracks .track').forEach(row => { const t = trackById(+row.dataset.id); if (t) drawTrack(row, t); });
+    $('#fStart').textContent = fmt(sel ? sel.a : cursor);
+    $('#fEnd').textContent = fmt(sel ? sel.b : cursor);
+    $('#fLen').textContent = fmt(sel ? sel.b - sel.a : 0);
+    $('#fPos').textContent = fmt(play ? playPos() : cursor);
+    $('#title').textContent = `Audacity — ${projectName}`;
+  });
+}
+
+/* ----- التمرير والتكبير ----- */
+function maxStart() { return Math.max(0, duration() + 1 - waveWidth() / view.pps); }
+function syncScroll() { const m = maxStart(); view.start = clamp(view.start, 0, m); $('#hscroll').value = m ? Math.round(view.start / m * 1000) : 0; $('#hscroll').disabled = !m; }
+$('#hscroll').addEventListener('input', e => { view.start = maxStart() * e.target.value / 1000; render(); });
+function zoomAt(factor, centerT) {
+  const W = waveWidth(); if (centerT == null) centerT = sel ? (sel.a + sel.b) / 2 : (play ? playPos() : cursor);
+  const px = timeToX(centerT);
+  view.pps = clamp(view.pps * factor, 4, 4000);
+  view.start = centerT - (px >= 0 && px <= W ? px : W / 2) / view.pps;
+  syncScroll(); render();
+}
+function zoomFit() { const d = duration() || 10; view.pps = clamp((waveWidth() - 20) / d, 4, 4000); view.start = 0; syncScroll(); render(); }
+$('#workspace').addEventListener('wheel', e => {
+  if (!tracks.length) return;
+  if (e.ctrlKey || e.metaKey) { e.preventDefault(); const r = $('#ruler').getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.25 : 0.8, xToTime(e.clientX - r.left)); return; }
+  const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+  if (d) { e.preventDefault(); view.start += d / view.pps; syncScroll(); render(); }
+}, { passive: false });
+
+/* #####################################################################
+   🖱️ التحديد بالفأرة + أزرار رأس المسار
+   ##################################################################### */
+let drag = null;
+function rowIndexAt(clientY) {
+  const rows = $$('#tracks .track');
+  for (let i = 0; i < rows.length; i++) { const r = rows[i].getBoundingClientRect(); if (clientY < r.bottom) return i; }
+  return rows.length - 1;
+}
+function bindTrack(row) {
+  const id = +row.dataset.id, cv = $('canvas', row);
+  const timeAt = e => { const r = cv.getBoundingClientRect(); return clamp(xToTime(e.clientX - r.left), 0, Math.max(duration(), 0)); };
+  cv.addEventListener('pointerdown', e => {
+    closeMenus(); cv.setPointerCapture(e.pointerId); focusId = id;
+    const t = timeAt(e), idx = tracks.findIndex(x => x.id === id);
+    if (e.shiftKey && (sel || cursor != null)) {
+      const anchor = sel ? (Math.abs(t - sel.a) < Math.abs(t - sel.b) ? sel.b : sel.a) : cursor;
+      drag = { t0: anchor, i0: idx }; sel = { a: Math.min(anchor, t), b: Math.max(anchor, t), ids: sel ? sel.ids : new Set([id]) };
+    } else { drag = { t0: t, i0: idx }; sel = null; cursor = t; }
+    if (play) { stopPlay(); }
+    render();
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const t = timeAt(e), i1 = rowIndexAt(e.clientY);
+    const ids = new Set(tracks.slice(Math.min(drag.i0, i1), Math.max(drag.i0, i1) + 1).map(x => x.id));
+    if (Math.abs(t - drag.t0) * view.pps > 2) sel = { a: Math.min(drag.t0, t), b: Math.max(drag.t0, t), ids };
+    render();
+  });
+  cv.addEventListener('pointerup', () => {
+    if (!drag) return; drag = null;
+    if (sel && sel.b - sel.a < 0.002) sel = null;
+    if (sel) status(`تم تحديد ${(sel.b - sel.a).toFixed(2)} ثانية — جرّبي التشغيل أو الحذف أو أحد التأثيرات`);
+    render();
+  });
+  $('[data-tclose]', row).onclick = () => { stopPlay(); pushUndo('إغلاق مسار'); tracks = tracks.filter(t => t.id !== id); if (sel) sel.ids.delete(id); if (sel && !sel.ids.size) sel = null; buildTracks(); render(); };
+  $('[data-mute]', row).onclick = e => { const t = trackById(id); t.mute = !t.mute; e.target.classList.toggle('on-m', t.mute); restartIfPlaying(); render(); };
+  $('[data-solo]', row).onclick = e => { const t = trackById(id); t.solo = !t.solo; e.target.classList.toggle('on-s', t.solo); restartIfPlaying(); render(); };
+  $('[data-gain]', row).oninput = e => {
+    const t = trackById(id); t.gain = +e.target.value; e.target.nextElementSibling.textContent = (t.gain > 0 ? '+' : '') + t.gain + ' dB';
+    if (play && t._g) t._g.gain.value = dbToLin(t.gain);
+    mark('gain'); checkVmsg();
+  };
+  $('[data-tsel]', row).onclick = () => { focusId = id; sel = { a: 0, b: trackById(id).data.length / SR(), ids: new Set([id]) }; render(); };
+  $('.th', row).addEventListener('pointerdown', e => { if (e.target === e.currentTarget) { focusId = id; sel = { a: 0, b: duration(), ids: new Set([id]) }; render(); } });
+}
+
+/* المسطرة: اضغطي لتشغيل من تلك النقطة */
+$('#ruler').addEventListener('pointerdown', e => {
+  if (!tracks.length) return; const r = e.currentTarget.getBoundingClientRect();
+  stopPlay(); sel = null; cursor = clamp(xToTime(e.clientX - r.left), 0, duration()); startPlay();
+});
+
+/* #####################################################################
+   ▶ التشغيل
+   ##################################################################### */
+function playPos() { if (!play) return null; return Math.min(play.b, play.a + (ctx.currentTime - play.t0)); }
+function startPlay(fromT) {
+  if (!tracks.length) return toast('افتحي ملفاً صوتياً أولاً 📂');
+  if (recState) return;
+  const c = ac(); stopPlay();
+  const dur = duration(); let a, b; const isSel = sel && sel.b - sel.a > 0.01;
+  if (fromT != null) { a = fromT; b = dur; }
+  else if (isSel) { a = sel.a; b = sel.b; }
+  else { a = cursor >= dur - 0.05 ? 0 : cursor; b = dur; }
+  const anySolo = tracks.some(t => t.solo), t0 = c.currentTime + 0.04, srcs = [];
+  tracks.forEach(t => {
+    if (t.mute || (anySolo && !t.solo)) return;
+    const len = t.data.length / SR(); if (a >= len) return;
+    const src = c.createBufferSource(); src.buffer = toBuf(t.data);
+    const g = c.createGain(); g.gain.value = dbToLin(t.gain); t._g = g;
+    src.connect(g).connect(master); src.start(t0, a, Math.min(b, len) - a); srcs.push(src);
+  });
+  play = { a, b, t0, srcs, isSel };
+  $('[data-a=play].tb').classList.add('on');
+  if (isSel && fromT == null) mark('playSel'); else mark('play');
+  status(isSel ? '▶ تشغيل الجزء المحدد…' : '▶ جارٍ التشغيل…');
+  tick();
+}
+function tick() {
+  if (!play) return;
+  const p = playPos();
+  if (p >= play.b - 0.001) {
+    if (loopOn) { const { a, b, isSel } = play; stopPlay(); if (isSel) sel = sel || { a, b, ids: new Set(tracks.map(t => t.id)) }; startPlay(isSel ? null : a); return; }
+    stopPlay(); status('⏹ انتهى التشغيل'); return;
+  }
+  const W = waveWidth(); if (timeToX(p) > W - 20) { view.start = p - 20 / view.pps; syncScroll(); }
+  render(); play.raf = requestAnimationFrame(tick);
+}
+function stopPlay(keepPos) {
+  if (!play) return; const p = playPos();
+  play.srcs.forEach(s => { try { s.stop(); } catch (e) {} }); cancelAnimationFrame(play.raf); play = null;
+  tracks.forEach(t => delete t._g);
+  if (keepPos) { cursor = p; sel = null; }
+  $('[data-a=play].tb').classList.remove('on'); render();
+}
+function restartIfPlaying() { if (!play) return; const p = playPos(), b = play.b, isSel = play.isSel; stopPlay(); if (isSel) startPlay(); else startPlay(p); if (play) play.b = Math.min(play.b, b); }
+
+/* مقياس التشغيل (يعمل أثناء التشغيل والتسجيل) */
+(function meterLoop() {
+  const c = $('#meter'), g = c.getContext('2d'); let level = 0, peak = 0, peakT = 0; const buf = new Float32Array(1024);
+  function draw() {
+    let v = 0;
+    const an = recState ? recState.analyser : (play ? analyser : null);
+    if (an) { an.getFloatTimeDomainData(buf); for (let i = 0; i < buf.length; i++) v = Math.max(v, Math.abs(buf[i])); }
+    level = Math.max(v, level * 0.9); if (level > peak || performance.now() - peakT > 1200) { peak = level; peakT = performance.now(); }
+    const W = c.width, H = c.height; g.clearRect(0, 0, W, H); g.fillStyle = '#2c2342'; g.fillRect(0, 0, W, H);
+    const grad = g.createLinearGradient(0, 0, W, 0); grad.addColorStop(0, '#22c55e'); grad.addColorStop(.7, '#facc15'); grad.addColorStop(1, '#ef4444');
+    g.fillStyle = grad; g.fillRect(4, 8, (W - 8) * Math.min(1, level), H - 16);
+    g.fillStyle = '#fff'; g.fillRect(4 + (W - 8) * Math.min(1, peak), 6, 2, H - 12);
+    g.fillStyle = 'rgba(255,255,255,.25)'; for (let i = 1; i < 10; i++) g.fillRect(4 + (W - 8) * i / 10, H - 6, 1, 4);
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* #####################################################################
+   🎙️ التسجيل من الميكروفون (حتى الضغط على توقف)
+   ##################################################################### */
+async function startRec() {
+  if (recState) return stopRec();
+  stopPlay();
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) return toast('المتصفح لا يدعم التسجيل 😕 جرّبي Google Chrome');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const rec = new MediaRecorder(stream), chunks = [];
+    const an = ac().createAnalyser(); an.fftSize = 1024; ac().createMediaStreamSource(stream).connect(an);
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    recState = { rec, stream, chunks, analyser: an, t0: performance.now(), script: Prompter.isOpen() };
+    Prompter.onRec(true);
+    rec.start();
+    $('[data-a=record].tb').classList.add('recording');
+    const upd = () => { if (!recState) return; Prompter.tick((performance.now() - recState.t0) / 1000); status(`🔴 جارٍ التسجيل… ${((performance.now() - recState.t0) / 1000).toFixed(1)} ث — اضغطي ⏹ للتوقف`); recState.iv = requestAnimationFrame(upd); };
+    upd();
+  } catch (e) { toast('تعذّر الوصول إلى الميكروفون 🎤 اسمحي للمتصفح باستخدامه'); }
+}
+async function stopRec() {
+  if (!recState) return; const r = recState; recState = null; cancelAnimationFrame(r.iv);
+  $('[data-a=record].tb').classList.remove('recording'); Prompter.onRec(false);
+  const stopped = new Promise(res => (r.rec.onstop = res)); r.rec.stop(); await stopped; r.stream.getTracks().forEach(t => t.stop());
+  try {
+    const data = await decodeToMono(await new Blob(r.chunks, { type: r.rec.mimeType }).arrayBuffer());
+    let pk = 0; for (let i = 0; i < data.length; i++) pk = Math.max(pk, Math.abs(data[i])); if (pk > .01 && pk < .5) for (let i = 0; i < data.length; i++) data[i] *= .8 / pk;
+    pushUndo('تسجيل'); addTrack(r.script ? RECORD_SCRIPT.trackName : 'تسجيلي 🎙️ ' + (tracks.filter(t => t.name.startsWith('تسجيلي')).length + 1), data, { fit: tracks.length === 0 });
+    mark('record'); checkVmsg();
+    if (r.script) { Prompter.close(); toast('🇸🇦 أحسنتِ! تم تسجيل رسالتكِ لوطنكِ — شغّليها واستمعي لصوتكِ 💚', 4000); status('✅ تم تسجيل «رسالتي لوطني» — جرّبي إضافة النشيد كخلفية من File › Open National Anthem'); }
+    else status('✅ تم التسجيل وإضافته كمسار جديد');
+  } catch (e) { toast('تعذّر حفظ التسجيل'); }
+}
+
+/* #####################################################################
+   ✂️ التحرير والتأثيرات
+   ##################################################################### */
+const selTracks = () => (sel ? tracks.filter(t => sel.ids.has(t.id)) : []);
+function requireSel() { if (!tracks.length) { toast('افتحي ملفاً صوتياً أولاً 📂'); return false; } if (!sel || sel.b - sel.a < 0.005) { toast('حدّدي جزءاً من المقطع أولاً بالسحب على الموجة 👆'); return false; } return true; }
+function rangeOf(t) { const sr = SR(); return [clamp(Math.floor(sel.a * sr), 0, t.data.length), clamp(Math.floor(sel.b * sr), 0, t.data.length)]; }
+function splice(data, a, b, ins) { const n = new Float32Array(data.length - (b - a) + ins.length); n.set(data.subarray(0, a)); n.set(ins, a); n.set(data.subarray(b), a + ins.length); return n; }
+/* تطبيق دالة على الجزء المحدد من كل مسار محدد */
+function applyRange(label, fn) {
+  if (!requireSel()) return false; stopPlay(); pushUndo(label);
+  let newLen = null;
+  selTracks().forEach(t => { const [a, b] = rangeOf(t); if (b <= a) return; const out = fn(t.data.slice(a, b), t); if (newLen == null) newLen = out.length; t.data = splice(t.data, a, b, out); });
+  return newLen;
+}
+const clip = seg => { for (let i = 0; i < seg.length; i++) seg[i] = clamp(seg[i], -1, 1); return seg; };
+
+const Effects = {
+  fadein()  { if (applyRange('تلاشي Fade In', s => { for (let i = 0; i < s.length; i++) s[i] *= i / s.length; return s; }) !== false) { mark('fade'); done2('✨ تم تطبيق التلاشي — لاحظي الموجة تكبر تدريجياً'); } },
+  fadeout() { if (applyRange('اختفاء Fade Out', s => { for (let i = 0; i < s.length; i++) s[i] *= 1 - i / s.length; return s; }) !== false) { mark('fade'); done2('🌙 تم تطبيق الاختفاء التدريجي'); } },
+  reverse() { if (applyRange('عكس Reverse', s => s.reverse()) !== false) { mark('effect2'); done2('🔁 تم عكس الصوت — شغّليه لتسمعي النتيجة الطريفة!'); } },
+  normalize() { if (applyRange('موازنة Normalize', s => { let p = 0; for (const v of s) p = Math.max(p, Math.abs(v)); if (p > 0) for (let i = 0; i < s.length; i++) s[i] *= .95 / p; return s; }) !== false) { mark('effect2'); done2('⚖️ تمت موازنة مستوى الصوت'); } },
+  echo() { const sr = SR(); if (applyRange('صدى Echo', s => { const d = Math.floor(.28 * sr); for (let i = d; i < s.length; i++) s[i] += s[i - d] * .45; return clip(s); }) !== false) { mark('effect2'); done2('🏔️ تمت إضافة الصدى'); } },
+  silence() { if (applyRange('كتم Silence', s => new Float32Array(s.length)) !== false) done2('🤫 تم كتم الجزء المحدد'); }
+};
+function done2(msg) { status(msg); toast(msg); render(); }
+
+function doDelete() {
+  if (!requireSel()) return; const a = sel.a;
+  applyRange('حذف', () => new Float32Array(0)); sel = null; cursor = a; mark('delete'); done2('🗑️ تم حذف الجزء المحدد — لاحظي أن المقطع أصبح أقصر');
+}
+function doCopy(silent) {
+  if (!requireSel()) return false; const t = selTracks()[0]; const [a, b] = rangeOf(t);
+  clipboard = t.data.slice(a, b); done.add('copy-1'); if (!silent) { status(`📄 تم نسخ ${(clipboard.length / SR()).toFixed(2)} ثانية — ضعي المؤشر في مكان آخر ثم الصقي`); toast('📄 تم النسخ'); }
+  return true;
+}
+function doCut() { if (!doCopy(true)) return; const a = sel.a; applyRange('قص', () => new Float32Array(0)); sel = null; cursor = a; done2('✂️ تم القص — ضعي المؤشر في مكان آخر ثم الصقي'); }
+function doPaste() {
+  if (!clipboard) return toast('لا يوجد شيء منسوخ بعد — حدّدي جزءاً واضغطي نسخ أولاً');
+  if (!tracks.length) { pushUndo('لصق'); addTrack('مقطع ملصوق', clipboard.slice()); return; }
+  const t = trackById(focusId) || (sel && selTracks()[0]) || tracks[0];
+  stopPlay(); pushUndo('لصق'); const sr = SR();
+  let a, b; if (sel && sel.ids.has(t.id)) [a, b] = rangeOf(t); else { a = Math.floor(cursor * sr); b = a; }
+  if (a > t.data.length) { const pad = new Float32Array(a); pad.set(t.data); t.data = pad; b = a; }
+  t.data = splice(t.data, a, Math.min(b, t.data.length), clipboard.slice());
+  sel = { a: a / sr, b: (a + clipboard.length) / sr, ids: new Set([t.id]) };
+  if (done.has('copy-1')) mark('copy');
+  done2('📋 تم اللصق — شغّلي لتسمعي الصوت المكرر');
+}
+
+/* ----- نوافذ الحوار ----- */
+function dialog(title, body, buttons, onOpen) {
+  closeMenus();
+  $('#dlg').innerHTML = `<div class="dlg-h"><span>${title}</span><button class="x" data-dx>×</button></div><div class="dlg-b">${body}</div><div class="dlg-f">${buttons.map((b, i) => `<button class="btn ${b.cls || ''}" data-db="${i}">${b.label}</button>`).join('')}</div>`;
+  $('#modal').classList.remove('hidden');
+  $('[data-dx]', $('#dlg')).onclick = closeDialog;
+  $$('[data-db]', $('#dlg')).forEach(el => (el.onclick = () => { const b = buttons[+el.dataset.db]; if (!b.fn || b.fn() !== false) closeDialog(); }));
+  onOpen && onOpen($('#dlg'));
+  const inp = $('input[type=text],input[type=number]', $('#dlg')); if (inp) setTimeout(() => { inp.focus(); inp.select(); }, 50);
+}
+let dialogStop = null;
+function closeDialog() { $('#modal').classList.add('hidden'); if (dialogStop) { dialogStop(); dialogStop = null; } }
+$('#modal').addEventListener('pointerdown', e => { if (e.target.id === 'modal') closeDialog(); });
+
+function speedDialog() {
+  if (!requireSel()) return; stopPlay();
+  dialog('⏩ Change Speed — تغيير السرعة', `
+    <div>حرّكي الشريط يميناً لتسريع الصوت أو يساراً لإبطائه، ثم اضغطي معاينة للاستماع.</div>
+    <div class="big-val" id="spv">×1.50</div>
+    <input type="range" id="spr" min="25" max="300" step="5" value="150">
+    <div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)"><span>🐢 أبطأ</span><span>أسرع 🐿️</span></div>`,
+    [{ label: '▶ Preview معاينة', cls: 'ghost', fn: () => { previewSpeed(); return false; } },
+     { label: 'OK موافق', fn: () => applySpeed(+$('#spr').value / 100) },
+     { label: 'Cancel إلغاء', cls: 'ghost' }],
+    d => { const r = $('#spr', d), v = $('#spv', d); r.oninput = () => (v.textContent = '×' + (r.value / 100).toFixed(2)); });
+}
+function previewSpeed() {
+  if (dialogStop) dialogStop();
+  const t = selTracks()[0], [a, b] = rangeOf(t), c = ac(), src = c.createBufferSource();
+  src.buffer = toBuf(t.data.slice(a, b)); src.playbackRate.value = +$('#spr').value / 100; src.connect(master); src.start();
+  dialogStop = () => { try { src.stop(); } catch (e) {} };
+}
+function applySpeed(f) {
+  const a = sel.a;
+  const nl = applyRange(`تغيير السرعة ×${f.toFixed(2)}`, s => {
+    const n = Math.max(1, Math.round(s.length / f)), out = new Float32Array(n);
+    for (let j = 0; j < n; j++) { const x = j * f, i = Math.floor(x), fr = x - i; out[j] = (s[i] || 0) * (1 - fr) + (s[i + 1] || 0) * fr; }
+    return out;
+  });
+  if (nl === false) return;
+  sel = { a, b: a + nl / SR(), ids: sel.ids }; mark('speed'); done2(f > 1 ? '🐿️ تم تسريع الجزء المحدد — شغّليه لتسمعي الفرق' : '🐢 تم إبطاء الجزء المحدد — شغّليه لتسمعي الفرق');
+}
+function amplifyDialog() {
+  if (!requireSel()) return;
+  dialog('🔊 Amplify — تضخيم', `<label>مقدار التضخيم بالديسيبل (dB): موجب للتعلية وسالب للتخفيض</label><div class="big-val" id="amv">+6 dB</div><input type="range" id="amr" min="-20" max="20" step="1" value="6">`,
+    [{ label: 'OK موافق', fn: () => { const db = +$('#amr').value, k = dbToLin(db); if (applyRange(`تضخيم ${db} dB`, s => { for (let i = 0; i < s.length; i++) s[i] *= k; return clip(s); }) !== false) { mark('effect2'); done2(`🔊 تم التضخيم بمقدار ${db} dB`); } } },
+     { label: 'Cancel إلغاء', cls: 'ghost' }],
+    d => { const r = $('#amr', d), v = $('#amv', d); r.oninput = () => (v.textContent = (r.value > 0 ? '+' : '') + r.value + ' dB'); });
+}
+
+/* ----- حفظ المشروع (خطوات الكتاب: تحذير ← اختيار المجلد ← الاسم ← حفظ) ----- */
+function saveDialog() {
+  if (!tracks.length) return toast('لا يوجد مشروع لحفظه بعد 📂');
+  dialog('⚠️ Warning — تحذير', `<div class="warn-ic">💾</div><div>سيُحفظ عملكِ كـ<b>مشروع أوداسيتي</b> بامتداد <b class="ltr">.aup</b>، ويمكنكِ فتحه لاحقاً في أوداسيتي لإكمال التحرير.<br>لكنه <b>لا يعمل في مشغّلات الصوت المعتادة</b>؛ لذلك استخدمي <b>التصدير Export</b> للحصول على ملف صوتي.</div>`,
+    [{ label: 'OK موافق', fn: () => { setTimeout(saveAsDialog, 60); } }]);
+}
+function saveAsDialog() {
+  let folder = 'Music';
+  dialog('💾 Save Project As — حفظ المشروع باسم', `
+    <label>اختاري مكان الحفظ:</label>
+    <div class="folders">
+      <button data-f="Desktop"><span>🖥️</span>سطح المكتب</button><button data-f="Documents"><span>📁</span>المستندات</button>
+      <button data-f="Music" class="on"><span>🎵</span>الموسيقى</button><button data-f="Pictures"><span>🖼️</span>الصور</button>
+    </div>
+    <label>اسم الملف (File name):</label><input type="text" id="pname" value="${projectName}">
+    <label>نوع الملف (Save as type):</label><div class="ltr" style="text-align:left">Audacity projects (*.aup)</div>`,
+    [{ label: 'Save حفظ', fn: () => {
+        const n = $('#pname').value.trim(); if (!n) { toast('اكتبي اسم الملف أولاً ✍️'); return false; }
+        projectName = n; render(); mark('save');
+        toast(`✅ تم حفظ ملفكِ بنجاح: ${folder} › ${n}.aup`, 3500); status(`💾 تم حفظ المشروع في مجلد ${folder} باسم ${n}.aup`);
+      } },
+     { label: 'Cancel إلغاء', cls: 'ghost' }],
+    d => $$('[data-f]', d).forEach(b => (b.onclick = () => { folder = b.dataset.f; $$('[data-f]', d).forEach(x => x.classList.toggle('on', x === b)); })));
+}
+
+/* ----- التصدير: ملف WAV حقيقي يتم تنزيله ----- */
+function exportDialog() {
+  if (!tracks.length) return toast('لا يوجد صوت لتصديره بعد 📂');
+  dialog('📤 Export Audio — تصدير الصوت', `<div>سيتم دمج جميع المسارات (مع مراعاة Gain و Mute) في ملف صوتي واحد يعمل في أي مشغّل.</div>
+    <label>اسم الملف:</label><input type="text" id="ename" value="${projectName}">
+    <label>الصيغة (Format):</label><select id="efmt"><option value="wav">WAV (signed 16-bit PCM)</option></select>`,
+    [{ label: 'Export تصدير', fn: () => {
+        const n = $('#ename').value.trim() || projectName; const blob = wavBlob(mixdown(), SR());
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = n + '.wav'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000); mark('export'); toast(`📤 تم تصدير ${n}.wav — ستجدينه في مجلد التنزيلات`, 3500);
+      } },
+     { label: 'Cancel إلغاء', cls: 'ghost' }]);
+}
+function mixdown() {
+  const len = Math.max(...tracks.map(t => t.data.length)), out = new Float32Array(len), anySolo = tracks.some(t => t.solo);
+  tracks.forEach(t => { if (t.mute || (anySolo && !t.solo)) return; const k = dbToLin(t.gain); for (let i = 0; i < t.data.length; i++) out[i] += t.data[i] * k; });
+  return clip(out);
+}
+function wavBlob(data, sr) {
+  const buf = new ArrayBuffer(44 + data.length * 2), v = new DataView(buf), w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + data.length * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, data.length * 2, true);
+  for (let i = 0, o = 44; i < data.length; i++, o += 2) { const c = data[i]; v.setInt16(o, c < 0 ? c * 0x8000 : c * 0x7fff, true); }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+/* ----- التوليد ----- */
+function genLen(def) { return Math.max(def, duration()); }
+function rhythmTrack(sec) {
+  const sr = SR(), len = Math.floor(sec * sr), d = new Float32Array(len), step = 0.25;
+  let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 * 2 - 1; };
+  for (let k = 0; k * step * sr < len; k++) {
+    const s0 = Math.floor(k * step * sr);
+    if (k % 4 === 0) { let ph = 0; for (let i = 0; i < sr * .3 && s0 + i < len; i++) { const tt = i / sr; ph += 2 * Math.PI * (48 + 80 * Math.exp(-tt * 28)) / sr; d[s0 + i] += Math.sin(ph) * Math.exp(-tt * 9) * .75; } }
+    if (k % 4 === 2) { for (let i = 0; i < sr * .18 && s0 + i < len; i++) { const tt = i / sr; d[s0 + i] += rnd() * Math.exp(-tt * 20) * .3 + Math.sin(2 * Math.PI * 190 * tt) * Math.exp(-tt * 30) * .25; } }
+    let prev = 0; for (let i = 0; i < sr * .04 && s0 + i < len; i++) { const n = rnd(); d[s0 + i] += (n - prev) * Math.exp(-i / sr * 90) * .12; prev = n; }
+  }
+  return d;
+}
+const Gen = {
+  rhythm() { stopPlay(); pushUndo('مسار إيقاع'); addTrack('Rhythm Track 🥁', rhythmTrack(genLen(8)), { fit: !tracks.length }); mark('merge'); done2('🥁 تمت إضافة مسار إيقاع أسفل المقطع — شغّلي لتسمعي الصوتين معاً'); },
+  tone() { stopPlay(); pushUndo('نغمة'); const sr = SR(), n = Math.floor(3 * sr), d = new Float32Array(n); for (let i = 0; i < n; i++) d[i] = Math.sin(2 * Math.PI * 440 * i / sr) * .4 * Math.min(1, i / 2000, (n - i) / 2000); addTrack('Tone 440Hz 🎵', d, { fit: !tracks.length }); done2('🎵 تمت إضافة نغمة'); },
+  noise() { stopPlay(); pushUndo('ضوضاء'); const n = Math.floor(3 * SR()), d = new Float32Array(n); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * .25; addTrack('Noise 📻', d, { fit: !tracks.length }); done2('📻 تمت إضافة ضوضاء'); },
+  silence() {
+    const t = trackById(focusId) || tracks[0]; if (!t) return toast('افتحي ملفاً صوتياً أولاً 📂');
+    stopPlay(); pushUndo('إدراج صمت'); const a = Math.min(t.data.length, Math.floor(cursor * SR()));
+    t.data = splice(t.data, a, a, new Float32Array(Math.floor(2 * SR()))); sel = { a: a / SR(), b: a / SR() + 2, ids: new Set([t.id]) }; done2('🤫 تم إدراج ثانيتين من الصمت عند المؤشر');
+  }
+};
+
+/* ----- الفتح والاستيراد ----- */
+async function loadFiles(files, replace) {
+  for (const [k, f] of [...files].entries()) {
+    status(`⏳ جارٍ فتح ${f.name}…`);
+    try {
+      const data = await decodeToMono(await f.arrayBuffer());
+      if (replace && k === 0) newProject(true);
+      pushUndo('استيراد'); const wasEmpty = !tracks.length;
+      addTrack(f.name.replace(/\.[^.]+$/, ''), data, { fit: wasEmpty });
+      if (wasEmpty) { mark('open'); if (replace) projectName = f.name.replace(/\.[^.]+$/, ''); } else mark('merge');
+      status(wasEmpty ? `📂 تم فتح ${f.name} — يمكنكِ رؤية الشكل الموجي للصوت` : '📥 ظهر شكل موجة جديد أسفل التسجيل السابق — اضغطي Space لسماع الصوتين معاً');
+    } catch (e) { toast(`تعذّر فتح الملف ${f.name} — اختاري ملفاً صوتياً (mp3 / m4a / wav)`); }
+  }
+  render();
+}
+async function openAnthem() {
+  if (!window.ANTHEM_B64) return toast('ملف النشيد anthem.js غير موجود بجانب هذه الصفحة');
+  status('⏳ جارٍ فتح النشيد الوطني…');
+  try {
+    const data = await decodeToMono(anthemArrayBuffer());
+    const wasEmpty = !tracks.length; pushUndo('فتح النشيد');
+    addTrack((window.ANTHEM_NAME || 'النشيد الوطني') + ' 🇸🇦', data, { fit: wasEmpty });
+    if (wasEmpty) { mark('open'); projectName = 'النشيد الوطني'; } else mark('merge');
+    checkVmsg(); status('🇸🇦 تم فتح النشيد الوطني — اضغطي ▶ أو Space للتشغيل');
+  } catch (e) { toast('تعذّر فتح النشيد في هذا المتصفح — جرّبي Google Chrome'); }
+  render();
+}
+function newProject(silent) {
+  stopPlay(); tracks = []; sel = null; cursor = 0; undoStack = []; redoStack = []; projectName = 'مشروعي'; view.start = 0;
+  buildTracks(); render(); if (!silent) status('📄 مشروع جديد — افتحي ملفاً صوتياً للبدء');
+}
+$('#fileOpen').onchange = e => { if (e.target.files.length) loadFiles(e.target.files, tracks.length > 0); e.target.value = ''; };
+$('#fileImport').onchange = e => { if (e.target.files.length) loadFiles(e.target.files, false); e.target.value = ''; };
+function openFile() {
+  if (tracks.length && !confirm('سيتم إغلاق المشروع الحالي وفتح ملف جديد. هل تريدين المتابعة؟\n(لإضافة صوت للمشروع الحالي استخدمي Import)')) return;
+  $('#fileOpen').click();
+}
+
+/* السحب والإفلات */
+let dragDepth = 0;
+addEventListener('dragenter', e => { e.preventDefault(); dragDepth++; $('#dropHint').classList.remove('hidden'); });
+addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; $('#dropHint').classList.add('hidden'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => { e.preventDefault(); dragDepth = 0; $('#dropHint').classList.add('hidden'); hideSplash(); if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files, false); });
+
+/* #####################################################################
+   🎛️ ربط الأوامر بالأزرار والقوائم ولوحة المفاتيح
+   ##################################################################### */
+const ACTIONS = {
+  play: () => (play ? stopPlay() : startPlay()),
+  pause: () => { if (play) { stopPlay(true); status('⏸ إيقاف مؤقت — اضغطي تشغيل للمتابعة'); } },
+  stop: () => { if (recState) stopRec(); else { stopPlay(); status('⏹ توقف'); } },
+  start: () => { stopPlay(); sel = null; cursor = 0; view.start = 0; syncScroll(); render(); },
+  end: () => { stopPlay(); sel = null; cursor = duration(); view.start = maxStart(); syncScroll(); render(); },
+  record: startRec,
+  loop: () => { loopOn = !loopOn; $('[data-a=loop].tb').classList.toggle('toggled', loopOn); toast(loopOn ? '🔁 تكرار التشغيل: مُفعّل' : 'تكرار التشغيل: متوقف'); },
+  undo, redo,
+  cut: doCut, copy: () => doCopy(), paste: doPaste, delete: doDelete, silence: Effects.silence,
+  selall: () => { if (!tracks.length) return; sel = { a: 0, b: duration(), ids: new Set(tracks.map(t => t.id)) }; render(); },
+  selnone: () => { sel = null; render(); },
+  zoomin: () => zoomAt(2), zoomout: () => zoomAt(.5), zoomfit: zoomFit,
+  open: openFile, import: () => $('#fileImport').click(), anthem: openAnthem,
+  save: saveDialog, export: exportDialog, new: () => { if (!tracks.length || confirm('بدء مشروع جديد؟ سيتم إغلاق المشروع الحالي.')) newProject(); },
+  'gen-rhythm': Gen.rhythm, 'gen-tone': Gen.tone, 'gen-noise': Gen.noise, 'gen-silence': Gen.silence,
+  fadein: Effects.fadein, fadeout: Effects.fadeout, reverse: Effects.reverse, normalize: Effects.normalize, echo: Effects.echo,
+  speed: speedDialog, amplify: amplifyDialog,
+  guide: () => { $('#guide').classList.toggle('hidden'); setTimeout(() => { resizeCanvases(); render(); }, 30); },
+  help: () => dialog('⌨️ اختصارات لوحة المفاتيح', `<div class="keys">
+      <kbd>Space</kbd><span>تشغيل / إيقاف</span><kbd>P</kbd><span>إيقاف مؤقت</span><kbd>R</kbd><span>تسجيل</span>
+      <kbd>Delete</kbd><span>حذف الجزء المحدد</span><kbd>Ctrl + Z</kbd><span>تراجع</span><kbd>Ctrl + Y</kbd><span>كرّر</span>
+      <kbd>Ctrl + C / X / V</kbd><span>نسخ / قص / لصق</span><kbd>Ctrl + A</kbd><span>تحديد الكل</span>
+      <kbd>Home / End</kbd><span>البداية / النهاية</span><kbd>Ctrl + 1 / 3</kbd><span>تكبير / تصغير</span>
+      <kbd>Ctrl + F</kbd><span>ملاءمة العرض</span><kbd>Shift + سحب</kbd><span>توسيع التحديد</span></div>`, [{ label: 'حسناً' }]),
+  blank: () => status('📄 مشروع فارغ — افتحي ملفاً أو سجّلي صوتكِ'),
+  script: () => Prompter.toggle()
+};
+function run(a) { closeMenus(); ac(); const f = ACTIONS[a]; if (f) f(); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  if (b.closest('#splash')) hideSplash();
+  run(b.dataset.a); setTimeout(() => b.blur(), 0);
+});
+
+/* القوائم المنسدلة */
+function closeMenus() { $$('.menu.open').forEach(m => m.classList.remove('open')); }
+$$('.menu > button').forEach(btn => {
+  btn.addEventListener('click', e => { e.stopPropagation(); const m = btn.parentElement, was = m.classList.contains('open'); closeMenus(); if (!was) m.classList.add('open'); });
+  btn.addEventListener('mouseenter', () => { if ($('.menu.open') && !btn.parentElement.classList.contains('open')) { closeMenus(); btn.parentElement.classList.add('open'); } });
+});
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.menu')) closeMenus(); });
+
+/* لوحة المفاتيح */
+document.addEventListener('keydown', e => {
+  if (!$('#modal').classList.contains('hidden')) { if (e.key === 'Escape') closeDialog(); if (e.key === 'Enter') { const ok = $$('[data-db]', $('#dlg')).find(b => !b.classList.contains('ghost')); if (ok) { e.preventDefault(); ok.click(); } } return; }
+  if (!$('#splash').classList.contains('hidden')) return;
+  if (e.target.matches('input[type=text], input[type=number], textarea')) return;
+  const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+  const map = mod ? { z: e.shiftKey ? 'redo' : 'undo', y: 'redo', x: 'cut', c: 'copy', v: 'paste', a: 'selall', l: 'silence', o: 'open', s: 'save', e: 'export', n: 'new', '1': 'zoomin', '3': 'zoomout', f: 'zoomfit', i: e.shiftKey ? 'import' : null }
+                  : { ' ': 'play', p: 'pause', r: 'record', l: 'loop', delete: 'delete', backspace: 'delete', home: 'start', end: 'end', escape: 'selnone', '?': 'help', 'ح': 'pause', 'ق': 'record' };
+  const a = map[k]; if (!a) { if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault(); return; }
+  e.preventDefault(); run(a);
+});
+
+/* ----- شاشة البداية ----- */
+function hideSplash() { $('#splash').classList.add('hidden'); setTimeout(() => { resizeCanvases(); render(); }, 30); }
+if (!window.ANTHEM_B64) $('#anthemOpt').classList.add('hidden');
+
+/* ----- احتفال بسيط ----- */
+function confetti() {
+  const cv = $('#confetti'), g = cv.getContext('2d'); cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ['#8b5cf6', '#f59e0b', '#0fa797', '#e0364f', '#0ea5e9', '#fde047'];
+  let ps = Array.from({ length: 160 }, (_, i) => ({ x: innerWidth / 2 + (Math.random() - .5) * 300, y: innerHeight / 2, vx: (Math.random() - .5) * 22, vy: -Math.random() * 20 - 6, r: Math.random() * 6, c: cols[i % 6], l: 0 }));
+  (function f() { g.clearRect(0, 0, cv.width, cv.height); ps.forEach(p => { p.vy += .55; p.x += p.vx; p.y += p.vy; p.r += .15; p.l++; g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.globalAlpha = Math.max(0, 1 - p.l / 130); g.fillStyle = p.c; g.fillRect(-5, -7, 10, 14); g.restore(); }); ps = ps.filter(p => p.l < 130); if (ps.length) requestAnimationFrame(f); else g.clearRect(0, 0, cv.width, cv.height); })();
+}
+
+/* #####################################################################
+   📜 بطاقة نص التسجيل (رسالة لوطني) — تظهر للطالبة لتقرأها أثناء التسجيل
+   ##################################################################### */
+const Prompter = (() => {
+  const box = $("#prompter"); let size = 1.45;
+  function build() {
+    const S = RECORD_SCRIPT;
+    box.innerHTML = `
+      <div class="pr-head"><h3>${S.title}</h3>
+        <button data-p="smaller" title="تصغير الخط">أ−</button><button data-p="bigger" title="تكبير الخط">أ+</button><button data-p="close" title="إغلاق">×</button></div>
+      <div class="pr-article"><small>${S.article.label}</small><q>${S.article.text}</q></div>
+      <div class="pr-body">${S.lines.map(l => `<p>${l}</p>`).join('')}</div>
+      <div class="pr-dua"><b>${S.dua.label}</b>${S.dua.text}</div>
+      <div class="pr-foot"><button class="btn rec" data-p="rec">⏺ ابدئي التسجيل</button><span class="pr-state"></span>
+        <span class="pr-note">💡 اقتربي من الميكروفون، واقرئي ببطء ووضوح. اضغطي «إنهاء التسجيل» عند الانتهاء، وسيظهر صوتكِ كمسار جديد.</span></div>`;
+  }
+  box.addEventListener('click', e => {
+    const b = e.target.closest('[data-p]'); if (!b) return; const k = b.dataset.p;
+    if (k === 'close') { if (recState) stopRec(); close(); }
+    if (k === 'bigger' || k === 'smaller') { size = clamp(size + (k === 'bigger' ? .2 : -.2), 1, 3); box.style.setProperty('--pf', size + 'rem'); }
+    if (k === 'rec') { ac(); recState ? stopRec() : startRec(); }
+  });
+  const open = () => { build(); box.classList.remove('hidden'); closeMenus(); status('📜 اقرئي النص واضغطي «ابدئي التسجيل»'); };
+  function close() { box.classList.add('hidden'); box.classList.remove('rec'); }
+  return {
+    open, close, isOpen: () => !box.classList.contains('hidden'),
+    toggle: () => (box.classList.contains('hidden') ? open() : close()),
+    onRec(on) {
+      if (!this.isOpen()) return;
+      box.classList.toggle('rec', on);
+      const btn = $('[data-p=rec]', box); btn.textContent = on ? '⏹ إنهاء التسجيل' : '⏺ ابدئي التسجيل'; btn.classList.toggle('green', on); btn.classList.toggle('rec', !on);
+      if (!on) { $('.pr-state', box).textContent = ''; $$('.pr-body p', box).forEach(p => p.classList.remove('hl')); }
+    },
+    /* تمييز السطر الحالي تقريبياً (كل سطر نحو 4 ثوانٍ) لمساعدة الطالبة على المتابعة */
+    tick(sec) {
+      if (!this.isOpen()) return;
+      $('.pr-state', box).textContent = `🔴 جارٍ التسجيل ${sec.toFixed(0)} ث`;
+      const ps = $$('.pr-body p', box), i = Math.min(ps.length - 1, Math.floor(sec / 4));
+      ps.forEach((p, k) => p.classList.toggle('hl', k === i));
+    }
+  };
+})();
+/* مهمة إضافية: تسجيل الرسالة + النشيد كخلفية بصوت منخفض */
+function checkVmsg() {
+  const voice = tracks.some(t => t.name === RECORD_SCRIPT.trackName), anthem = tracks.find(t => t.name.includes(window.ANTHEM_NAME || 'النشيد'));
+  if (voice && anthem && anthem.gain < 0) mark('vmsg');
+}
+
+/* ----- التشغيل الأول ----- */
+addEventListener('resize', () => { resizeCanvases(); render(); });
+buildTasks(); buildTracks(); render();
+</script>
+</body>
+</html>

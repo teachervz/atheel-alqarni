@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الدروس التفاعلية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6FB;
+    --ink:#18213F;
+    --muted:#5B6585;
+    --card:#FFFFFF;
+    --line:#E2E6F0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Tajawal',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:40px 16px;
+  }
+  header{text-align:center;margin-bottom:36px}
+  h1{font-size:clamp(28px,5vw,42px);font-weight:900}
+  header p{color:var(--muted);font-size:18px;margin-top:8px}
+  .school{
+    display:inline-block;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 18px;
+    margin-bottom:14px;
+    font-size:18px;
+    font-weight:800;
+    color:#5B57D9;
+  }
+  .teacher{font-size:20px;font-weight:700;margin-top:10px}
+  .grid{
+    width:100%;
+    max-width:900px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:18px;
+  }
+  .btn{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:22px 24px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    text-decoration:none;
+    color:var(--ink);
+    font-size:22px;
+    font-weight:800;
+    box-shadow:0 4px 14px rgba(24,33,63,.06);
+    transition:transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .btn:hover,.btn:focus-visible{
+    transform:translateY(-3px);
+    box-shadow:0 10px 24px rgba(24,33,63,.12);
+    border-color:var(--c);
+    outline:none;
+  }
+  .num{
+    flex:none;
+    width:52px;height:52px;
+    border-radius:14px;
+    display:grid;place-items:center;
+    background:var(--c);
+    color:#fff;
+    font-size:24px;
+    font-weight:900;
+  }
+  .arrow{margin-inline-start:auto;color:var(--c);font-size:26px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="school">مدارس دينا العالمية</div>
+    <h1>الدروس التفاعلية</h1>
+    <div class="teacher">المعلمة: أثيل القرني</div>
+    <p>اختر الصف للدخول إلى الدرس</p>
+  </header>
+
+  <nav class="grid">
+    <a class="btn" href="sound/index.html" style="--c:#0fa797"><span class="num">٥</span>الصف الخامس<span class="arrow">←</span></a>
+    <a class="btn" href="database/index.html" style="--c:#F59E0B"><span class="num">٦</span>الصف السادس<span class="arrow">←</span></a>
+    <a class="btn" href="excel/index.html" style="--c:#16A34A"><span class="num">١</span>الأول متوسط<span class="arrow">←</span></a>
+    <a class="btn" href="python/index.html" style="--c:#2563EB"><span class="num">٢</span>الثاني متوسط<span class="arrow">←</span></a>
+    <a class="btn" href="control/index.html" style="--c:#5B57D9"><span class="num">١</span>الأول ثانوي<span class="arrow">←</span></a>
+  </nav>
+</body>
+</html>
