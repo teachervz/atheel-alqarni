@@ -735,7 +735,7 @@ body.idle{cursor:none}
   <div id="progress"><i></i></div>
   <div id="slides"></div>
   <div id="fx"></div>
-  <div id="hint"><span><kbd>Space</kbd> = التالي</span> | <span><kbd>← →</kbd> للتنقل</span> | <span><kbd>ت</kbd> = تصفيق</span> | <span><kbd>ن</kbd> = النقاط</span> | <span><kbd>1–5</kbd> = نقطة</span></div>
+  <div id="hint"><span><kbd>Space</kbd> = التالي</span> | <span><kbd>← →</kbd> للتنقل</span> | <span><kbd>ت</kbd> = تصفيق</span> | <span><kbd>ق</kbd> = قرعة</span> | <span><kbd>ن</kbd> = النقاط</span> | <span><kbd>1–5</kbd> = نقطة</span></div>
   <div id="teams"></div>
   <div id="tpanel"></div>
   <nav id="bar">
@@ -749,6 +749,7 @@ body.idle{cursor:none}
   </nav>
 </div>
 
+<script src="../shared/roster.js"></script>
 <script>
 /* =====================================================================
    ✏️ إعدادات الدرس — هنا فقط تعدّل المعلمة المحتوى (لا حاجة لمعرفة البرمجة)
@@ -778,6 +779,10 @@ const LESSON = {
   ]
 };
 
+/* صف هذا الدرس في لوحة الإدارة (للتحضير والقرعة) */
+const LESSON_GRADE = 'الأول ثانوي';
+Roster.use(LESSON_GRADE);
+
 const SLIDES = [
 
   /* 1) الترحيب */
@@ -790,6 +795,13 @@ const SLIDES = [
     tags: ['📡 المستشعرات', '🔁 أنظمة التحكم', '🇸🇦 مدن ذكية'],
     teacher: '👩‍🏫 المعلمة: أثيل القرني',
     readings: [['🌡️', '24°C'], ['💡', '320 lux'], ['🔊', '45 dB'], ['🏃', 'حركة!'], ['💧', '60%'], ['📡', '1.2 m']]
+  },
+
+  /* التحضير — الأسماء من لوحة الإدارة (admin/index.html) */
+  {
+    type: 'attendance', fx: 'slide',
+    strategy: '📋 التحضير',
+    title: 'صباح الخير يا مبدعات! من حاضرة اليوم؟'
   },
 
   /* 2) مراجعة الدرس السابق: الخرائط الذهنية — استراتيجية مترو الرياض
@@ -1642,6 +1654,13 @@ RENDER.predict = (s, root) => {
 };
 
 /* الأهداف */
+/* 📋 التحضير: الشعب والأسماء من لوحة الإدارة */
+RENDER.attendance = (s, root) => {
+  root.innerHTML = shell(s, '<div class="rs-host st" style="flex:1;min-height:0"></div>');
+  root.querySelector('.sb').style.justifyContent = 'stretch';
+  Roster.attendance(root.querySelector('.rs-host'), LESSON_GRADE);
+};
+
 RENDER.objectives = (s, root) => {
   root.innerHTML = shell(s, `<div class="objs">${s.items.map((it, i) => `<button class="obj st"><span class="obj-n" dir="ltr">0${i + 1}</span><span class="obj-ic">${it.icon}</span><p>${it.text}</p><span class="obj-ck">✔</span></button>`).join('')}</div>
     ${s.note ? `<p class="hint-line st">${s.note}</p>` : ''}`);
@@ -2254,6 +2273,7 @@ document.addEventListener('touchmove', e => { if (!e.target.closest('input')) e.
 $('#btnNext').onclick = next;
 $('#btnPrev').onclick = prev;
 $('#btnClap').onclick = clap;
+Roster.drawButton($('#btnClap'));
 $('#btnTeams').onclick = () => Teams.toggle();
 $('#btnFull').onclick = () => {
   if (!document.fullscreenElement) (document.documentElement.requestFullscreen || function(){}).call(document.documentElement);

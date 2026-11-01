@@ -484,6 +484,8 @@ kbd{font-family:var(--mono);background:#fff;border:2px solid var(--p200);border-
 .csw.on{background:var(--p600);color:#fff;border-color:var(--p600)}
 .csw small{font-size:20px;opacity:.8}
 .att-tip{font-size:24px;color:var(--muted);text-align:center;flex-shrink:0}
+.att-empty{flex:1;display:grid;place-items:center;text-align:center;font-size:40px;font-weight:800;color:var(--muted);line-height:1.8}
+.att-empty a{color:var(--p600,#7048e8)}
 
 /* نافذة القرعة */
 #draw{position:absolute;inset:0;z-index:80;background:rgba(30,11,75,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
@@ -702,6 +704,7 @@ kbd{font-family:var(--mono);background:#fff;border:2px solid var(--p200);border-
 </div>
 <canvas id="confetti"></canvas>
 
+<script src="../shared/roster.js"></script>
 <script>
 /* ================================================================
    ★★★  إعدادات الدرس — عدّلي من هنا فقط  ★★★
@@ -718,19 +721,9 @@ kbd{font-family:var(--mono);background:#fff;border:2px solid var(--p200);border-
    • يمكن استخدام <b>عريض</b> و <code>نص مميز</code> داخل النصوص.
    ================================================================ */
 
-/* 👩‍🎓 أسماء الطالبات لكل فصل (للتحضير والقرعة) — أضيفي أو احذفي أي اسم أو فصل */
-const CLASSES = {
-  'ثاني متوسط أ': [
-    'البتول الحربي', 'الجادل آل نادر', 'الجوهرة الوهيبي', 'بيسان السحيباني', 'جوري الحربي',
-    'حور البنية', 'ديالا أبا الخيل', 'ردينا السحيباني', 'كادي الحربي', 'لانا المرشودي',
-    'لتين المطيري', 'لتين الراجحي', 'لجين الكوفحي', 'موضي العقيلي', 'نورة الفائز'
-  ],
-  'ثاني متوسط ب': [
-    'جنى المقبل', 'جود المحسن', 'حبيبة هربيه', 'رسيل السحيباني', 'ريتان الحميدان',
-    'سارة التركي', 'شهد الراجحي', 'صبا المحسن', 'لتين الفريح', 'لمار العواد',
-    'لينا المطيري', 'ميلا الكريديس'
-  ]
-};
+/* 👩‍🎓 الشعب وأسماء الطالبات تُقرأ من لوحة الإدارة (admin/index.html) — للتحضير والقرعة */
+const LESSON_GRADE = 'الصف السادس';
+let CLASSES = Roster.load(LESSON_GRADE);
 
 const MESSAGES = {
   correct: 'أحسنتِ! 👏 إجابة صحيحة',
@@ -757,6 +750,13 @@ const SLIDES = [
         { at: 4300, filter: [2, '1'], cap: '🔽 التصفية: طلبة الفصل 1 فقط' }
       ]
     }
+  },
+
+  /* التحضير — الأسماء من لوحة الإدارة */
+  {
+    type: 'attendance', transition: 'slide',
+    strategy: '📋 التحضير',
+    title: 'صباح الإبداع يا مبدعات! من حاضرة اليوم؟'
   },
 
   /* 2) أهداف الدرس */
@@ -1367,8 +1367,14 @@ const RENDERERS = {
   attendance(s, el) {
     const today = new Date().toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long' });
     const LBL = { p: '✅ حاضرة', a: '❌ غائبة', l: '⏰ متأخرة' }, NEXT = { p: 'a', a: 'l', l: 'p' };
-    el.innerHTML = head(s) + `<div class="sbody">
-      <div class="cls-sw anim"><span>👩‍🏫 الفصل:</span>${Object.keys(CLASSES).map(c => `<button class="csw${c === CUR_CLASS ? ' on' : ''}" data-c="${c}">${c} <small>(${CLASSES[c].length})</small></button>`).join('')}</div>
+    const sw = Object.keys(CLASSES).length ? `<div class="cls-sw anim"><span>👩‍🏫 الشعبة:</span>${Object.keys(CLASSES).map(c => `<button class="csw${c === CUR_CLASS ? ' on' : ''}" data-c="${c}">${c} <small>(${CLASSES[c].length})</small></button>`).join('')}</div>` : '';
+    if (!STUDENTS.length) {
+      el.innerHTML = head(s) + `<div class="sbody">${sw}
+        <div class="att-empty anim">📋 لا توجد أسماء طالبات ${CUR_CLASS ? 'في ' + CUR_CLASS + ' ' : ''}بعد<br><a href="../admin/index.html" target="_blank">أضيفيها من لوحة الإدارة ←</a></div></div>`;
+      $$('.csw', el).forEach(b => b.onclick = () => setClass(b.dataset.c));
+      return {};
+    }
+    el.innerHTML = head(s) + `<div class="sbody">${sw}
       <div class="att-bar anim">
         <span class="tag">📅 ${today}</span>
         <span class="tag t-ok">✅ <b class="n-p"></b></span>
@@ -2059,9 +2065,9 @@ const RENDERERS = {
    ================================================================ */
 let CUR_CLASS = Object.keys(CLASSES)[0];
 try { const c = localStorage.getItem('att-class'); if (c && CLASSES[c]) CUR_CLASS = c; } catch (e) {}
-let STUDENTS = CLASSES[CUR_CLASS], ATT_KEY, ATT;
+let STUDENTS = CLASSES[CUR_CLASS] || [], ATT_KEY, ATT;
 function loadAtt() {
-  STUDENTS = CLASSES[CUR_CLASS];
+  STUDENTS = CLASSES[CUR_CLASS] || [];
   ATT_KEY = 'att-' + new Date().toISOString().slice(0, 10) + '-' + CUR_CLASS;
   ATT = STUDENTS.map(() => 'p');                 // p حاضرة | a غائبة | l متأخرة
   try { const sv = JSON.parse(localStorage.getItem(ATT_KEY)); if (Array.isArray(sv) && sv.length === STUDENTS.length) ATT = sv; } catch (e) {}
@@ -2074,6 +2080,13 @@ function setClass(c) {
   SLIDES.forEach((sl, i) => { if (sl.type === 'attendance') build(i); });
   Sound.success();
 }
+/* تحديث الأسماء إذا عُدّلت في لوحة الإدارة أثناء فتح الدرس */
+Roster.watch(() => {
+  CLASSES = Roster.load(LESSON_GRADE);
+  if (!CLASSES[CUR_CLASS]) CUR_CLASS = Object.keys(CLASSES)[0];
+  loadAtt(); Draw.picked = [];
+  SLIDES.forEach((sl, i) => { if (sl.type === 'attendance') build(i); });
+});
 function saveAtt() { try { localStorage.setItem(ATT_KEY, JSON.stringify(ATT)); } catch (e) {} }
 function copyText(t) {
   const fallback = () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); };
@@ -2088,9 +2101,9 @@ const Draw = {
   el: () => $('#draw'),
   avail() { return STUDENTS.filter((n, k) => ATT[k] !== 'a'); },
   info() {
-    $('#drTitle').textContent = '🎯 قرعة الأسماء — ' + CUR_CLASS;
+    $('#drTitle').textContent = '🎯 قرعة الأسماء' + (CUR_CLASS ? ' — ' + CUR_CLASS : '');
     const av = this.avail();
-    $('#drInfo').textContent = av.length ? `اختيرت ${this.picked.filter(n => av.includes(n)).length} من ${av.length} طالبة حاضرة` : 'لا توجد طالبات حاضرات — راجعي التحضير';
+    $('#drInfo').textContent = !STUDENTS.length ? 'لا توجد أسماء — أضيفيها من لوحة الإدارة' : av.length ? `اختيرت ${this.picked.filter(n => av.includes(n)).length} من ${av.length} طالبة حاضرة` : 'لا توجد طالبات حاضرات — راجعي التحضير';
     $('#drPicked').innerHTML = this.picked.map(n => `<span>${n}</span>`).join('');
   },
   show() { this.el().classList.add('on'); this.open = true; this.info(); Sound.pop(); },

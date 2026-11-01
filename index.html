@@ -81,6 +81,22 @@
     font-weight:900;
   }
   .arrow{margin-inline-start:auto;color:var(--c);font-size:26px}
+  .admin{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    margin-top:28px;
+    padding:12px 22px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:999px;
+    text-decoration:none;
+    color:var(--muted);
+    font-size:18px;
+    font-weight:800;
+    transition:color .15s, border-color .15s;
+  }
+  .admin:hover,.admin:focus-visible{color:#5B57D9;border-color:#5B57D9;outline:none}
 </style>
 </head>
 <body>
@@ -98,5 +114,7 @@
     <a class="btn" href="python/index.html" style="--c:#2563EB"><span class="num">٢</span>الثاني متوسط<span class="arrow">←</span></a>
     <a class="btn" href="control/index.html" style="--c:#5B57D9"><span class="num">١</span>الأول ثانوي<span class="arrow">←</span></a>
   </nav>
+
+  <a class="admin" href="admin/index.html">📚 لوحة الإدارة</a>
 </body>
 </html>

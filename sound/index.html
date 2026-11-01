@@ -588,7 +588,7 @@ body.idle #hint{opacity:0}
 </div>
 
 <div id="fx"></div>
-<div id="hint">Space = التالي &nbsp;|&nbsp; ← → للتنقل &nbsp;|&nbsp; ت = تصفيق</div>
+<div id="hint">Space = التالي &nbsp;|&nbsp; ← → للتنقل &nbsp;|&nbsp; ت = تصفيق &nbsp;|&nbsp; ق = قرعة</div>
 
 <nav id="bar" dir="ltr" aria-label="التحكم بالعرض">
   <button id="prevBtn" title="السابق">← السابق</button>
@@ -598,6 +598,7 @@ body.idle #hint{opacity:0}
   <button id="fsBtn" title="ملء الشاشة">⛶</button>
 </nav>
 
+<script src="../shared/roster.js"></script>
 <script>
 /* ######################################################################
    ✏️ الجزء الأول: محتوى الدرس — عدّلي هنا فقط!
@@ -611,12 +612,16 @@ body.idle #hint{opacity:0}
    • في الأسئلة: correct = رقم الإجابة الصحيحة (يبدأ العدّ من 0).
    ###################################################################### */
 
+/* صف هذا الدرس في لوحة الإدارة (للتحضير والقرعة) */
+const LESSON_GRADE = "الصف الخامس";
+Roster.use(LESSON_GRADE);
+
 const LESSON = {
   title:    "أصنعُ فيلمي عن وطني",
   subtitle: "الدرس الثاني: البحث عن الوسائط المتعددة وإنشاء وتحرير مقاطع الفيديو",
   subject:  "المهارات الرقمية",
   grade:    "الصف الخامس",
-  teacher:  "المعلمة: ..............",
+  teacher:  "المعلمة: أثيل القرني",
   clipSeconds: 2          // مدة كل صورة داخل محاكي الفيديو (بالثواني)
 };
 
@@ -641,6 +646,10 @@ const SLIDES = [
     lead:"اليوم لسنا طالبات فقط… اليوم نحن <span class='hl'>مخرجات أفلام!</span>",
     clapLines:[ ["الفيلم","عن وطني 💚"], ["المخرجة","أنتِ!"] ],
     tip:"اضغطي على لوح التصوير لنبدأ! 👆", action:"أكشن! 🎬" },
+
+  /* التحضير — الأسماء من لوحة الإدارة (admin/index.html) */
+  { type:"attendance", tr:"slide", tag:"التحضير",
+    title:"🎬 مَن حاضرة في تصوير اليوم؟" },
 
   /* 2) شريط الذكريات: مراجعة الدروس السابقة */
   { type:"memories", tr:"slide", tag:"شريط الذكريات",
@@ -1032,6 +1041,13 @@ const R = {
           setTimeout(()=>celebrate(el.querySelector(".filmstrip")), 500);
       }));
     }
+  },
+
+  attendance: {
+    html: d => `
+      <div ${rv(0)}><h2 class="h2">${d.title}</h2></div>
+      <div ${rv(1)} style="flex:1;min-height:0;margin-top:20px"><div class="rs-host" style="height:100%"></div></div>`,
+    init(el){ Roster.attendance(el.querySelector(".rs-host"), LESSON_GRADE); }
   },
 
   goals: {
@@ -1668,6 +1684,7 @@ const next = () => go(cur + 1), prev = () => go(cur - 1);
 document.getElementById("nextBtn").addEventListener("click", next);
 document.getElementById("prevBtn").addEventListener("click", prev);
 clapBtn.addEventListener("click", clap);
+Roster.drawButton(clapBtn);
 document.getElementById("fsBtn").addEventListener("click", () => {
   if(!document.fullscreenElement) (document.documentElement.requestFullscreen || function(){}).call(document.documentElement);
   else document.exitFullscreen();
