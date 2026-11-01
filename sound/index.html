@@ -1046,7 +1046,7 @@ const R = {
   attendance: {
     html: d => `
       <div ${rv(0)}><h2 class="h2">${d.title}</h2></div>
-      <div ${rv(1)} style="flex:1;min-height:0;margin-top:20px"><div class="rs-host" style="height:100%"></div></div>`,
+      <div class="rv" style="--i:1;flex:1;min-height:0;margin-top:20px;display:flex;flex-direction:column"><div class="rs-host" style="flex:1;min-height:0"></div></div>`,
     init(el){ Roster.attendance(el.querySelector(".rs-host"), LESSON_GRADE); }
   },
 
@@ -1706,8 +1706,8 @@ document.addEventListener("keydown", e => {
 });
 document.addEventListener("keyup", e => { if(e.key === " " && !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) e.preventDefault(); });
 // منع أي تمرير بعجلة الماوس أو اللمس
-addEventListener("wheel", e => e.preventDefault(), { passive:false });
-addEventListener("touchmove", e => { if(!e.target.closest("input")) e.preventDefault(); }, { passive:false });
+addEventListener("wheel", e => { if(!e.target.closest(".scroll")) e.preventDefault(); }, { passive:false });
+addEventListener("touchmove", e => { if(!e.target.closest("input, .scroll")) e.preventDefault(); }, { passive:false });
 
 /* ---------- 📐 ملاءمة الشاشة (16:9 بدون تمرير) ---------- */
 function fit(){

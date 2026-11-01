@@ -52,26 +52,28 @@ const Roster = (() => {
   /* ---------- الأنماط (مقاسات مسرح 1920×1080) ---------- */
   const CSS = `
   .rs{display:flex;flex-direction:column;gap:22px;height:100%;min-height:0;font-family:'Tajawal','Cairo',sans-serif;direction:rtl;color:#2b1558}
-  .rs-sw{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:28px;font-weight:800}
+  .rs-sw{flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:28px;font-weight:800}
   .rs-sw button{font:inherit;font-size:26px;border:3px solid #ddd3fb;background:#fff;color:inherit;border-radius:999px;padding:6px 24px;cursor:pointer}
   .rs-sw button.on{background:#7048e8;border-color:#7048e8;color:#fff}
   .rs-sw small{opacity:.7}
-  .rs-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .rs-bar{flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
   .rs-tag{background:#fff;border-radius:16px;padding:8px 20px;font-size:26px;font-weight:800;box-shadow:0 6px 18px -8px rgba(76,40,160,.35)}
   .rs-tag.ok{color:#15803d}.rs-tag.late{color:#b45309}.rs-tag.bad{color:#be123c}
   .rs-bar .sp{flex:1}
   .rs-btn{font:inherit;font-size:24px;font-weight:800;border:none;border-radius:16px;padding:10px 22px;cursor:pointer;background:#efe9ff;color:#2b1558}
   .rs-btn.pri{background:#7048e8;color:#fff}
   .rs-btn:hover{filter:brightness(.96)}
-  .rs-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;align-content:start;padding:4px}
-  .rs-stu{font:inherit;display:flex;align-items:center;gap:14px;background:#fff;border:3px solid #dcfce7;border-radius:20px;padding:10px 16px;cursor:pointer;text-align:right;transition:transform .15s}
+  .rs-grid{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;align-content:start;padding:4px}
+  .rs-grid::-webkit-scrollbar{width:14px}
+  .rs-grid::-webkit-scrollbar-thumb{background:#ddd3fb;border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+  .rs-stu{font:inherit;display:grid;grid-template-columns:56px 1fr;align-items:center;column-gap:14px;row-gap:2px;background:#fff;border:3px solid #dcfce7;border-radius:20px;padding:10px 16px;cursor:pointer;text-align:right;transition:transform .15s}
   .rs-stu:active{transform:scale(.97)}
-  .rs-stu .av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff;background:#22c55e;flex:none}
-  .rs-stu .nm{flex:1;font-size:28px;font-weight:800;color:#2b1558}
+  .rs-stu .av{grid-row:1/3;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff;background:#22c55e;flex:none}
+  .rs-stu .nm{min-width:0;overflow-wrap:anywhere;font-size:26px;font-weight:800;color:#2b1558;line-height:1.3}
   .rs-stu .s{font-size:20px;font-weight:800;white-space:nowrap}
   .rs-stu[data-s=a]{border-color:#fecdd3;background:#fff1f2}.rs-stu[data-s=a] .av{background:#f43f5e}.rs-stu[data-s=a] .nm{opacity:.6}
   .rs-stu[data-s=l]{border-color:#fde68a;background:#fffbeb}.rs-stu[data-s=l] .av{background:#f59e0b}
-  .rs-tip{font-size:24px;color:#6b5a93;text-align:center}
+  .rs-tip{flex-shrink:0;margin:0;font-size:24px;color:#6b5a93;text-align:center}
   .rs-empty{flex:1;display:grid;place-items:center;text-align:center;font-size:34px;font-weight:800;color:#6b5a93;line-height:1.8}
   .rs-empty a{color:#7048e8}
   #rsDraw{position:fixed;inset:0;z-index:9999;background:rgba(20,10,45,.7);display:none;align-items:center;justify-content:center;font-family:'Tajawal','Cairo',sans-serif;direction:rtl}
@@ -117,7 +119,7 @@ const Roster = (() => {
         <button class="rs-btn" data-act="copy">📋 نسخ الغائبات</button>
         <button class="rs-btn pri" data-act="draw">🎯 قرعة</button>
       </div>
-      <div class="rs-grid">${st.students.map((n, k) => `<button class="rs-stu" data-k="${k}"><span class="av">${esc(n.replace(/^ال/, '')[0] || '؟')}</span><span class="nm">${esc(n)}</span><span class="s"></span></button>`).join('')}</div>
+      <div class="rs-grid scroll">${st.students.map((n, k) => `<button class="rs-stu" data-k="${k}"><span class="av">${esc(n.replace(/^ال/, '')[0] || '؟')}</span><span class="nm">${esc(n)}</span><span class="s"></span></button>`).join('')}</div>
       <p class="rs-tip">👆 اضغطي على اسم الطالبة لتغيير حالتها: حاضرة ← غائبة ← متأخرة</p>`
       : `<div class="rs-empty"><div>لا توجد طالبات في هذه الشعبة بعد<br><a href="${ADMIN_URL}" target="_blank">أضيفيهن من لوحة الإدارة ←</a></div></div>`}
     </div>`;

@@ -403,17 +403,20 @@ kbd{font-family:var(--mono);background:#fff;border:2px solid var(--p200);border-
 .att-bar .tag{font-size:26px;padding:8px 22px}
 .att-bar .btn{font-size:26px;padding:12px 24px}
 .t-ok{color:var(--ok)!important}.t-late{color:#B45309!important}.t-bad{color:var(--bad)!important}
-.att-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(5,1fr);grid-auto-rows:1fr;gap:18px}
-.stu{background:#fff;border:4px solid var(--okbd);border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:var(--shadow);transition:background .25s,border-color .25s,transform .15s,opacity .25s}
+.att-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;align-content:start;gap:18px;overflow-y:auto;overscroll-behavior:contain;padding:6px 6px 6px 12px}
+.att-grid::-webkit-scrollbar{width:14px}
+.att-grid::-webkit-scrollbar-thumb{background:var(--p200,#DDD6FE);border-radius:8px;border:3px solid transparent;background-clip:padding-box}
+
+.stu{font:inherit;background:#fff;border:4px solid var(--okbd);border-radius:26px;padding:14px 18px;display:grid;grid-template-columns:64px 1fr;align-items:center;align-content:center;column-gap:16px;row-gap:2px;text-align:right;box-shadow:var(--shadow);transition:background .25s,border-color .25s,transform .15s,opacity .25s}
 .stu:hover{transform:translateY(-4px)}
-.stu .av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1D9A55,#2FB36A);color:#fff;font-size:32px;font-weight:900;display:grid;place-items:center}
-.stu .nm{font-size:32px;font-weight:800;color:var(--p900)}
-.stu .st{font-size:22px;font-weight:700;color:var(--ok)}
+.stu .av{grid-row:1/3;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1D9A55,#2FB36A);color:#fff;font-size:32px;font-weight:900;display:grid;place-items:center}
+.stu .nm{min-width:0;overflow-wrap:anywhere;font-size:28px;font-weight:800;color:var(--p900);line-height:1.3}
+.stu .st{font-size:22px;font-weight:700;color:var(--ok);white-space:nowrap}
 .stu[data-s=a]{background:#FFF5F6;border-color:var(--badbd);opacity:.75}
 .stu[data-s=a] .av{background:#FDA4AF}.stu[data-s=a] .st{color:var(--bad)}
 .stu[data-s=l]{background:#FFFBEB;border-color:#FCD34D}
 .stu[data-s=l] .av{background:linear-gradient(135deg,#F59E0B,#FBBF24)}.stu[data-s=l] .st{color:#B45309}
-.cls-sw{display:flex;align-items:center;gap:14px;flex-shrink:0;font-size:28px;font-weight:800;color:var(--p800)}
+.cls-sw{display:flex;flex-wrap:wrap;align-items:center;gap:14px;flex-shrink:0;font-size:28px;font-weight:800;color:var(--p800)}
 .csw{font-size:28px;font-weight:800;padding:10px 30px;border-radius:999px;border:3px solid var(--p200);background:#fff;color:var(--p700);transition:transform .15s,background .2s}
 .csw:hover{transform:translateY(-3px)}
 .csw.on{background:var(--p600);color:#fff;border-color:var(--p600)}
@@ -1376,7 +1379,7 @@ const RENDERERS = {
         <button class="btn btn-soft" data-act="copy">📋 نسخ الغائبات</button>
         <button class="btn btn-primary" data-act="draw">🎯 قرعة</button>
       </div>
-      <div class="att-grid">${STUDENTS.map((n, k) => `<button class="stu anim" data-k="${k}"><span class="av">${n.replace(/^ال/, '')[0]}</span><span class="nm">${n}</span><span class="st"></span></button>`).join('')}</div>
+      <div class="att-grid scroll">${STUDENTS.map((n, k) => `<button class="stu anim" data-k="${k}"><span class="av">${n.replace(/^ال/, '')[0]}</span><span class="nm">${n}</span><span class="st"></span></button>`).join('')}</div>
       <p class="att-tip anim">👆 اضغطي على اسم الطالبة لتغيير حالتها: حاضرة ← غائبة ← متأخرة</p>
     </div>`;
     const render = () => {

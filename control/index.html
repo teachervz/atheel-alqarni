@@ -2266,8 +2266,8 @@ document.addEventListener('keydown', e => {
 /* إزالة التركيز عن الأزرار بعد النقر حتى لا يضغطها زر Space */
 document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.blur(); });
 /* منع التمرير بعجلة الماوس أو اللمس */
-window.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-document.addEventListener('touchmove', e => { if (!e.target.closest('input')) e.preventDefault(); }, { passive: false });
+window.addEventListener('wheel', e => { if (!e.target.closest('.scroll')) e.preventDefault(); }, { passive: false });
+document.addEventListener('touchmove', e => { if (!e.target.closest('input, .scroll')) e.preventDefault(); }, { passive: false });
 
 /* أزرار الشريط */
 $('#btnNext').onclick = next;
