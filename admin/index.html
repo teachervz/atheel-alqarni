@@ -225,7 +225,7 @@ function seed() {
   return {
     grades: [
       ['الصف الخامس', '#0fa797'], ['الصف السادس', '#F59E0B'], ['الأول متوسط', '#16A34A'],
-      ['الثاني متوسط', '#2563EB'], ['الأول ثانوي', '#5B57D9']
+      ['الثاني متوسط', '#2563EB'], ['الثالث متوسط', '#DB2777'], ['الأول ثانوي', '#5B57D9']
     ].map(([name, color]) => ({ id: uid(), name, color, weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] }))
   };
 }
@@ -233,6 +233,16 @@ function seed() {
 let db = null;
 try { db = JSON.parse(localStorage.getItem(KEY)); } catch {}
 if (!db || !Array.isArray(db.grades)) db = seed();
+/* إضافة صف الثالث متوسط للبيانات المحفوظة قبل إضافته (مرة واحدة فقط) */
+if (!db.v) {
+  if (!db.grades.some(g => g.name === 'الثالث متوسط')) {
+    const at = db.grades.findIndex(g => g.name === 'الأول ثانوي');
+    const g = { id: uid(), name: 'الثالث متوسط', color: '#DB2777', weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] };
+    at < 0 ? db.grades.push(g) : db.grades.splice(at, 0, g);
+  }
+  db.v = 2;
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
+}
 
 let saveTimer;
 function save(msg) {

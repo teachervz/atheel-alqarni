@@ -623,7 +623,7 @@ body.idle{cursor:none}
 <div id="progress"><span></span></div>
 
 <!-- مؤشر الاختصارات -->
-<div id="hint"><kbd>Space</kbd> = التالي &nbsp;|&nbsp; <kbd>← →</kbd> للتنقل &nbsp;|&nbsp; <kbd>ت</kbd> = تصفيق</div>
+<div id="hint"><kbd>Space</kbd> = التالي &nbsp;|&nbsp; <kbd>← →</kbd> للتنقل &nbsp;|&nbsp; <kbd>ت</kbd> = تصفيق &nbsp;|&nbsp; <kbd>ق</kbd> = قرعة</div>
 
 <!-- شريط التحكم السفلي -->
 <div id="controls">
@@ -647,6 +647,7 @@ body.idle{cursor:none}
 
 <!-- ملف النشيد الوطني (يجب أن يكون بجانب هذا الملف) -->
 <script src="anthem.js"></script>
+<script src="../shared/roster.js"></script>
 <script>
 /* #####################################################################
    ⚙️  إعدادات المحتوى — عدّلي من هنا فقط  ⚙️
@@ -662,6 +663,10 @@ body.idle{cursor:none}
    • anim  : (اختياري) نوع الانتقال: 'slide' أو 'zoom' أو 'fade'
    • section / strategy : الوسوم الصغيرة أعلى الشريحة.
    ##################################################################### */
+/* صف هذا الدرس في لوحة الإدارة (للتحضير والقرعة) */
+const LESSON_GRADE = 'الصف الخامس';
+Roster.use(LESSON_GRADE);
+
 const LESSON = {
   info: {
     subject: 'المهارات الرقمية',
@@ -700,6 +705,9 @@ const LESSON = {
       ],
       strategies: ['❓ الأسئلة', '🔮 ماذا تتوقعين؟', '🧠 العصف الذهني', '👭 فكّري-زاوجي-شاركي', '🔍 لاحظي واكتشفي', '🤝 التعلم التعاوني', '⏱️ تحدي الدقيقة', '🛠️ التطبيق العملي', '📊 التقييم الفوري'],
       tools: ['الماسح الضوئي', 'Windows Fax and Scan', 'Audacity', 'الكاميرا الرقمية', 'الميكروفون'] },
+
+    /* ---------- الحضور — الأسماء من لوحة الإدارة (admin/index.html) ---------- */
+    { type: 'attendance', section: '📋 التحضير', title: 'مَن <span class="hl">حاضرة</span> اليوم؟ 🙋‍♀️' },
 
     /* ---------- 3) فرق التعلم التعاوني ---------- */
     { type: 'teams', section: '📋 التحضير', strategy: '🤝 التعلم التعاوني',
@@ -1334,6 +1342,12 @@ const Renderers = {
       <div class="cover-meta rv">${LESSON.info.subject} • ${LESSON.info.grade} • ${LESSON.info.teacher}</div>
       <button class="btn btn-lg rv" data-act="next">لنبدأ رحلتنا ✨</button>
     </div>`;
+  },
+
+  /* ---------- الحضور: الشعب والأسماء من لوحة الإدارة ---------- */
+  attendance(s, el) {
+    el.innerHTML = head(s) + '<div class="rs-host" style="flex:1;min-height:0;margin-top:14px"></div>';
+    Roster.attendance($('.rs-host', el), LESSON_GRADE);
   },
 
   /* ---------- التحضير ---------- */
@@ -2019,8 +2033,8 @@ document.addEventListener('keydown', e => {
   wake();
 });
 /* منع التمرير بالعجلة أو اللمس */
-addEventListener('wheel', e => e.preventDefault(), { passive: false });
-addEventListener('touchmove', e => { if (!e.target.closest('input[type=range], canvas')) e.preventDefault(); }, { passive: false });
+addEventListener('wheel', e => { if (!e.target.closest('.scroll')) e.preventDefault(); }, { passive: false });
+addEventListener('touchmove', e => { if (!e.target.closest('input[type=range], canvas, .scroll')) e.preventDefault(); }, { passive: false });
 
 /* ----- الأزرار العامة (تفويض الأحداث) ----- */
 document.addEventListener('click', e => {
@@ -2034,6 +2048,7 @@ document.addEventListener('click', e => {
 $('#nextBtn').onclick = next;
 $('#prevBtn').onclick = prev;
 $('#clapBtn').onclick = clap;
+Roster.drawButton($('#clapBtn'));
 $('#scoreBtn').onclick = () => $('#scoreboard').classList.toggle('open');
 $('#fsBtn').onclick = () => {
   const d = document;

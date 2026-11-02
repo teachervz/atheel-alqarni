@@ -51,13 +51,14 @@ const Roster = (() => {
 
   /* ---------- الأنماط (مقاسات مسرح 1920×1080) ---------- */
   const CSS = `
-  .rs{display:flex;flex-direction:column;gap:22px;height:100%;min-height:0;font-family:'Tajawal','Cairo',sans-serif;direction:rtl;color:#2b1558}
+  .rs{display:flex;flex-direction:column;gap:22px;height:100%;min-height:0;font-family:'Tajawal','Cairo',sans-serif;direction:rtl;color:inherit}
   .rs-sw{flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:28px;font-weight:800}
-  .rs-sw button{font:inherit;font-size:26px;border:3px solid #ddd3fb;background:#fff;color:inherit;border-radius:999px;padding:6px 24px;cursor:pointer}
+  .rs-sw>span{color:#2b1558;background:rgba(255,255,255,.85);border-radius:999px;padding:4px 18px}
+  .rs-sw button{font:inherit;font-size:26px;border:3px solid #ddd3fb;background:#fff;border-radius:999px;padding:6px 24px;cursor:pointer;color:#2b1558}
   .rs-sw button.on{background:#7048e8;border-color:#7048e8;color:#fff}
   .rs-sw small{opacity:.7}
   .rs-bar{flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-  .rs-tag{background:#fff;border-radius:16px;padding:8px 20px;font-size:26px;font-weight:800;box-shadow:0 6px 18px -8px rgba(76,40,160,.35)}
+  .rs-tag{color:#2b1558;background:#fff;border-radius:16px;padding:8px 20px;font-size:26px;font-weight:800;box-shadow:0 6px 18px -8px rgba(76,40,160,.35)}
   .rs-tag.ok{color:#15803d}.rs-tag.late{color:#b45309}.rs-tag.bad{color:#be123c}
   .rs-bar .sp{flex:1}
   .rs-btn{font:inherit;font-size:24px;font-weight:800;border:none;border-radius:16px;padding:10px 22px;cursor:pointer;background:#efe9ff;color:#2b1558}
@@ -73,9 +74,9 @@ const Roster = (() => {
   .rs-stu .s{font-size:20px;font-weight:800;white-space:nowrap}
   .rs-stu[data-s=a]{border-color:#fecdd3;background:#fff1f2}.rs-stu[data-s=a] .av{background:#f43f5e}.rs-stu[data-s=a] .nm{opacity:.6}
   .rs-stu[data-s=l]{border-color:#fde68a;background:#fffbeb}.rs-stu[data-s=l] .av{background:#f59e0b}
-  .rs-tip{flex-shrink:0;margin:0;font-size:24px;color:#6b5a93;text-align:center}
-  .rs-empty{flex:1;display:grid;place-items:center;text-align:center;font-size:34px;font-weight:800;color:#6b5a93;line-height:1.8}
-  .rs-empty a{color:#7048e8}
+  .rs-tip{flex-shrink:0;margin:0;font-size:24px;text-align:center;align-self:center;color:#6b5a93;background:rgba(255,255,255,.85);border-radius:999px;padding:4px 22px}
+  .rs-empty{flex:1;display:grid;place-items:center;text-align:center;font-size:34px;font-weight:800;opacity:.8;line-height:1.8}
+  .rs-empty a{color:inherit;text-decoration:underline}
   #rsDraw{position:fixed;inset:0;z-index:9999;background:rgba(20,10,45,.7);display:none;align-items:center;justify-content:center;font-family:'Tajawal','Cairo',sans-serif;direction:rtl}
   #rsDraw.on{display:flex}
   #rsDraw .card{background:#fff;border-radius:3vmin;padding:4vmin 5vmin;width:min(80vw,120vmin);text-align:center;box-shadow:0 4vmin 10vmin rgba(0,0,0,.4);color:#2b1558}
@@ -195,6 +196,7 @@ const Roster = (() => {
   /* زر القرعة في شريط التحكم + اختصارات لوحة المفاتيح (تسبق أوامر التنقل) */
   function drawButton(after) {
     const b = document.createElement('button');
+    b.className = after.className.replace(/\bclap\b/, '').trim();   // نفس شكل أزرار الشريط
     b.title = 'قرعة الأسماء (ق)'; b.textContent = '🎯';
     b.onclick = () => draw.toggle();
     after.insertAdjacentElement('afterend', b);

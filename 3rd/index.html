@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التعاملات عبر الإنترنت</title>
+<!-- خط عربي واضح (إذا لم يتوفر الإنترنت يُستخدم خط النظام تلقائيًا) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   1) الألوان والهوية البصرية
+   ========================================================= */
+:root{
+  --p:#6D3FD1;        /* البنفسجي الأساسي */
+  --p2:#8B5CF6;       /* بنفسجي فاتح */
+  --pd:#46288F;       /* بنفسجي غامق للعناوين */
+  --lav:#EFE7FF;      /* لافندر */
+  --lav2:#F8F4FF;
+  --line:#E3D8FB;
+  --mint:#12A05C;     /* الأخضر */
+  --mintbg:#E0F6EA;
+  --yel:#FFD43B;      /* الأصفر */
+  --yelbg:#FFF7D6;
+  --yelline:#F5DE85;
+  --coral:#F25F5C;
+  --coralbg:#FFECEB;
+  --amber:#F2B705;
+  --ink:#2A2140;
+  --muted:#6F6888;
+  --shadow:0 14px 40px -18px rgba(76,40,160,.35);
+  --font:'Tajawal','Cairo','Segoe UI',Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#E9E1FB;font-family:var(--font);color:var(--ink);-webkit-user-select:none;user-select:none}
+input{-webkit-user-select:text;user-select:text}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+::-webkit-scrollbar{display:none}
+
+/* =========================================================
+   2) المسرح: 1600×900 (16:9) يتم تكبيره ليملأ الشاشة دون تمرير
+   ========================================================= */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage{
+  position:relative;flex:none;width:1600px;height:900px;overflow:hidden;
+  background:
+    radial-gradient(900px 520px at 105% -10%, #E4D7FF 0, transparent 60%),
+    radial-gradient(700px 460px at -6% -12%, #FFF3BF 0, transparent 60%),
+    radial-gradient(760px 520px at -8% 110%, #D3F2E1 0, transparent 60%),
+    linear-gradient(180deg,#FCFAFF,#F4EEFF);
+}
+#stage::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(rgba(109,63,209,.13) 1.6px,transparent 1.7px);background-size:30px 30px;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 45%);mask-image:linear-gradient(180deg,#000,transparent 45%)}
+.deco{position:absolute;font-size:130px;opacity:.06;pointer-events:none}
+
+/* ---------- ربط بالدين: الآية ---------- */
+.ayah{display:flex;align-items:center;gap:24px;background:linear-gradient(135deg,#fff,var(--mintbg));border:3px solid var(--mint);border-radius:28px;padding:16px 32px;margin-bottom:16px;box-shadow:var(--shadow);position:relative}
+.ayah::after{content:'';position:absolute;inset:7px;border:2px dashed rgba(18,160,92,.35);border-radius:22px;pointer-events:none}
+.ay-ico{flex:none;width:84px;height:84px;border-radius:24px;background:var(--yelbg);display:grid;place-items:center;font-size:46px}
+.ay-text{font-family:'Amiri','Traditional Arabic','Times New Roman',serif;font-size:38px;font-weight:700;color:#0B5E38;line-height:1.75}
+.ay-src{display:inline-block;margin-top:2px;font-size:20px;color:var(--pd);font-weight:800;background:var(--yelbg);padding:2px 14px;border-radius:999px}
+.ay-text.plain{font-family:var(--font);font-size:34px;font-weight:800;color:var(--pd);line-height:1.6}
+.hadith{font-family:'Amiri','Traditional Arabic',serif;font-size:26px;font-weight:700;color:#0B5E38;display:block;margin:4px 0}
+.rc-detail small{display:block;font-size:18px;color:var(--muted);font-weight:700}
+
+/* ---------- الشريط العلوي: الشعار + تتبع الطلب + النقاط ---------- */
+.topbar{position:absolute;top:0;left:0;right:0;height:88px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:5}
+.brand{display:flex;align-items:center;gap:14px;font-weight:900;font-size:24px;color:var(--pd)}
+.brand .logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--mint));display:grid;place-items:center;font-size:26px;box-shadow:var(--shadow)}
+.brand small{display:block;font-size:16px;color:var(--muted);font-weight:500}
+.tracker{position:relative;width:640px;display:flex;justify-content:space-between}
+.tracker::before{content:'';position:absolute;top:20px;right:60px;left:60px;height:6px;background:var(--line);border-radius:6px}
+.tracker .fill{position:absolute;top:20px;right:60px;height:6px;width:0;background:linear-gradient(270deg,var(--p),var(--yel),var(--mint));border-radius:6px;transition:width .6s ease}
+.tk{position:relative;z-index:1;width:120px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:15px;font-weight:800;color:var(--muted)}
+.tk i{width:46px;height:46px;border-radius:50%;background:#fff;border:3px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:21px;transition:.4s}
+.tk.on{color:var(--pd)}
+.tk.on i{background:var(--p);border-color:var(--p);box-shadow:0 0 0 6px rgba(109,63,209,.15)}
+.tk.on:nth-of-type(3) i{background:var(--yel);border-color:var(--yel);box-shadow:0 0 0 6px rgba(255,212,59,.25)}
+.tk.on:nth-of-type(4) i,.tk.on:nth-of-type(5) i{background:var(--mint);border-color:var(--mint);box-shadow:0 0 0 6px rgba(18,160,92,.18)}
+.points{display:flex;align-items:center;gap:10px;background:var(--yelbg);border:2px solid var(--yelline);padding:7px 18px 7px 10px;border-radius:999px;font-weight:800;font-size:19px;color:var(--pd);box-shadow:var(--shadow)}
+.points .bag{width:40px;height:40px;border-radius:50%;background:var(--mintbg);display:grid;place-items:center;font-size:22px}
+.points b{font-size:26px;color:var(--mint);min-width:28px;text-align:center}
+
+/* =========================================================
+   3) الشرائح والانتقالات
+   ========================================================= */
+.slide{position:absolute;top:104px;bottom:80px;left:64px;right:64px;display:flex;flex-direction:column;visibility:hidden;opacity:0;pointer-events:none}
+.slide.active{visibility:visible;opacity:1;pointer-events:auto}
+.slide.out{visibility:visible;animation:slideOut .38s ease both}
+.slide.active.fx-fade{animation:inFade .6s ease both}
+.slide.active.fx-slide-n{animation:inSlideN .65s cubic-bezier(.2,.8,.2,1) both}
+.slide.active.fx-slide-p{animation:inSlideP .65s cubic-bezier(.2,.8,.2,1) both}
+.slide.active.fx-zoom{animation:inZoom .65s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slideOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.97)}}
+@keyframes inFade{from{opacity:0}to{opacity:1}}
+@keyframes inSlideN{from{opacity:0;transform:translateX(-80px)}to{opacity:1;transform:none}}
+@keyframes inSlideP{from{opacity:0;transform:translateX(80px)}to{opacity:1;transform:none}}
+@keyframes inZoom{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+/* ظهور العناصر بالتتابع */
+.slide.play .rv{animation:rise .65s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.7)}70%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes bob{50%{transform:translateY(-10px)}}
+@keyframes pulse{50%{transform:scale(1.06)}}
+@keyframes slideInR{from{opacity:0;transform:translateX(40px)}}
+
+/* ---------- عناصر مشتركة ---------- */
+.s-head{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+.s-head h2{font-size:50px;font-weight:900;color:var(--pd);line-height:1.2}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--yelbg);border:2px solid var(--yelline);color:var(--pd);font-size:21px;font-weight:800;padding:8px 18px;border-radius:999px;white-space:nowrap;box-shadow:var(--shadow)}
+.lead{font-size:29px;color:var(--muted);font-weight:600;line-height:1.55;margin-bottom:18px}
+.lead b{color:var(--p)}
+.note{background:#FFF7E6;border-right:6px solid var(--amber);border-radius:18px;padding:14px 24px;font-size:25px;font-weight:600;line-height:1.55;margin-top:18px}
+.chat{display:inline-block;background:var(--mintbg);color:#0b7a58;font-weight:800;font-size:22px;padding:4px 14px;border-radius:999px;margin-inline-start:8px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:24px;font-weight:800;padding:12px 24px;border-radius:16px;transition:transform .15s,background .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:scale(.95)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.primary{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;box-shadow:0 10px 22px -10px rgba(109,63,209,.8)}
+.btn.ghost{background:var(--lav);color:var(--p)}
+.btn.add{background:var(--mint);color:#fff;font-size:21px;padding:10px 18px;box-shadow:0 10px 20px -12px rgba(20,184,134,.9)}
+.btn.big{font-size:30px;padding:16px 34px;border-radius:22px}
+.btn.wide{width:100%}
+.btn.sm{font-size:19px;padding:8px 14px;border-radius:12px}
+
+/* ---------- صندوق السؤال ---------- */
+.q-box{display:flex;align-items:center;gap:22px;background:linear-gradient(135deg,#fff,var(--lav2));border:2px solid var(--line);border-radius:28px;padding:22px 30px;font-size:35px;font-weight:800;line-height:1.5;margin-bottom:22px;box-shadow:var(--shadow)}
+.q-box.big{font-size:31px}
+.q-ico{flex:none;width:84px;height:84px;border-radius:24px;background:var(--lav);display:grid;place-items:center;font-size:48px}
+.q-hint{font-size:23px;color:var(--muted);margin:-8px 0 16px;text-align:center;font-weight:600}
+
+/* ---------- أزرار الخيارات ---------- */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.opts.c3{grid-template-columns:repeat(3,1fr)}
+.opt{position:relative;display:flex;align-items:center;gap:18px;padding:18px 28px 18px 76px;min-height:104px;font-size:33px;font-weight:800;background:#fff;border:3px solid var(--line);border-radius:24px;box-shadow:var(--shadow);text-align:right;transition:transform .2s,border-color .2s,background .2s,opacity .3s}
+.opt:hover:not(:disabled){transform:translateY(-4px);border-color:var(--p2)}
+.opt:active:not(:disabled){transform:scale(.97)}
+.opt:disabled{cursor:default}
+.o-ico{font-size:44px;flex:none}
+.o-txt small{display:block;font-size:20px;color:var(--muted);font-weight:600}
+.o-let{position:absolute;left:18px;top:50%;margin-top:-22px;width:44px;height:44px;border-radius:12px;background:var(--lav);color:var(--p);font-size:24px;font-weight:900;display:grid;place-items:center}
+.opt.ok{background:var(--mintbg);border-color:var(--mint);color:#0b6e51}
+.opt.ok .o-let{background:var(--mint);color:#fff}
+.opt.no{background:var(--coralbg);border-color:var(--coral);opacity:.7}
+.qgroup.solved .opt:not(.ok){opacity:.45}
+.opt.sm{min-height:auto;padding:10px 18px;font-size:23px;border-radius:16px;box-shadow:none}
+.fb{min-height:62px;font-size:36px;font-weight:900;text-align:center;margin-top:14px}
+.fb.ok{color:var(--mint)}
+.fb.no{color:var(--p)}
+.explain{display:none;background:var(--lav2);border:2px dashed var(--line);border-radius:18px;padding:12px 22px;font-size:25px;font-weight:600;color:var(--pd);text-align:center;line-height:1.5}
+.solved .explain{display:block;animation:rise .5s both}
+
+/* ---------- البطاقات القابلة للقلب ---------- */
+.flip-grid,.card-grid{display:grid;gap:22px;flex:1;min-height:0;grid-auto-rows:1fr}
+.cols-2{grid-template-columns:repeat(2,1fr)}
+.cols-3{grid-template-columns:repeat(3,1fr)}
+.cols-4{grid-template-columns:repeat(4,1fr)}
+.flip{perspective:1400px;cursor:pointer;min-height:0}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.3,.7,.2,1);transform-style:preserve-3d}
+.flip.flipped .flip-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 26px;gap:10px}
+.front{background:#fff;border:3px solid var(--line);box-shadow:var(--shadow);transition:border-color .2s}
+.flip:hover .front{border-color:var(--p2)}
+.back{background:linear-gradient(145deg,var(--p) 0%,var(--pd) 70%,#0E7A47 130%);color:#fff;transform:rotateY(180deg)}
+.f-ico{font-size:70px}
+.f-title{font-size:35px;font-weight:900;color:var(--pd);line-height:1.3}
+.f-title small{display:block;font-size:22px;color:var(--muted);font-weight:700}
+.back .f-title{color:#fff;font-size:26px;opacity:.85}
+.back p{font-size:27px;line-height:1.55;font-weight:600}
+.f-ex{font-size:22px;background:rgba(255,255,255,.16);padding:8px 16px;border-radius:12px;line-height:1.5}
+.f-hint{font-size:18px;color:var(--muted);font-weight:700}
+
+/* ---------- بطاقات الكشف ---------- */
+.rcard,.sit{position:relative;background:#fff;border:3px solid var(--line);border-radius:26px;padding:18px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;box-shadow:var(--shadow);overflow:hidden}
+.rcard{cursor:pointer;transition:transform .25s,border-color .25s,background .3s}
+.rcard:hover{transform:translateY(-5px);border-color:var(--p2)}
+.rc-ico{font-size:54px}
+.rc-tag{font-size:17px;font-weight:800;background:var(--lav);color:var(--p);padding:3px 12px;border-radius:999px}
+.rc-title{font-size:29px;font-weight:900;color:var(--pd);line-height:1.3}
+.rc-detail{font-size:24px;line-height:1.5;max-height:0;opacity:0;overflow:hidden;transition:max-height .5s,opacity .5s}
+.rc-detail b{color:var(--p)}
+.rcard.open .rc-detail{max-height:220px;opacity:1}
+.rc-tap{font-size:18px;color:var(--muted);font-weight:700}
+.rcard.open .rc-tap{display:none}
+.rcard.open{border-color:var(--mint);background:linear-gradient(180deg,#fff,var(--mintbg))}
+.sit{font-size:27px;font-weight:700;line-height:1.5}
+.c-foot{display:flex;gap:22px;align-items:center;margin-top:18px}
+.c-foot .note{flex:1;margin:0}
+
+/* ---------- صندوق الكشف ---------- */
+.reveal-box{margin-top:20px;border-radius:26px;cursor:pointer;background:linear-gradient(135deg,var(--p),var(--mint));color:#fff;padding:20px 32px;text-align:center;box-shadow:var(--shadow);transition:transform .2s;border:3px solid transparent}
+.reveal-box:hover{transform:scale(1.01)}
+.rb-label{font-size:31px;font-weight:900}
+.rb-content{display:none;font-size:29px;line-height:1.6;font-weight:600}
+.rb-content b{color:var(--p)}
+.reveal-box.open{background:#fff;color:var(--ink);border-color:var(--p2)}
+.reveal-box.open .rb-label{display:none}
+.reveal-box.open .rb-content{display:block;animation:popIn .5s both}
+
+/* ---------- الخطوات المتتابعة (تتبع الطلب) ---------- */
+.steps-wrap{display:flex;gap:44px;flex:1;min-height:0}
+.side{width:400px;flex:none;display:flex;align-items:center;justify-content:center}
+.steps-col{flex:1;display:flex;flex-direction:column;min-height:0}
+.track{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.tstep{position:relative;display:flex;align-items:center;gap:18px;font-size:26px;font-weight:700;padding:6px 16px;border-radius:18px;border:2px dashed var(--line);color:transparent;background:rgba(255,255,255,.5);transition:.4s}
+.t-ico{width:48px;height:48px;border-radius:50%;background:var(--lav);display:grid;place-items:center;font-size:24px;flex:none;filter:grayscale(1) opacity(.35);transition:.4s}
+.tstep:not(.on)::after{content:'؟';position:absolute;right:86px;color:var(--line);font-weight:900;font-size:30px}
+.tstep.on{color:var(--ink);background:#fff;border:2px solid var(--line);box-shadow:var(--shadow);animation:slideInR .5s both}
+.tstep.on .t-ico{filter:none;background:var(--lav)}
+.tstep.on:last-of-type .t-ico{background:var(--mintbg)}
+.row-btns{display:flex;gap:12px}
+.final{display:none;position:absolute;left:0;right:0;bottom:-8px;margin:0 auto;width:max-content;max-width:92%;background:linear-gradient(135deg,var(--p),var(--mint));color:#fff;font-size:32px;font-weight:900;padding:16px 40px;border-radius:999px;box-shadow:0 20px 40px -16px rgba(76,40,160,.7);z-index:3;text-align:center}
+.final.show{display:block;animation:popIn .6s both}
+
+/* جوال المتجر */
+.phone{width:270px;height:480px;border-radius:44px;background:#1F1636;padding:13px;box-shadow:0 30px 50px -20px rgba(31,22,54,.6)}
+.ph-screen{height:100%;border-radius:32px;background:linear-gradient(180deg,#fff,var(--lav));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px}
+.ph-app{font-size:17px;font-weight:800;color:var(--muted)}
+.ph-prod{font-size:110px;animation:bob 3s ease-in-out infinite}
+.ph-name{font-size:26px;font-weight:900}
+.ph-price{font-size:24px;color:var(--p);font-weight:900}
+.ph-buy{background:var(--mint);color:#fff;font-weight:800;padding:10px 28px;border-radius:14px;font-size:21px;animation:pulse 2s ease-in-out infinite}
+.side-card{background:#fff;border:3px solid var(--line);border-radius:28px;padding:30px;text-align:center;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;align-items:center}
+.sc-ico{font-size:80px}
+.side-card b{font-size:34px;color:var(--pd)}
+.side-card p{font-size:23px;line-height:1.6;color:var(--muted);font-weight:600}
+.sc-link{direction:ltr;font-weight:800;color:var(--p);background:var(--lav);padding:6px 16px;border-radius:12px;font-size:21px}
+
+/* ---------- العصف الذهني ---------- */
+.bs{display:flex;flex-direction:column;flex:1;min-height:0}
+.bs-top{display:flex;gap:26px;align-items:center}
+.bs-top .q-box{flex:1;margin:0}
+.bs-input{display:flex;gap:14px;align-items:center;margin:18px 0}
+.bs-field{flex:1;font:inherit;font-size:27px;font-weight:600;padding:13px 22px;border-radius:18px;border:3px solid var(--line);outline:none;background:#fff;color:var(--ink)}
+.bs-field:focus{border-color:var(--p2)}
+.bs-count{font-size:22px;color:var(--muted);font-weight:800;white-space:nowrap}
+.bs-board{position:relative;flex:1;min-height:0;border:3px dashed var(--line);border-radius:26px;background:rgba(255,255,255,.55);padding:20px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:16px;overflow:hidden}
+.bs-board:empty::before{content:'🧠 أفكار الطالبات ستظهر هنا…';position:absolute;inset:0;display:grid;place-items:center;font-size:30px;color:var(--muted);font-weight:700}
+.sticky{font-size:27px;font-weight:800;padding:13px 22px;border-radius:14px;transform:rotate(var(--r));box-shadow:0 8px 18px -10px rgba(0,0,0,.35);animation:stickIn .45s both;cursor:pointer}
+@keyframes stickIn{from{opacity:0;transform:scale(.4) rotate(var(--r))}}
+.c0{background:#FFF1B8}.c1{background:#E3D7FF}.c2{background:#CFF5E7}.c3{background:#FFDCD6}.c4{background:#D5EFFF}
+
+/* ---------- المؤقت ---------- */
+.timer{display:flex;flex-direction:column;align-items:center;gap:8px;flex:none}
+.t-ring{position:relative;width:120px;height:120px}
+.timer.compact .t-ring{width:92px;height:92px}
+.t-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.tr-bg{fill:#fff;stroke:var(--line);stroke-width:9}
+.tr-fg{fill:none;stroke:var(--p);stroke-width:9;stroke-linecap:round;stroke-dasharray:276.46;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .3s}
+.timer.warn .tr-fg,.timer.done .tr-fg{stroke:var(--coral)}
+.t-num{position:absolute;inset:0;display:grid;place-items:center;font-size:32px;font-weight:900;color:var(--pd);direction:ltr}
+.timer.compact .t-num{font-size:25px}
+.timer.warn .t-num{color:var(--coral);animation:pulse 1s infinite}
+.t-btn{font-size:19px;font-weight:800;padding:7px 18px;border-radius:999px;background:var(--lav);color:var(--p);transition:.2s}
+.t-btn:hover{background:var(--p);color:#fff}
+
+/* ---------- شريحة ورقة العمل ---------- */
+.ws-wrap{display:grid;grid-template-columns:1fr 470px;gap:40px;flex:1;min-height:0;align-items:center}
+.ws-head{display:flex;align-items:center;gap:16px}
+.ws-head .lead{flex:1;margin:0}
+.ws-head .btn{white-space:nowrap;text-decoration:none}
+.ws-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin:14px 0 18px}
+.ws-list li{display:flex;align-items:center;gap:20px;background:#fff;border:3px solid var(--line);border-radius:24px;padding:16px 24px;box-shadow:var(--shadow)}
+.ws-n{flex:none;width:62px;height:62px;border-radius:18px;background:var(--p);color:#fff;font-size:32px;font-weight:900;display:grid;place-items:center}
+.ws-list li:nth-child(2) .ws-n{background:var(--mint)}
+.ws-list li:nth-child(3) .ws-n{background:var(--amber)}
+.ws-list li:nth-child(4) .ws-n{background:var(--coral)}
+.ws-list b{display:block;font-size:31px;color:var(--pd);font-weight:900}
+.ws-list small{font-size:22px;color:var(--muted);font-weight:700}
+.ws-roles{display:flex;flex-wrap:wrap;gap:12px}
+.ws-roles span{background:var(--yelbg);border:2px solid var(--yelline);border-radius:999px;padding:8px 18px;font-size:22px;font-weight:800;color:var(--pd)}
+.ws-timer{display:flex;flex-direction:column;align-items:center;gap:16px;background:#fff;border:3px solid var(--line);border-radius:36px;padding:30px 20px;box-shadow:var(--shadow)}
+.ws-timer .timer{gap:18px}
+.ws-timer .t-ring{width:330px;height:330px}
+.ws-timer .t-num{font-size:92px}
+.ws-timer .tr-bg{stroke-width:7}
+.ws-timer .tr-fg{stroke-width:7;stroke:var(--mint)}
+.ws-timer .timer.warn .tr-fg,.ws-timer .timer.done .tr-fg{stroke:var(--coral)}
+.ws-timer .t-btn{font-size:28px;padding:12px 40px;background:var(--p);color:#fff}
+.ws-timer .t-btn:hover{background:var(--pd)}
+.ws-cap{font-size:24px;font-weight:800;color:var(--muted)}
+
+/* ---------- التصنيف / صح وخطأ ---------- */
+.sort-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;flex:1;min-height:0;align-content:start}
+.sort-grid.one{grid-template-columns:1fr}
+.srow{display:flex;align-items:center;flex-wrap:wrap;gap:14px;background:#fff;border:3px solid var(--line);border-radius:20px;padding:11px 18px;transition:border-color .3s,background .3s}
+.s-text{flex:1;min-width:0;display:flex;align-items:center;gap:12px;font-size:25px;font-weight:700;line-height:1.45}
+.s-ico{font-size:34px;flex:none}
+.s-btns{display:flex;gap:10px;flex:none}
+.srow.solved{border-color:var(--mint);background:var(--mintbg)}
+.srow .explain{flex-basis:100%;font-size:21px;padding:6px 14px}
+
+/* ---------- فكر - زاوج - شارك ---------- */
+.tps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;flex:1;min-height:0}
+.phase{background:#fff;border:3px solid var(--line);border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px;cursor:pointer;transition:.3s;box-shadow:var(--shadow)}
+.phase:hover{transform:translateY(-5px)}
+.phase.active{border-color:var(--p);background:linear-gradient(180deg,#fff,var(--lav));transform:translateY(-6px) scale(1.02)}
+.ph-ico{font-size:68px}
+.ph-name{font-size:38px;font-weight:900;color:var(--pd)}
+.ph-hint{font-size:22px;color:var(--muted);line-height:1.5;font-weight:600}
+.ph-time{font-size:38px;font-weight:900;color:var(--p);background:var(--lav);padding:4px 26px;border-radius:999px;direction:ltr}
+.ph-time.warn,.ph-time.done{color:var(--coral)}
+.ph-tip{text-align:center;color:var(--muted);font-size:20px;font-weight:700;margin-top:12px}
+
+/* ---------- أسئلة متعددة داخل شريحة ---------- */
+.multi{display:flex;flex-direction:column;flex:1;min-height:0}
+.m-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:24px;font-weight:800;color:var(--muted)}
+.m-top b{color:var(--p)}
+.m-dots{display:flex;gap:8px}
+.m-dots i{width:36px;height:10px;border-radius:9px;background:var(--line);transition:.3s}
+.m-dots i.on{background:var(--p)}
+.mq{display:none}
+.mq.show{display:block;animation:rise .5s both}
+.m-nav{display:flex;justify-content:center;gap:16px;margin-top:auto;direction:ltr}
+
+/* ---------- محاكاة المتجر ---------- */
+.shop-sim{display:grid;grid-template-columns:1fr 520px;gap:26px;flex:1;min-height:0}
+.store,.cart{background:#fff;border:3px solid var(--line);border-radius:28px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0}
+.store{padding:18px 24px}
+.store-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:2px dashed var(--line)}
+.st-name{font-size:27px;font-weight:900;color:var(--pd);direction:ltr}
+.st-sort{font:inherit;font-size:19px;font-weight:700;padding:8px 14px;border-radius:12px;border:2px solid var(--line);background:var(--lav2);color:var(--ink);cursor:pointer}
+.products{display:flex;gap:18px;flex:1;min-height:0}
+.prod{position:relative;flex:1;border:2px solid var(--line);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:22px 12px 16px;transition:.3s;background:linear-gradient(180deg,var(--lav2),#fff)}
+.prod:hover{transform:translateY(-4px);border-color:var(--p2)}
+.p-img{font-size:92px;filter:drop-shadow(0 10px 10px rgba(0,0,0,.12))}
+.p-name{font-size:29px;font-weight:900}
+.p-price{font-size:22px}
+.p-price s{color:var(--muted);font-size:19px}
+.p-price b{color:var(--p);font-size:27px}
+.sale{position:absolute;top:12px;right:12px;background:var(--coral);color:#fff;font-size:17px;font-weight:800;padding:4px 12px;border-radius:999px}
+.shop-tip{margin-top:12px;font-size:20px;font-weight:700;color:var(--muted);text-align:center}
+.shop-tip b{color:var(--p)}
+.cart{padding:18px 22px;gap:12px}
+.cart-head{font-size:27px;font-weight:900;color:var(--pd);display:flex;align-items:center;gap:10px}
+.c-badge{background:var(--coral);color:#fff;font-size:18px;min-width:32px;height:32px;border-radius:999px;display:grid;place-items:center;padding:0 8px}
+.cart-items{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.empty{flex:1;display:grid;place-items:center;color:var(--muted);font-size:23px;font-weight:700;border:2px dashed var(--line);border-radius:18px;text-align:center;padding:10px}
+.ci{display:flex;align-items:center;gap:12px;background:var(--lav2);border-radius:16px;padding:8px 12px;font-size:22px;animation:rise .35s both}
+.ci-del{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--coral);font-weight:900;flex:none}
+.ci-img{font-size:32px}
+.ci-name{flex:1;font-weight:800}
+.ci-qty{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:3px 6px}
+.ci-qty button{width:30px;height:30px;border-radius:8px;background:var(--lav);color:var(--p);font-weight:900;font-size:20px}
+.ci-sub{font-weight:800;color:var(--p);min-width:120px;text-align:left}
+.coupon{display:flex;gap:10px}
+.cp-field{flex:1;font:inherit;font-size:20px;padding:8px 14px;border-radius:12px;border:2px solid var(--line);outline:none}
+.cp-field:focus{border-color:var(--p2)}
+.cart-total{display:flex;justify-content:space-between;align-items:center;font-size:25px;font-weight:900;border-top:2px dashed var(--line);padding-top:10px}
+.ct-val{color:var(--p);font-size:29px}
+.ct-val small{font-size:16px;color:var(--mint);background:var(--mintbg);padding:2px 8px;border-radius:8px}
+.cart-msg{min-height:30px;font-size:21px;font-weight:800;color:var(--mint);text-align:center}
+
+/* ---------- تحدي الترتيب ---------- */
+.order-ch{display:grid;grid-template-columns:1fr 1fr;gap:34px;flex:1;min-height:0}
+.oc-pool{display:flex;flex-direction:column;gap:12px}
+.oc-item{font-size:25px;font-weight:800;padding:15px 22px;border-radius:18px;background:#fff;border:3px solid var(--line);text-align:right;transition:.25s;box-shadow:var(--shadow)}
+.oc-item:hover:not(:disabled){border-color:var(--p2);transform:translateX(-6px)}
+.oc-item:disabled{opacity:.55;cursor:not-allowed;filter:blur(2px)}
+.oc-right{display:flex;flex-direction:column;gap:14px;min-height:0}
+.oc-ctrl{display:flex;align-items:center;gap:22px}
+.oc-btns{display:flex;flex-direction:column;gap:10px}
+.oc-done{position:relative;list-style:none;flex:1;border:3px dashed var(--line);border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.55)}
+.oc-done:empty::before{content:'📦 اضغطي الخطوات بالترتيب الصحيح لتظهر هنا';position:absolute;inset:0;display:grid;place-items:center;font-size:24px;color:var(--muted);font-weight:700;padding:20px;text-align:center}
+.oc-done li{display:flex;align-items:center;gap:14px;font-size:23px;font-weight:800;background:var(--mintbg);border:2px solid var(--mint);border-radius:16px;padding:9px 16px;animation:rise .35s both}
+.oc-n{width:38px;height:38px;border-radius:50%;background:var(--mint);color:#fff;display:grid;place-items:center;flex:none}
+.oc-msg{font-size:27px;font-weight:900;color:var(--mint);text-align:center;min-height:38px}
+
+/* ---------- استكشاف (قائمة + لوحة تفاصيل) ---------- */
+.explore{display:grid;grid-template-columns:430px 1fr;gap:28px;flex:1;min-height:0}
+.ex-list{display:flex;flex-direction:column;gap:12px;min-height:0}
+.ex-tab{flex:1;display:flex;align-items:center;gap:16px;padding:0 20px;background:#fff;border:3px solid var(--line);border-radius:20px;font-size:26px;font-weight:800;color:var(--ink);text-align:right;box-shadow:var(--shadow);transition:transform .2s,border-color .2s,background .2s}
+.ex-tab:hover{border-color:var(--p2);transform:translateX(-6px)}
+.ex-tab .ex-i{font-size:36px;flex:none}
+.ex-tab .ex-n{flex:1}
+.ex-tab .ex-c{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);flex:none;display:grid;place-items:center;font-size:18px;color:#fff}
+.ex-tab.seen .ex-c{background:var(--mint);border-color:var(--mint)}
+.ex-tab.seen .ex-c::after{content:'✓';font-weight:900}
+.ex-tab.on{background:linear-gradient(135deg,var(--p),var(--p2));border-color:var(--p);color:#fff;transform:translateX(-10px)}
+.ex-tab.on .ex-c{border-color:#fff}
+.ex-panel{position:relative;background:#fff;border:3px solid var(--line);border-radius:32px;box-shadow:var(--shadow);overflow:hidden;min-height:0}
+.ex-pane{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 40px;gap:18px}
+.ex-pane.show{display:flex;animation:rise .45s both}
+.ex-top{display:flex;align-items:center;gap:24px;padding-bottom:18px;border-bottom:3px dashed var(--line)}
+.ex-big{width:120px;height:120px;border-radius:32px;background:var(--lav);display:grid;place-items:center;font-size:72px;flex:none}
+.ex-top h3{font-size:46px;font-weight:900;color:var(--pd);line-height:1.2}
+.ex-en{display:inline-block;margin-top:8px;direction:ltr;font-size:22px;font-weight:800;color:var(--p);background:var(--lav2);border:2px solid var(--line);padding:4px 16px;border-radius:999px}
+.ex-def{font-size:31px;font-weight:600;line-height:1.7;color:var(--ink)}
+.ex-def b{color:var(--p)}
+.ex-def ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+.ex-def li{position:relative;padding-right:40px;font-size:28px;line-height:1.55}
+.ex-def li::before{content:'✔';position:absolute;right:0;top:2px;width:28px;height:28px;border-radius:50%;background:var(--mintbg);color:var(--mint);font-size:17px;font-weight:900;display:grid;place-items:center}
+.ex-eg{margin-top:auto;display:flex;align-items:center;gap:18px;background:var(--yelbg);border:2px solid var(--yelline);border-radius:22px;padding:16px 24px;font-size:26px;font-weight:700;line-height:1.5}
+.ex-eg span{font-size:40px;flex:none}
+.ex-start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;color:var(--muted);font-size:30px;font-weight:800}
+.ex-start .ex-big{font-size:64px;animation:bob 3s ease-in-out infinite}
+
+/* ---------- الفاتورة (المراجعة) ---------- */
+.invoice{position:relative;background:#fff;border-radius:28px;box-shadow:var(--shadow);border:3px solid var(--line);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.inv-head{display:flex;justify-content:space-between;background:linear-gradient(135deg,var(--p),var(--mint));color:#fff;padding:14px 30px;font-size:23px;font-weight:800}
+.inv-rows{flex:1;display:flex;flex-direction:column;padding:4px 30px}
+.inv-row{flex:1;display:flex;align-items:center;gap:20px;border-bottom:2px dashed var(--line);cursor:pointer;font-size:24px;padding:0 10px;border-radius:10px;transition:background .2s}
+.inv-row:hover{background:var(--lav2)}
+.ir-k{width:290px;flex:none;font-weight:900;color:var(--pd)}
+.ir-v{flex:1;font-weight:700;opacity:0;transform:translateX(-14px);transition:.45s}
+.ir-q{color:var(--muted);font-size:20px;font-weight:700;white-space:nowrap}
+.inv-row.open .ir-v{opacity:1;transform:none}
+.inv-row.open .ir-q{display:none}
+.inv-total{display:flex;justify-content:space-between;padding:14px 30px;font-size:29px;font-weight:900;background:var(--yelbg);color:var(--pd)}
+
+/* ---------- أهداف الدرس (إيصال) ---------- */
+.receipt{background:#fff;border-radius:28px;box-shadow:var(--shadow);border:3px solid var(--line);padding:20px 40px;flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1240px;margin:0 auto}
+.rc-top{display:flex;justify-content:space-between;font-size:28px;font-weight:900;color:var(--mint);border-bottom:3px dashed var(--line);padding-bottom:12px;margin-bottom:4px}
+.rc-top span:last-child{color:var(--muted);font-size:21px}
+.receipt ul{list-style:none;flex:1;display:flex;flex-direction:column;justify-content:space-around}
+.obj{display:flex;align-items:center;gap:20px;font-size:26px;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:14px;transition:background .2s}
+.obj:hover{background:var(--lav2)}
+.chk{width:44px;height:44px;border-radius:12px;border:3px solid var(--line);display:grid;place-items:center;flex:none;transition:.3s}
+.obj.open .chk{background:var(--mint);border-color:var(--mint)}
+.obj.open .chk::after{content:'✓';color:#fff;font-weight:900;font-size:28px}
+
+/* ---------- الشريحة الترحيبية ---------- */
+.welcome{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:40px;flex:1}
+.w-text h1{font-size:90px;font-weight:900;line-height:1.15;margin:20px 0 14px;background:linear-gradient(135deg,var(--pd),var(--p2) 55%,var(--mint));-webkit-background-clip:text;background-clip:text;color:transparent}
+.w-sub{font-size:33px;color:var(--muted);font-weight:600;line-height:1.5}
+.w-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:26px}
+.w-meta span{background:#fff;border:2px solid var(--line);padding:10px 20px;border-radius:999px;font-size:23px;font-weight:700}
+.w-note{margin-top:22px;font-size:23px;color:var(--p);font-weight:700}
+.w-art{position:relative;display:flex;justify-content:center}
+.shopf{width:470px;filter:drop-shadow(0 30px 40px rgba(76,40,160,.25))}
+.shop-sign{background:var(--mint);color:#fff;font-weight:900;font-size:27px;padding:10px 26px;border-radius:14px;width:max-content;margin:0 auto 12px}
+.awning{position:relative;height:84px;border-radius:22px 22px 0 0;background:repeating-linear-gradient(90deg,var(--p) 0 58px,var(--yel) 58px 116px)}
+.awning::after{content:'';position:absolute;left:0;right:0;bottom:-28px;height:29px;
+  background:radial-gradient(circle at 29px 0,var(--p) 28px,transparent 29px) 0 0/116px 29px repeat-x,
+             radial-gradient(circle at 87px 0,var(--yel) 28px,transparent 29px) 0 0/116px 29px repeat-x}
+.shop-body{background:#F6F1FF;border:4px solid var(--line);border-top:0;border-radius:0 0 24px 24px;padding:50px 28px 0;display:grid;grid-template-columns:1.3fr 1fr;gap:20px;height:320px}
+.shop-window{align-self:start;background:linear-gradient(160deg,#E6F6FF,#F1EAFF);border:4px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:space-around;font-size:54px;height:160px}
+.shop-window span{animation:bob 3s ease-in-out infinite}
+.shop-window span:nth-child(2){animation-delay:.4s}
+.shop-window span:nth-child(3){animation-delay:.8s}
+.shop-door{align-self:end;background:#fff;border:4px solid var(--line);border-bottom:0;border-radius:70px 70px 0 0;height:230px;display:flex;justify-content:center;padding-top:34px}
+.shop-door span{height:max-content;background:var(--mintbg);color:#0b7a58;font-weight:900;font-size:21px;padding:6px 16px;border-radius:999px}
+.float-cart{position:absolute;bottom:-34px;left:-10px;font-size:104px;animation:drive 4s ease-in-out infinite}
+@keyframes drive{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(34px) rotate(-5deg)}}
+
+/* ---------- الشريحة الختامية ---------- */
+.closing{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px}
+.cl-ico{font-size:104px;animation:bob 3s ease-in-out infinite}
+.closing h1{font-size:74px;font-weight:900;color:var(--pd)}
+.cl-score{font-size:31px;font-weight:800;background:#fff;border:3px solid var(--line);padding:10px 30px;border-radius:999px;box-shadow:var(--shadow)}
+.cl-score b{color:var(--mint);font-size:40px}
+.hw{font-size:25px;max-width:1150px;background:#FFF7E6;border-right:6px solid var(--amber);padding:14px 26px;border-radius:18px;line-height:1.6;text-align:right;font-weight:600}
+
+/* =========================================================
+   4) شريط التحكم + التلميح + التأثيرات
+   ========================================================= */
+#controls{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--line);padding:7px;border-radius:999px;box-shadow:0 18px 40px -16px rgba(60,30,130,.5);z-index:40;transition:opacity .4s,transform .4s;font-size:clamp(14px,1.15vw,18px)}
+.cb{padding:9px 18px;border-radius:999px;font-weight:800;color:var(--pd);font-size:inherit;transition:background .2s,transform .15s}
+.cb:hover{background:var(--lav)}
+.cb:active{transform:scale(.92)}
+.cb:disabled{opacity:.35;cursor:default}
+.cb.primary{background:var(--p);color:#fff}
+.cb.clap{background:var(--yelbg)}
+.cb.primary:hover{background:var(--pd)}
+.cb.clap{font-size:1.55em;padding:3px 14px;line-height:1.2}
+.cb-num{font-weight:900;color:var(--muted);padding:0 8px;min-width:72px;text-align:center}
+.cb-num b{color:var(--p)}
+.cb-sep{width:1px;height:26px;background:var(--line)}
+body.idle #controls{opacity:0;transform:translate(-50%,26px);pointer-events:none}
+body.idle{cursor:none}
+#hint{position:fixed;bottom:14px;right:16px;display:flex;gap:12px;align-items:center;font-size:13px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.8);padding:6px 12px;border-radius:999px;z-index:39;transition:opacity .4s}
+body.idle #hint{opacity:.3}
+kbd{font-family:inherit;background:#fff;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:0 6px;font-weight:900;color:var(--pd)}
+#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,30px);opacity:0;background:var(--pd);color:#fff;font-size:clamp(18px,2vw,30px);font-weight:900;padding:12px 32px;border-radius:999px;z-index:60;transition:.35s;pointer-events:none;box-shadow:0 18px 40px -14px rgba(60,30,130,.6);white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.ok{background:var(--mint)}
+#toast.no{background:var(--p)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:55;overflow:hidden}
+.fx-clap{position:absolute;bottom:40px;line-height:1}
+.fx-conf{position:absolute;width:12px;height:16px;border-radius:3px;margin:-8px 0 0 -6px}
+</style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="stage">
+    <span class="deco" style="top:140px;left:40px">🛒</span>
+    <span class="deco" style="bottom:60px;right:30px">📦</span>
+    <span class="deco" style="top:420px;right:46%">💳</span>
+
+    <header class="topbar">
+      <div class="brand"><div class="logo">🛒</div><div><span id="brandName"></span><small id="brandSub"></small></div></div>
+      <div class="tracker" id="tracker">
+        <div class="fill" id="trackFill"></div>
+        <div class="tk"><i>🧾</i>تم الطلب</div>
+        <div class="tk"><i>📦</i>قيد التجهيز</div>
+        <div class="tk"><i>🚚</i>تم الشحن</div>
+        <div class="tk"><i>🏠</i>تم التوصيل</div>
+      </div>
+      <div class="points" id="ptsBox"><span class="bag">🛍️</span>مشتريات الصف <b class="pts">0</b></div>
+    </header>
+
+    <main id="slides"></main>
+  </div>
+</div>
+
+<!-- شريط التحكم (يختفي تلقائيًا عند عدم تحريك الماوس) -->
+<div id="controls" dir="ltr">
+  <button class="cb" data-act="prev" id="btnPrev" title="السابق">← السابق</button>
+  <div class="cb-num"><b id="num">1</b> / <span id="total">1</span></div>
+  <button class="cb primary" data-act="next" id="btnNext" title="التالي">التالي →</button>
+  <span class="cb-sep"></span>
+  <button class="cb clap" data-act="clap" title="تصفيق (ت)">👏</button>
+  <button class="cb" data-act="fs" title="ملء الشاشة">⛶</button>
+</div>
+<div id="hint"><span><kbd>Space</kbd> التالي</span><span><kbd>←</kbd> <kbd>→</kbd> للتنقل</span><span><kbd>ت</kbd> تصفيق</span><span><kbd>ق</kbd> قرعة</span></div>
+<div id="toast"></div>
+<div id="fx"></div>
+
+<script src="../shared/roster.js"></script>
+<script>
+/* ==================================================================
+   ✏️ إعدادات الدرس — عدّلي هنا فقط بدون الحاجة لمعرفة البرمجة
+   ================================================================== */
+/* صف هذا الدرس في لوحة الإدارة (للتحضير والقرعة) */
+const LESSON_GRADE = 'الثالث متوسط';
+Roster.use(LESSON_GRADE);
+
+const LESSON = {
+  title:   'التعاملات عبر الإنترنت',
+  lessonNo:'الدرس الثاني',
+  subject: 'المهارات الرقمية',
+  grade:   'الصف الثالث المتوسط',
+  teacher: 'أ. أثيل القرني',
+  brand:   'متجر الدرس',
+  currency:'ر.س'
+};
+
+/* ------------------------------------------------------------------
+   الشرائح — كل عنصر {} هو شريحة. أنواع الشرائح المتاحة:
+   welcome | flip | mcq | objectives | steps | discover | brainstorm
+   cards | sort | tps | multi | shop | order | invoice | closing | explore
+   fx = نوع الانتقال: 'fade' أو 'slide' أو 'zoom'
+   answer = رقم الإجابة الصحيحة (يبدأ العد من 0)
+   ------------------------------------------------------------------ */
+const SLIDES = [
+
+  /* 1) ترحيب */
+  { type:'welcome', fx:'zoom',
+    kicker:'💳 أهلًا بكنّ في الدرس الثاني',
+    subtitle:'اليوم ندفع… ونتعلّم كيف نحمي أموالنا وبياناتنا عبر الإنترنت!',
+    note:'🎧 تأكدي من الصوت وجهّزي الدردشة 💬 للمشاركة' },
+
+  /* التحضير — الأسماء من لوحة الإدارة (admin/index.html) */
+  { type:'attendance', fx:'slide', strategy:'📋 التحضير', title:'أهلًا يا مبدعات! من حاضرة اليوم؟' },
+
+  /* 2) مراجعة الدرس الأول — بطاقات تُقلب */
+  { type:'flip', fx:'slide', strategy:'🔁 مراجعة | استراتيجية الأسئلة', title:'تذكرين الدرس الأول؟ اقلبي البطاقة!', cols:3,
+    cards:[
+      {icon:'🛒', front:'التجارة الإلكترونية', back:'كافة أشكال التعاملات التجارية التي تتم عبر الإنترنت.'},
+      {icon:'🏢🤝🏢', front:'B2B', back:'تبادل المنتجات أو الخدمات بين الشركات.'},
+      {icon:'🏢➜👩', front:'B2C', back:'تبيع الشركة منتجاتها مباشرة للمستهلك.'},
+      {icon:'👩🔁👩', front:'C2C', back:'يتبادل المستهلكون المنتجات عبر منصة طرف ثالث.'},
+      {icon:'🏬', front:'السوق الإلكتروني', back:'موقع يوفّر فيه طرف ثالث المنتجات، ويعالج مشغّل السوق التعاملات.'},
+      {icon:'☁️', front:'السلع الافتراضية', back:'أصول غير ملموسة تُتداول في اقتصاد افتراضي.', example:'مثل: شخصيات الألعاب والاشتراكات'}
+    ],
+    note:'💡 تذكّري: من الأنظمة التي تعتمد عليها التجارة الإلكترونية <b>الخدمات المصرفية عبر الإنترنت</b>… وهي موضوعنا اليوم!' },
+
+  /* 3) سؤال ربط */
+  { type:'mcq', fx:'fade', strategy:'❓ استراتيجية الأسئلة', title:'سؤال الربط 🔗',
+    question:'في رحلة طلبك من المتجر الإلكتروني… أي خطوة تحتاج أكبر قدر من الحماية؟',
+    hint:'💬 اكتبي حرف الإجابة في الدردشة، ثم نكشف معًا',
+    options:[{icon:'👀',text:'تصفّح المنتجات'},{icon:'💳',text:'إدخال بيانات الدفع'},{icon:'🛒',text:'إضافة المنتج للسلة'},{icon:'⭐',text:'قراءة التقييمات'}],
+    answer:1,
+    explain:'🔐 بيانات البطاقة أموالك! لذلك يحتاج الدفع إلى تقنيات آمنة… وهذا ما سنتعلمه اليوم' },
+
+  /* 4) أهداف الدرس */
+  { type:'objectives', fx:'slide', strategy:'🎯 أهداف الدرس', title:'ماذا سنشتري من المعرفة اليوم؟',
+    listTitle:'قائمة طلبات اليوم',
+    items:[
+      'أعدّد تقنيات التجارة الإلكترونية وأعرّف كلًّا منها.',
+      'أميّز بين طرق الدفع الإلكتروني المختلفة.',
+      'أوضّح مفهوم المحفظة الإلكترونية ومكوّنيها.',
+      'أقارن بين خصائص الدفع عبر باي بال وأبل باي.',
+      'أطبّق نصائح الأمان لإتمام التعاملات المالية عبر الإنترنت.',
+      'أوضّح مفهوم الاتصال الآمن وإشارات الثقة.',
+      'أكتشف إشارات التحذير من عمليات الاحتيال عبر الإنترنت.',
+      'أضيف عنواني وأُتمّ عملية الشراء في متجر إلكتروني، وأحمي وطني رقميًا (المادة 34).'
+    ] },
+
+  /* 5) تمهيد: ماذا تتوقعين؟ */
+  { type:'steps', fx:'zoom', strategy:'🔮 ماذا تتوقعين؟', title:'ثانيتان فقط… ماذا حدث خلالهما؟',
+    question:'قرّبتِ جوالك من جهاز الدفع في المتجر، فظهرت كلمة «تمت العملية ✔️»! ماذا حدث خلف الشاشة؟ <span class="chat">💬 توقعي في الدردشة</span>',
+    side:'<div class="phone"><div class="ph-screen"><div class="ph-app">📱 المحفظة الرقمية</div><div class="ph-prod">💳</div><div class="ph-name">بطاقة مدى</div><div class="ph-price">35 ر.س</div><div class="ph-buy">قرّبي الجوال</div></div></div>',
+    button:'اكشفي الخطوة التالية ▸',
+    steps:[
+      {icon:'📱', text:'قرّبتِ الجوال من القارئ بتقنية الاتصال قريب المدى (NFC)'},
+      {icon:'👆', text:'تحقّق الجوال من هويتك بالبصمة أو الوجه'},
+      {icon:'🔐', text:'شُفِّرت بيانات بطاقتك قبل إرسالها'},
+      {icon:'🏦', text:'وصل الطلب إلى المصرف عبر اتصال آمن'},
+      {icon:'💸', text:'حوّل المصرف المبلغ إلكترونيًا إلى حساب المتجر'},
+      {icon:'✅', text:'وصلك إشعار بتأكيد العملية'}
+    ],
+    final:'هذه هي التعاملات عبر الإنترنت! 🎉' },
+
+  /* 6) لاحظي واكتشفي: تقنيات التجارة الإلكترونية */
+  { type:'discover', fx:'slide', strategy:'🔍 لاحظي واكتشفي', title:'ما الذي يجعل كل هذا ممكنًا؟',
+    prompt:'لاحظي المواقف الثلاثة… ما الذي يجمع بينها؟ <span class="chat">💬 كلمة واحدة في الدردشة</span>',
+    situations:[
+      {icon:'💳', text:'ريم دفعت ثمن كتابها ببطاقة مدى من البيت'},
+      {icon:'🎮', text:'خالد اشترى لعبة ونزّلها فورًا على جهازه'},
+      {icon:'📦', text:'المتجر عرف أن المنتج نفد من المستودع'}
+    ],
+    reveal:{ label:'✨ اكشفي الإجابة',
+      content:'<b>التقنية</b> هي العمود الفقري للتجارة الإلكترونية؛ تربط البائعين بالمستهلكين، وتدير الطلبات والمدفوعات والتسليم والإرجاع 💻📱' } },
+
+  /* 7) تقنيات التجارة الإلكترونية */
+  { type:'explore', fx:'slide', strategy:'🔍 استكشفي', title:'تقنيات التجارة الإلكترونية',
+    start:'ست تقنيات تعمل خلف كل متجر إلكتروني…<br>اختاري تقنية من القائمة لنكتشفها معًا',
+    items:[
+      {icon:'💳', title:'الدفع الإلكتروني', en:'E-Payment',
+        def:'عملية الدفع مقابل السلع أو الخدمات <b>عبر الإنترنت</b>، وتشمل جميع العمليات المالية التي تتم بالأجهزة الإلكترونية كالحاسب والهاتف الذكي والجهاز اللوحي، وتتم <b>بالبطاقات</b> أو <b>التحويلات المصرفية</b>.',
+        example:'دفعتِ ثمن طلبك من المتجر ببطاقة مدى'},
+      {icon:'🏦', title:'التحويل الإلكتروني للأموال', en:'Electronic Fund Transfer (EFT)',
+        def:'معاملة تتم عبر <b>شبكة محوسبة</b>، إما بين حسابات مختلفة في <b>نفس المصرف</b>، أو بين حسابات في <b>مؤسسات مالية منفصلة</b>.',
+        example:'والدك يحوّل مصروفك من حسابه إلى حسابك عبر تطبيق المصرف'},
+      {icon:'📣', title:'التسويق الإلكتروني', en:'E-Marketing',
+        def:'الترويج لنشاط تجاري أو علامة تجارية بمنتجاتها ونشاطاتها <b>عبر الإنترنت</b>، باستخدام أدوات تزيد <b>الاهتمام بالمنتج</b> والعملاء المحتملين والمبيعات.',
+        example:'إعلان لمتجر يظهر لك على مواقع التواصل الاجتماعي'},
+      {icon:'🔄', title:'التبادل الإلكتروني للبيانات', en:'Electronic Data Interchange (EDI)',
+        def:'تبادل المعلومات التجارية إلكترونيًا بين الشركات <b>بدلًا من الورق</b>، ويوحّد المعلومات في مستندات الأعمال مما يسهّل التبادل الخالي من الورق.',
+        example:'أوامر الشراء، والفواتير، ومعلومات الشحن، والوثائق الجمركية، وتأكيدات الدفع'},
+      {icon:'📦', title:'إدارة المخزون', en:'Inventory Management',
+        def:'الإشراف على البضائع وتدفّقها من <b>الموردين والمصنّعين</b> إلى <b>المستودعات</b> ثم إلى <b>نقاط البيع</b>، مع الاحتفاظ بسجل مفصّل لكل منتج جديد أو مسترجع عند دخوله أو خروجه.',
+        example:'المتجر يعرض «نفدت الكمية» لأن النظام سجّل خروج آخر قطعة'},
+      {icon:'🎧', title:'التوزيع الرقمي', en:'Digital Distribution',
+        def:'إيصال محتوى <b>الوسائط الرقمية</b> كالصوت والفيديو والكتب الإلكترونية وألعاب الفيديو والبرامج التي تم شراؤها عبر الإنترنت، <b>دون المرور</b> بطرق التوزيع المادية كالأوراق والأقراص.',
+        example:'اشتريتِ كتابًا إلكترونيًا ونزّلتِه فورًا على جهازك'}
+    ] },
+
+  /* 8) تحدٍ: أي تقنية؟ */
+  { type:'multi', fx:'fade', strategy:'✅ اختاري الإجابة الصحيحة', title:'أي تقنية تعمل الآن؟',
+    options:[{icon:'🔄',text:'EDI',sub:'التبادل الإلكتروني للبيانات'},{icon:'📦',text:'إدارة المخزون',sub:'تتبّع البضائع'},{icon:'🎧',text:'التوزيع الرقمي',sub:'وسائط رقمية'}],
+    questions:[
+      {icon:'🧾', text:'شركة ترسل أوامر الشراء والفواتير إلكترونيًا إلى شركة أخرى بدل الورق', answer:0},
+      {icon:'📚', text:'نورة تشتري كتابًا إلكترونيًا وتنزّله على جهازها مباشرة', answer:2},
+      {icon:'🏷️', text:'المتجر يسجّل كل منتج جديد أو مسترجع عند دخوله المستودع أو خروجه', answer:1},
+      {icon:'🚢', text:'مورّد يرسل معلومات الشحن والوثائق الجمركية إلكترونيًا', answer:0},
+      {icon:'🎮', text:'سارة تشتري لعبة فيديو وتبدأ اللعب دون استلام أي قرص', answer:2}
+    ] },
+
+  /* 9) العصف الذهني */
+  { type:'brainstorm', fx:'fade', strategy:'🧠 العصف الذهني', title:'أكبر عدد من الأفكار!',
+    question:'في دقيقة واحدة: اذكري أكبر عدد من طرق الدفع التي رأيتِ أسرتك تستخدمها عند الشراء 💳',
+    seconds:60, placeholder:'اكتبي إجابة الطالبة ثم اضغطي Enter ↵' },
+
+  /* 10) طرق الدفع الإلكتروني */
+  { type:'flip', fx:'slide', strategy:'🔄 بطاقات قابلة للقلب', title:'طرق الدفع الإلكتروني', cols:3,
+    cards:[
+      {icon:'💳', front:'بطاقات الائتمان والخصم<small>Credit & Debit cards</small>', back:'من أهم طرق الدفع وأكثرها شيوعًا عند التسوق عبر الإنترنت.', example:'مثل: فيزا، ماستركارد، ومدى (mada) الوطنية'},
+      {icon:'📱', front:'الدفع بالهاتف المحمول<small>Mobile payment</small>', back:'دفع مبلغ مقابل منتج أو خدمة عبر جهاز محمول كالجوال أو الحاسب اللوحي.'},
+      {icon:'👛', front:'المحفظة الإلكترونية<small>E-Wallet</small>', back:'وسيلة دفع محمية بكلمة مرور، لها نفس وظيفة بطاقة الائتمان.', example:'مثل: Apple Pay و Samsung Pay'},
+      {icon:'🌐', front:'الدفع عبر الشبكة الإلكترونية', back:'نموذج دفع فوري في الموقع، ويمكن حفظ بيانات الدفع في حسابك للمرات القادمة.'},
+      {icon:'📧', front:'الفواتير عبر البريد الإلكتروني', back:'تصلك الفاتورة على بريدك فتدفعين فورًا باتباع بعض الخطوات.'},
+      {icon:'🅿️', front:'باي بال وأبل باي', back:'أنظمة عالمية للدفع عبر الإنترنت كبديل عن الشيكات والحوالات الورقية.'}
+    ],
+    note:'💡 تقبل المتاجر اليوم طرقًا جديدة مثل <b>علي باي</b> و<b>وي تشات</b>… أما العملات المشفّرة مثل <b>بيتكوين</b> فما زالت تواجه قيودًا قانونية حول العالم.' },
+
+  /* 11) الدفع بالهاتف المحمول */
+  { type:'cards', fx:'zoom', strategy:'🤔 خمّني ثم اكشفي', title:'كيف ندفع بالجوال؟', cols:3,
+    intro:'ثلاث طرق للدفع عبر <b>الهاتف المحمول</b>… أيّها جرّبتِه أو رأيتِه؟ <span class="chat">💬</span>',
+    cards:[
+      {icon:'🏦', title:'تطبيقات المصارف', detail:'إرسال الأموال وتسديد الفواتير مباشرة من <b>حسابك المصرفي</b>'},
+      {icon:'🔳', title:'مسح الرمز الشريطي', detail:'مسح <b>الباركود</b> بأحد تطبيقات الجوال للدفع في المتجر'},
+      {icon:'📶', title:'الاتصال قريب المدى NFC', detail:'لمس الجوال لقارئ NFC فيعمل كالبطاقة الذكية <b>غير التلامسية</b>'}
+    ],
+    note:'📱 يرتبط الجوال بمؤسسة مالية كالمصرف، وتتم عملية الدفع عبر البروتوكولات الخاصة بهذه المؤسسة.' },
+
+  /* 12) سؤال: مكونات المحفظة */
+  { type:'mcq', fx:'fade', strategy:'❓ استراتيجية الأسئلة', title:'داخل المحفظة الإلكترونية 👛',
+    question:'تتكوّن المحفظة الإلكترونية من مكوّنين أساسيين، هما:',
+    hint:'💬 اكتبي حرف الإجابة في الدردشة',
+    options:[{icon:'💵',text:'النقود والبطاقات'},{icon:'🧩',text:'البرنامج والمعلومات'},{icon:'📱',text:'الجوال والشاحن'},{icon:'🏦',text:'المصرف والمتجر'}],
+    answer:1,
+    explain:'البرنامج يخزّن البيانات ويشفّرها 🔐، والمعلومات قاعدة بيانات بالاسم والعنوان وطريقة الدفع ورقم البطاقة' },
+
+  /* 13) خصائص باي بال وأبل باي */
+  { type:'sort', fx:'zoom', strategy:'⚖️ صنّفي', title:'باي بال أم أبل باي؟',
+    intro:'اقرئي الخاصية ثم صنّفيها: <b>باي بال 🅿️</b> أم <b>أبل باي </b>؟',
+    labels:[{text:'🅿️ باي بال',v:'p'},{text:' أبل باي',v:'a'}],
+    items:[
+      {text:'تُدخَل بيانات البطاقة مرة واحدة عند التسجيل', a:'p'},
+      {text:'تُرسل الأموال عبر تطبيق الرسائل ببطاقة Apple Cash', a:'a'},
+      {text:'لا رسوم على المشتري، بل تُخصم نسبة من البائع', a:'p'},
+      {text:'تُشفَّر البيانات وتُرسل إلى خوادم الشركة', a:'a'},
+      {text:'تحويل الأموال لطرف ثالث بضغطة واحدة', a:'p'},
+      {text:'خصومات تلقائية في فترات محددة عند اختيارها للدفع', a:'a'}
+    ] },
+
+  /* 🕌 ربط بالدين */
+  { type:'quote', fx:'fade', strategy:'🕌 ربط بالدين', title:'الأمانة… في كل معاملة إلكترونية',
+    icon:'📖',
+    quote:'إِنَّ اللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا الْأَمَانَاتِ إِلَىٰ أَهْلِهَا',
+    source:'سورة النساء – الآية 58',
+    prompt:'بيانات العملاء وأموالهم <b>أمانة</b>… كيف نطبّق قيمنا في التعاملات عبر الإنترنت؟ اكشفي البطاقات 👇',
+    cards:[
+      {icon:'🔐', title:'حفظ الأمانة', detail:'<span class="hadith">«أدِّ الأمانة إلى من ائتمنك»</span><small>رواه أبو داود والترمذي</small>لا يبيع المتجر بيانات عملائه ولا يكشفها'},
+      {icon:'🚫', title:'لا للغش والاحتيال', detail:'<span class="hadith">«من غشّنا فليس منّا»</span><small>رواه مسلم</small>لا مواقع مزيّفة ولا عروض وهمية'},
+      {icon:'🤝', title:'الوفاء بالعقود', detail:'<span class="hadith">﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا أَوْفُوا بِالْعُقُودِ ﴾</span><small>سورة المائدة – الآية 1</small>توصيل الطلب كما وُصف وفي موعده'}
+    ] },
+
+  { type:'mcq', fx:'zoom', strategy:'🕌 ربط بالدين | ماذا تفعلين؟', title:'موقف للنقاش 💭',
+    question:'صاحبة متجر إلكتروني عُرض عليها مبلغ كبير مقابل بيع أرقام جوالات عملائها وعناوينهم لشركة إعلانات. ما رأيك؟',
+    hint:'💬 اكتبي حرف الإجابة في الدردشة، ثم نتناقش',
+    options:[{icon:'💰',text:'فرصة ربح لا تُفوَّت'},{icon:'🚫',text:'خيانة للأمانة لا تجوز'},{icon:'🤫',text:'جائز إذا لم يعلم العملاء'},{icon:'🤷‍♀️',text:'جائز لأنها بيانات بسيطة'}],
+    answer:1,
+    explain:'بيانات العملاء أمانة، وسياسة الخصوصية عهد بين المتجر والعميل… ﴿ أَوْفُوا بِالْعُقُودِ ﴾ 🤲' },
+
+  /* 14) نصائح الأمان */
+  { type:'explore', fx:'slide', strategy:'🛡️ نصائح الأمان', title:'نصائح الأمان لإتمام التعاملات المالية',
+    start:'سبع نصائح تحمي أموالك وبياناتك عند الشراء…<br>اختاري نصيحة من القائمة لنتعرّف عليها',
+    items:[
+      {icon:'🔄', title:'حدّثي البرامج والأجهزة', en:'Update your software',
+        def:'<ul><li>ثبّتي <b>آخر التحديثات</b> للبرامج والتطبيقات، فهي تحميها من الفيروسات والمتسللين.</li><li>ثبّتي برنامج <b>مكافحة الفيروسات</b> وحدّثيه باستمرار.</li><li>المتصفحات <b>تشفّر</b> ما ترسلينه ببروتوكول طبقة المقابس الآمنة <b>SSL</b>.</li></ul>',
+        example:'ظهر لك «يتوفر تحديث جديد» على جوالك؟ حدّثيه ولا تؤجّليه!'},
+      {icon:'🔒', title:'كوني حذرة عند التسوق', en:'HTTPS & TLS',
+        def:'<ul><li>قبل إدخال أي معلومات حساسة تأكدي أن الموقع <b>آمن</b>.</li><li>ابحثي عن <b>رمز القفل 🔒</b> بجانب الرابط أعلى الصفحة.</li><li>تأكدي أن الرابط يبدأ بـ <b>https</b> وليس http، فحرف <b>s</b> يعني <b>Secure</b> أي «آمن».</li></ul>',
+        example:'<span dir="ltr">🔒 https://store.com</span> ✅ &nbsp;&nbsp; <span dir="ltr">http://store.com</span> ❌'},
+      {icon:'🏅', title:'ابحثي عن إشارات الثقة', en:'Trust signals & digital certificates',
+        def:'<ul><li><b>الشهادات الرقمية</b> شعارات تتحقق من هوية الموقع.</li><li>اضغطي على الشعار لتتأكدي أن الموقع <b>حقيقي</b>.</li><li>وليس <b>نسخة مزيفة</b> صُنعت لسرقة معلوماتك الشخصية والمالية.</li></ul>',
+        example:'شعار Verified by Visa أو Norton Seal في صفحة الدفع'},
+      {icon:'📄', title:'اقرئي اتفاقية الخصوصية', en:'Privacy policy',
+        def:'<ul><li>المعلومات التي تدخلينها في الموقع يجب أن تبقى <b>سرّية</b>.</li><li>اقرئي <b>سياسة الخصوصية</b> للشركة قبل التسجيل.</li><li>لتضمني أنها <b>لن تبيع</b> معلوماتك الشخصية للآخرين.</li></ul>',
+        example:'ابحثي عن رابط «سياسة الخصوصية» أسفل صفحة المتجر'},
+      {icon:'🔑', title:'لا تشاركي كلمات المرور', en:'Two-Factor Authentication',
+        def:'<ul><li>استخدمي <b>كلمة مرور قوية</b>، وفعّلي <b>المصادقة المزدوجة</b>.</li><li>لا تعطي بياناتك لأي جهة تطلبها عبر البريد أو الرسائل، فغالبًا هي <b>احتيال</b>.</li><li>سجّلي <b>الخروج</b> من حساباتك على الأجهزة العامة أو المشتركة.</li></ul>',
+        example:'كلمة مرور قوية: حروف كبيرة وصغيرة وأرقام ورموز — وليست تاريخ ميلادك!'},
+      {icon:'🗂️', title:'احتفظي بسجلات معاملاتك', en:'Keep records',
+        def:'<ul><li>استخدمي قدر الإمكان <b>طرق الدفع الآمنة</b> مثل باي بال.</li><li>راقبي <b>كشوفات بطاقتك</b> الائتمانية باستمرار.</li><li>وتأكدي من <b>دقتها</b> وأن كل عملية فيها قمتِ بها أنتِ.</li></ul>',
+        example:'عملية شراء لا تعرفينها في كشف الحساب؟ بلّغي المصرف فورًا'},
+      {icon:'📧', title:'تحقّقي من بريدك بعد الشراء', en:'Check your email',
+        def:'<ul><li>بعد شرائك عبر الإنترنت <b>افتحي بريدك الإلكتروني</b>.</li><li>غالبًا يرسل التاجر رسالة <b>لتأكيد طلبك</b>.</li><li>إذا لم تصلك رسالة التأكيد، <b>تواصلي مع المتجر</b> للتأكد من طلبك.</li></ul>',
+        example:'«تم استلام طلبك رقم 1448 ✅» — رسالة تأكيد من المتجر'}
+    ] },
+
+
+  /* 15) الاتصال الآمن */
+  { type:'steps', fx:'zoom', strategy:'🔍 لاحظي واكتشفي', title:'الاتصال الآمن (Secure connection)',
+    question:'كيف تصل بيانات بطاقتك إلى المتجر دون أن يقرأها أحد في الطريق؟ <span class="chat">💬</span>',
+    side:'<div class="side-card"><div class="sc-ico">🔐</div><b>الاتصال الآمن</b><p>اتصال يُشفَّر ببروتوكول أمان أو أكثر لضمان أمن تدفّق البيانات بين طرفين أو أكثر على الشبكة</p><span class="sc-link">🔒 https://</span></div>',
+    button:'اكشفي الخطوة التالية ▸',
+    steps:[
+      {icon:'⌨️', text:'تكتبين بيانات بطاقتك في صفحة الدفع'},
+      {icon:'🔐', text:'يشفّر جهازك (المُرسِل) البيانات ببروتوكول TLS'},
+      {icon:'🌐', text:'تنتقل عبر الشبكة رموزًا غير مفهومة لأي متجسّس'},
+      {icon:'🖥️', text:'يفكّ الخادم (المُستقبِل) التشفير ويقرأ البيانات'},
+      {icon:'🛡️', text:'يمنع الأطراف المجهولة من رؤية البيانات أو تغييرها'}
+    ],
+    final:'التشفير = إخفاء المعلومات عن غير المصرّح لهم 🔐' },
+
+  /* 16) سؤال */
+  { type:'mcq', fx:'fade', strategy:'⚡ التقييم الفوري', title:'دقّقي في الرابط 🔎',
+    question:'أي رابط هو الأكثر أمانًا لإدخال بيانات بطاقتك؟',
+    hint:'💬 أسرع إجابة صحيحة في الدردشة تفوز!',
+    options:[{icon:'🌐',text:'<span dir="ltr">http://mystore.com</span>'},{icon:'🔒',text:'<span dir="ltr">https://mystore.com</span>'},{icon:'🎁',text:'<span dir="ltr">http://mystore-deals.bargain</span>'},{icon:'❓',text:'<span dir="ltr">mystore.app/free</span>'}],
+    answer:1,
+    explain:'🔒 https مع رمز القفل يعني أن البيانات محمية ببروتوكول أمان طبقة النقل (TLS)' },
+
+  /* 17) إشارات الثقة */
+  { type:'flip', fx:'slide', strategy:'🔄 بطاقات قابلة للقلب', title:'إشارات الثقة (Trust Signals)', cols:3,
+    cards:[
+      {icon:'🏅', front:'إشارات الثقة', back:'عناصر تُعرض على المواقع لتشعر العميل بالأمان عند قرار الشراء.', example:'توضع غالبًا على صفحات الدفع وصفحات المنتجات'},
+      {icon:'💳✔️', front:'Verified by Visa<small>تم التحقق بواسطة فيزا</small>', back:'يدل على أن المعاملة محمية من الاحتيال من أحد أكبر مزودي الخدمات المالية.'},
+      {icon:'🛡️', front:'Norton Seal<small>نورتون سيل</small>', back:'ختم يضمن أن العمليات لن تُخترق أثناء الإرسال، ويُعرض بعد أن تصادق Digicert على خلو الموقع من البرامج الضارة.'}
+    ],
+    note:'🧩 إشارات الثقة ليست مجرد شعارات، بل أدلة على <b>سلوك الشركة وسمعتها وجدارتها بالثقة</b>.' },
+
+  /* 18) إشارات التحذير من الاحتيال */
+  { type:'sort', fx:'zoom', strategy:'🚩 المحققة الرقمية', title:'متجر موثوق أم احتيال؟',
+    intro:'افحصي كل علامة ثم صنّفيها: <b>موثوق ✅</b> أم <b>إشارة تحذير 🚩</b>؟',
+    labels:[{text:'✅ موثوق',v:'s'},{text:'🚩 احتيال',v:'f'}],
+    items:[
+      {icon:'💸', text:'جوال جديد بخصم 90% مع شحن مجاني وتوصيل في ساعة', a:'f'},
+      {icon:'📝', text:'موقع بتصميم رديء وأخطاء لغوية كثيرة', a:'f'},
+      {icon:'📮', text:'خدمة العملاء عبر بريد جي ميل فقط ولا يوجد رقم تواصل', a:'f'},
+      {icon:'🔗', text:'رابط غريب مثل brand-sale.bargain', a:'f'},
+      {icon:'🔒', text:'رابط https مع قفل وشهادة رقمية يمكن التحقق منها', a:'s'},
+      {icon:'📄', text:'سياسة خصوصية واضحة ووسائل تواصل متعددة', a:'s'}
+    ] },
+
+  /* 19) فكر - زاوج - شارك */
+  { type:'tps', fx:'zoom', strategy:'👭 فكّري – زاوجي – شاركي', title:'صديقتي ستقع في الفخ!',
+    question:'أرسلت لك صديقتك رابط متجر على مواقع التواصل يبيع عطرًا فاخرًا بربع سعره 🎁 — ما إشارات التحذير التي ستبحثين عنها؟ وبماذا تنصحينها قبل الدفع؟',
+    phases:[
+      {icon:'🤔', name:'فكّري', hint:'وحدكِ… دوّني إجابتك في ورقة', seconds:60},
+      {icon:'👭', name:'زاوجي', hint:'ناقشي زميلتك في الدردشة الخاصة أو الغرفة الجانبية', seconds:120},
+      {icon:'📢', name:'شاركي', hint:'افتحي المايك وشاركي فكرتكما مع الصف', seconds:0}
+    ] },
+
+  /* 💚 ربط بالوطن */
+  { type:'cards', fx:'slide', strategy:'💚 ربط بالوطن', title:'وطني يحمي تعاملاتي الإلكترونية', cols:3,
+    intro:'ضمن <b>رؤية السعودية 2030</b> أصبح الدفع الإلكتروني جزءًا من حياتنا اليومية… اكشفي كيف دعمه وطني 👇',
+    cards:[
+      {icon:'💳', title:'شبكة مدى', detail:'منظومة <b>دفع وطنية</b> تدعم الدفع عبر نقاط البيع والمتاجر الإلكترونية'},
+      {icon:'🧾', title:'نظام سداد', detail:'لسداد <b>الفواتير</b> والمدفوعات الحكومية إلكترونيًا بأمان'},
+      {icon:'🏦', title:'البنك المركزي السعودي', detail:'ينظّم <b>المدفوعات</b> ويشرف على المصارف ويحذّر من الاحتيال المالي'},
+      {icon:'🛡️', title:'الأمن السيبراني', detail:'<b>الهيئة الوطنية للأمن السيبراني</b> تحمي الفضاء الرقمي للمملكة'},
+      {icon:'✅', title:'توثيق المتاجر', detail:'توثّق <b>وزارة التجارة</b> المتاجر الإلكترونية ليطمئن المشتري لموثوقيتها'},
+      {icon:'🌴', title:'رؤية 2030', detail:'دعم <b>التحول الرقمي</b> وزيادة المدفوعات الإلكترونية بدل النقد'}
+    ] },
+
+  /* 📜 ربط بالمادة 34 من النظام الأساسي للحكم */
+  { type:'quote', fx:'fade', strategy:'📜 ربط بالنظام الأساسي للحكم', title:'المادة 34… وأنا أدفع إلكترونيًا!',
+    icon:'📜', plain:true,
+    quote:'الدفاع عن العقيدة الإسلامية، والمجتمع، والوطن واجب على كل مواطن، ويبين النظام أحكام الخدمة العسكرية.',
+    source:'النظام الأساسي للحكم – المادة الرابعة والثلاثون',
+    prompt:'الدفاع عن الوطن والمجتمع اليوم يشمل <b>الفضاء الرقمي</b> أيضًا… كيف أطبّق ذلك في تعاملاتي المالية؟ اكشفي البطاقات 👇',
+    cards:[
+      {icon:'🛡️', title:'أحمي مجتمعي', detail:'أبلّغ عن <b>المواقع والرسائل الاحتيالية</b>، وأعلّم أسرتي إشارات التحذير'},
+      {icon:'🔐', title:'أحمي وطني رقميًا', detail:'لا أشارك <b>رمز التحقق</b> أو كلمة المرور، وأفعّل المصادقة المزدوجة'},
+      {icon:'🌴', title:'أدعم اقتصاد وطني', detail:'أستخدم <b>وسائل الدفع الوطنية الآمنة</b> وأشتري من المتاجر الموثّقة'}
+    ] },
+
+  { type:'mcq', fx:'zoom', strategy:'📜 المادة 34 | ماذا تفعلين؟', title:'كوني درعًا لوطنك 🛡️',
+    question:'وصلتك رسالة: «تم إيقاف بطاقتك! أدخلي بياناتها ورمز التحقق عبر هذا الرابط لإعادة تفعيلها». ماذا تفعلين؟',
+    hint:'💬 اكتبي حرف الإجابة في الدردشة',
+    options:[{icon:'📲',text:'أدخل بياناتي بسرعة'},{icon:'👭',text:'أرسلها لصديقاتي ليحذرن'},{icon:'🚫',text:'لا أضغط الرابط وأبلّغ عنها'},{icon:'💳',text:'أدخل رقم البطاقة فقط'}],
+    answer:2,
+    explain:'المصارف لا تطلب بياناتك عبر الرسائل… حماية أموالنا وبياناتنا جزء من الدفاع عن الوطن 💚' },
+
+  /* 20) جربي بنفسك: محاكاة متجر */
+  { type:'shop', fx:'zoom', strategy:'🛍️ تعلّم بالممارسة', title:'جرّبي الشراء بنفسك!',
+    storeName:'My giftshop',
+    products:[
+      {name:'دبابيس', emoji:'🎖️', price:3.99, old:4.99},
+      {name:'قبعة',   emoji:'🧢', price:44.99},
+      {name:'كوب',    emoji:'☕', price:49.99}
+    ],
+    coupon:{code:'أمان', discount:0.10},
+    tip:'💡 تأكدي من عنوان الشحن وطريقة الدفع قبل تأكيد الطلب — وجرّبي رمز القسيمة: <b>أمان</b>' },
+
+  /* 22) صح أم خطأ */
+  { type:'sort', fx:'zoom', strategy:'✔️ صح أم خطأ', title:'صح أم خطأ؟', cols:1,
+    labels:[{text:'✔️ صح',v:'t'},{text:'✖️ خطأ',v:'f'}],
+    items:[
+      {icon:'1️⃣', text:'تُعدّ بطاقات الائتمان الطريقة الأكثر شيوعًا للدفع عند التسوق عبر الإنترنت.', a:'t'},
+      {icon:'2️⃣', text:'يحل التبادل الإلكتروني للبيانات (EDI) محل التبادل الورقي للمستندات.', a:'t'},
+      {icon:'3️⃣', text:'حرف s في https يعني Simple (بسيط).', a:'f', explain:'بل يعني Secure (آمن).'},
+      {icon:'4️⃣', text:'يتطلب أبل باي أجهزة دفع خاصة بشركة أبل فقط.', a:'f', explain:'يعمل مع أي جهاز يدعم الدفع غير التلامسي.'},
+      {icon:'5️⃣', text:'يجب تسجيل الخروج من المتجر الإلكتروني بعد تقديم الطلب.', a:'t'}
+    ] },
+
+  /* 📝 ورقة العمل الجماعية — مؤقت دقيقتين */
+  { type:'worksheet', fx:'zoom', strategy:'🤝 التعلم التعاوني', title:'لنطبّق معًا 📝',
+    intro:'أجبن مع مجموعتكِ عن الأسئلة الأربعة:',
+    file:'ورقة عمل جماعية - التعاملات عبر الإنترنت.pdf',
+    tasks:[
+      {title:'أكملن الفراغات', desc:'من بنك الكلمات — 5 درجات'},
+      {title:'أي تقنية تعمل في كل موقف؟', desc:'تقنيات التجارة الإلكترونية — 4 درجات'},
+      {title:'المحققات الرقميات 🔎', desc:'متجر موثوق أم احتيال؟ — 4 درجات'},
+      {title:'ثلاث نصائح للأمان', desc:'لصديقة تدفع عبر الإنترنت لأول مرة — 3 درجات'}
+    ],
+    roles:['👑 القائدة','✍️ الكاتبة','📢 المتحدثة','⏱️ مراقبة الوقت'],
+    seconds:600,
+    endMessage:'انتهى الوقت! ⏰ أحسنتنّ 👏' },
+
+  /* 23) مراجعة: فاتورة الدرس */
+  { type:'invoice', fx:'slide', strategy:'🧾 مراجعة', title:'فاتورة درس اليوم',
+    prompt:'قبل كشف كل بند: من تتذكر الإجابة؟ 🙋‍♀️',
+    storeLine:'متجر الدرس — فاتورة مراجعة', no:'1448-2',
+    rows:[
+      {k:'⚙️ تقنيات التجارة', v:'الدفع • التحويل EFT • التسويق • EDI • المخزون • التوزيع الرقمي'},
+      {k:'💳 طرق الدفع', v:'البطاقات (مدى) • الجوال • المحفظة • الشبكة • البريد • باي بال وأبل باي'},
+      {k:'👛 المحفظة الإلكترونية', v:'مكوّنان: البرنامج + المعلومات'},
+      {k:'🔒 الاتصال الآمن', v:'اتصال مُشفَّر ببروتوكولات الأمان (SSL / TLS / https)'},
+      {k:'🏅 إشارات الثقة', v:'Verified by Visa • Norton Seal • الشهادات الرقمية'},
+      {k:'🚩 إشارات الاحتيال', v:'خصومات خيالية • تصميم رديء • تواصل مشبوه • روابط غريبة'},
+      {k:'🕌 قيمنا', v:'الأمانة • الوفاء بالعقود • لا للغش'},
+      {k:'💚 وطني', v:'مدى • سداد • المادة 34: أحمي وطني رقميًا'}
+    ],
+    total:'معرفة لا تُقدَّر بثمن 💜' },
+
+  /* 24) ختام */
+  { type:'closing', fx:'zoom',
+    title:'تمت العملية بنجاح! ✔️',
+    subtitle:'شكرًا لتعاملكنّ الآمن في متجر المعرفة… أنتنّ رائعات 💜',
+    homework:'حلّ الواجب في منصة مدرستي' }
+];
+
+/* ==================================================================
+   ⚙️ من هنا يبدأ محرك العرض — لا حاجة لتعديله
+   ================================================================== */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const LETTERS = ['أ','ب','ج','د','هـ','و'];
+const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+const money = v => `${v.toFixed(2)} ${LESSON.currency}`;
+const shuffle = a => { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; };
+
+/* ---------- الأصوات (Web Audio API — بدون ملفات خارجية) ---------- */
+const Sound = (() => {
+  let ac = null, master = null, nb = null;
+  function ctx(){
+    try{
+      if(!ac){
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        master = ac.createDynamicsCompressor();
+        master.connect(ac.destination);
+      }
+      if(ac.state === 'suspended') ac.resume();
+    }catch(e){ return null; }
+    return ac;
+  }
+  function tone(f, t, d, type='sine', vol=.18, f2){
+    const a = ctx(); if(!a) return;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if(f2) o.frequency.exponentialRampToValueAtTime(f2, t+d);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+d);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t+d+0.05);
+  }
+  function noise(a){
+    if(nb) return nb;
+    const len = Math.floor(a.sampleRate*0.4);
+    nb = a.createBuffer(1, len, a.sampleRate);
+    const d = nb.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+    return nb;
+  }
+  // ضربة تصفيق واحدة = ضوضاء مرشّحة بغلاف سريع
+  function clapHit(a, t, vol){
+    const s = a.createBufferSource(); s.buffer = noise(a);
+    const bp = a.createBiquadFilter(); bp.type='bandpass';
+    bp.frequency.value = 900 + Math.random()*1500; bp.Q.value = .7 + Math.random()*.6;
+    const g = a.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+0.004);
+    g.gain.exponentialRampToValueAtTime(vol*0.25, t+0.012);
+    g.gain.exponentialRampToValueAtTime(vol*0.8, t+0.017);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.13+Math.random()*0.06);
+    s.connect(bp); bp.connect(g); g.connect(master);
+    s.start(t, Math.random()*0.15, 0.22);
+  }
+  return {
+    clap(){ // تصفيق جماعي قصير (~ ثانيتان)
+      const a = ctx(); if(!a) return;
+      const t0 = a.currentTime + 0.03, dur = 2.0;
+      for(let p=0;p<8;p++){
+        let t = t0 + Math.random()*0.2;
+        const gap = 0.12 + Math.random()*0.07;
+        while(t < t0+dur){
+          const fade = 1 - (t-t0)/dur;
+          clapHit(a, t, (0.12+Math.random()*0.12)*(0.3+0.7*fade));
+          t += gap*(0.85+Math.random()*0.3);
+        }
+      }
+    },
+    success(){ const a=ctx(); if(!a) return; const t=a.currentTime;
+      [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,t+i*0.09,0.35,'triangle',0.2));
+      tone(1318.5,t+0.36,0.5,'sine',0.12); },
+    wrong(){ const a=ctx(); if(!a) return; const t=a.currentTime;
+      tone(392,t,0.18,'sine',0.16); tone(311,t+0.16,0.32,'sine',0.16); },
+    pop(){ const a=ctx(); if(!a) return; tone(620,a.currentTime,0.12,'sine',0.14,980); },
+    flip(){ const a=ctx(); if(!a) return; tone(380,a.currentTime,0.16,'triangle',0.1,760); },
+    bell(){ const a=ctx(); if(!a) return; const t=a.currentTime;
+      [0,0.4].forEach(o=>{ tone(880,t+o,0.9,'sine',0.22); tone(1760,t+o,0.6,'sine',0.06); }); }
+  };
+})();
+
+/* ---------- التأثيرات البصرية ---------- */
+const fx = $('#fx');
+const COLORS = ['#6D3FD1','#8B5CF6','#12A05C','#3CC77E','#FFD43B','#F2B705'];
+
+function clapFX(){
+  for(let i=0;i<16;i++){
+    const s = document.createElement('span');
+    s.className = 'fx-clap'; s.textContent = '👏';
+    s.style.left = (8 + Math.random()*84) + 'vw';
+    s.style.fontSize = (28 + Math.random()*38) + 'px';
+    fx.appendChild(s);
+    const dx = Math.random()*120 - 60, dy = 40 + Math.random()*35, rot = Math.random()*40 - 20;
+    s.animate([
+      {transform:'translate(0,0) scale(.6)', opacity:0},
+      {opacity:1, offset:.15},
+      {transform:`translate(${dx}px,-${dy}vh) scale(1.1) rotate(${rot}deg)`, opacity:0}
+    ], {duration:1600+Math.random()*900, delay:Math.random()*350, easing:'cubic-bezier(.2,.7,.3,1)', fill:'both'})
+     .onfinish = () => s.remove();
+  }
+}
+function clap(){
+  Sound.clap(); clapFX();
+  const b = $('.cb.clap');
+  b && b.animate([{transform:'scale(1)'},{transform:'scale(1.35) rotate(-10deg)'},{transform:'scale(1)'}],{duration:450});
+}
+function burst(x, y, n=36){
+  for(let i=0;i<n;i++){
+    const p = document.createElement('i');
+    p.className = 'fx-conf';
+    p.style.left = x+'px'; p.style.top = y+'px';
+    p.style.background = COLORS[i % COLORS.length];
+    fx.appendChild(p);
+    const a = Math.random()*Math.PI*2, v = 120 + Math.random()*230;
+    const dx = Math.cos(a)*v, dy = Math.sin(a)*v - 120;
+    p.animate([
+      {transform:'translate(0,0) rotate(0)', opacity:1},
+      {transform:`translate(${dx}px,${dy+260}px) rotate(${Math.random()*720}deg)`, opacity:0}
+    ], {duration:1100+Math.random()*600, easing:'cubic-bezier(.15,.6,.35,1)'}).onfinish = () => p.remove();
+  }
+}
+function burstFrom(el){ const r = el.getBoundingClientRect(); burst(r.left + r.width/2, r.top + r.height/2); }
+function rain(){
+  for(let i=0;i<90;i++){
+    const p = document.createElement('i');
+    p.className = 'fx-conf';
+    p.style.left = Math.random()*100 + 'vw'; p.style.top = '-20px';
+    p.style.background = COLORS[i % COLORS.length];
+    fx.appendChild(p);
+    p.animate([
+      {transform:'translate(0,0) rotate(0)', opacity:1},
+      {transform:`translate(${Math.random()*160-80}px,110vh) rotate(${Math.random()*900}deg)`, opacity:.9}
+    ], {duration:2200+Math.random()*1500, delay:Math.random()*600, easing:'linear', fill:'backwards'}).onfinish = () => p.remove();
+  }
+}
+function shake(el){
+  el.animate([{transform:'translateX(0)'},{transform:'translateX(-10px)'},{transform:'translateX(10px)'},{transform:'translateX(-6px)'},{transform:'translateX(0)'}],{duration:400});
+}
+function popEl(el){
+  el.animate([{transform:'scale(.6)',opacity:0},{transform:'scale(1.08)',opacity:1},{transform:'scale(1)'}],{duration:450,easing:'ease-out'});
+}
+const toastEl = $('#toast');
+function toast(msg, type=''){
+  toastEl.textContent = msg; toastEl.className = 'show ' + type;
+  clearTimeout(toastEl._h); toastEl._h = setTimeout(()=> toastEl.className = '', 1900);
+}
+
+/* ---------- نقاط "مشتريات الصف" ---------- */
+let points = 0; const scored = new Set();
+function addPoint(id){
+  if(scored.has(id)) return;
+  scored.add(id); points++;
+  $$('.pts').forEach(e => e.textContent = points);
+  $('#ptsBox').animate([{transform:'scale(1)'},{transform:'scale(1.22)'},{transform:'scale(1)'}],{duration:450});
+}
+
+/* ---------- المؤقت ---------- */
+const CIRC = 2*Math.PI*44;
+const tState = el => el._t || (el._t = {total:+el.dataset.sec, left:+el.dataset.sec, id:null, onEnd:null});
+function tBtn(el, txt){ const b = $('.t-btn', el); if(b) b.textContent = txt; }
+function tDraw(el){
+  const st = tState(el);
+  ( $('.t-num', el) || el ).textContent = fmt(Math.max(0, st.left));
+  const r = $('.tr-fg', el); if(r) r.style.strokeDashoffset = CIRC*(1 - st.left/st.total);
+  el.classList.toggle('warn', !!st.id && st.left <= 10 && st.left > 0);
+}
+function tStart(el, onEnd){
+  const st = tState(el); if(st.id) return;
+  if(onEnd) st.onEnd = onEnd;
+  if(st.left <= 0) st.left = st.total;
+  el.classList.remove('done'); tBtn(el, '⏸ إيقاف');
+  st.id = setInterval(() => {
+    st.left--; tDraw(el);
+    if(st.left <= 0){
+      clearInterval(st.id); st.id = null;
+      el.classList.remove('warn'); el.classList.add('done'); tBtn(el, '↺ إعادة');
+      Sound.bell(); st.onEnd && st.onEnd();
+      if(el.dataset.end){ toast(el.dataset.end, 'ok'); clapFX(); }
+    }
+  }, 1000);
+  tDraw(el);
+}
+function tStop(el){ const st = tState(el); if(st.id){ clearInterval(st.id); st.id = null; tBtn(el, '▶ متابعة'); } el.classList.remove('warn'); }
+function tReset(el){ tStop(el); const st = tState(el); st.left = st.total; el.classList.remove('done'); tBtn(el, '▶ ابدئي'); tDraw(el); }
+function tToggle(el){ tState(el).id ? tStop(el) : tStart(el); }
+const timerHTML = (sec, compact=false, noBtn=false, end='') => `
+  <div class="timer ${compact?'compact':''}" data-sec="${sec}" ${end?`data-end="${end}"`:''}>
+    <div class="t-ring"><svg viewBox="0 0 100 100"><circle class="tr-bg" cx="50" cy="50" r="44"/><circle class="tr-fg" cx="50" cy="50" r="44"/></svg><div class="t-num">${fmt(sec)}</div></div>
+    ${noBtn ? '' : '<button class="t-btn" data-act="timer">▶ ابدئي</button>'}
+  </div>`;
+
+/* ---------- قوالب الشرائح ---------- */
+const head = s => `<div class="s-head rv">${s.strategy?`<span class="badge">${s.strategy}</span>`:''}<h2>${s.title}</h2></div>`;
+const optBtn = (o, k, ok) => `<button class="opt" data-act="opt" data-ok="${ok?1:0}"><span class="o-ico">${o.icon}</span><span class="o-txt">${o.text}${o.sub?`<small>${o.sub}</small>`:''}</span><span class="o-let">${LETTERS[k]}</span></button>`;
+
+const R = {
+  welcome: s => `
+    <div class="welcome">
+      <div class="w-text">
+        <span class="badge rv">${s.kicker}</span>
+        <h1 class="rv">${LESSON.title}</h1>
+        <p class="w-sub rv">${s.subtitle}</p>
+        <div class="w-meta rv"><span>📚 ${LESSON.subject}</span><span>🎓 ${LESSON.grade}</span><span>👩‍🏫 ${LESSON.teacher}</span></div>
+        <p class="w-note rv">${s.note||''}</p>
+      </div>
+      <div class="w-art rv">
+        <div class="shopf">
+          <div class="shop-sign">🛍️ ${LESSON.brand}</div>
+          <div class="awning"></div>
+          <div class="shop-body">
+            <div class="shop-window"><span>🎁</span><span>👜</span><span>⌚</span></div>
+            <div class="shop-door"><span>مفتوح ✨</span></div>
+          </div>
+        </div>
+        <div class="float-cart">🛒</div>
+      </div>
+    </div>`,
+
+  flip: s => `${head(s)}
+    <div class="flip-grid cols-${s.cols||3}">
+      ${s.cards.map(c => `
+        <div class="flip rv" data-act="flip"><div class="flip-inner">
+          <div class="face front"><div class="f-ico">${c.icon}</div><div class="f-title">${c.front}</div><div class="f-hint">🔄 اضغطي للقلب</div></div>
+          <div class="face back"><div class="f-title">${c.front.replace(/<small>.*<\/small>/,'')}</div><p>${c.back}</p>${c.example?`<div class="f-ex">${c.example}</div>`:''}</div>
+        </div></div>`).join('')}
+    </div>
+    ${s.note?`<div class="note rv">${s.note}</div>`:''}`,
+
+  mcq: (s, i) => `${head(s)}
+    <div class="qgroup" data-qid="s${i}">
+      <div class="q-box rv"><span class="q-ico">❓</span><p>${s.question}</p></div>
+      ${s.hint?`<p class="q-hint rv">${s.hint}</p>`:''}
+      <div class="opts">${s.options.map((o,k) => optBtn(o, k, k===s.answer).replace('class="opt"','class="opt rv"')).join('')}</div>
+      <div class="fb"></div>
+      ${s.explain?`<div class="explain">${s.explain}</div>`:''}
+    </div>`,
+
+  objectives: s => `${head(s)}
+    <div class="receipt rv">
+      <div class="rc-top"><span>📋 ${s.listTitle}</span><span>${s.items.length} بنود</span></div>
+      <ul>${s.items.map(t => `<li class="obj" data-act="reveal"><span class="chk"></span><span>${t}</span></li>`).join('')}</ul>
+    </div>`,
+
+  steps: s => `${head(s)}
+    ${s.question?`<div class="q-box rv" style="font-size:30px;padding:16px 26px"><span class="q-ico" style="width:68px;height:68px;font-size:38px">🤔</span><p>${s.question}</p></div>`:''}
+    <div class="steps-wrap">
+      ${s.side?`<div class="side rv">${s.side}</div>`:''}
+      <div class="steps-col">
+        <ol class="track rv">${s.steps.map(st => `<li class="tstep"><span class="t-ico">${st.icon}</span><span>${st.text}</span></li>`).join('')}</ol>
+        <div class="row-btns rv"><button class="btn primary" data-act="step-next">${s.button||'الخطوة التالية ▸'}</button><button class="btn ghost" data-act="step-reset" title="إعادة">↺</button></div>
+      </div>
+    </div>
+    ${s.final?`<div class="final">${s.final}</div>`:''}`,
+
+  discover: s => `${head(s)}
+    <p class="lead rv">${s.prompt}</p>
+    <div class="card-grid cols-3">${s.situations.map(c => `<div class="sit rv"><div class="rc-ico">${c.icon}</div><div>${c.text}</div></div>`).join('')}</div>
+    <div class="reveal-box rv" data-act="reveal"><div class="rb-label">${s.reveal.label}</div><div class="rb-content">${s.reveal.content}</div></div>`,
+
+  brainstorm: s => `${head(s)}
+    <div class="bs">
+      <div class="bs-top rv"><div class="q-box"><span class="q-ico">💡</span><p>${s.question}</p></div>${timerHTML(s.seconds)}</div>
+      <div class="bs-input rv">
+        <input type="text" class="bs-field" placeholder="${s.placeholder||'اكتبي الفكرة ثم Enter'}">
+        <button class="btn primary" data-act="bs-add">➕ إضافة</button>
+        <span class="bs-count">0 فكرة</span>
+        <button class="btn ghost" data-act="bs-clear" title="مسح اللوحة">🧹</button>
+      </div>
+      <div class="bs-board"></div>
+    </div>`,
+
+  cards: s => `${head(s)}
+    ${s.intro?`<p class="lead rv">${s.intro}</p>`:''}
+    <div class="card-grid cols-${s.cols||3}">
+      ${s.cards.map(c => `<div class="rcard rv" data-act="reveal">${c.tag?`<span class="rc-tag">${c.tag}</span>`:''}<div class="rc-ico">${c.icon}</div><div class="rc-title">${c.title}</div><div class="rc-detail">${c.detail}</div><div class="rc-tap">👆 اضغطي للكشف</div></div>`).join('')}
+    </div>
+    ${(s.note||s.timer)?`<div class="c-foot rv">${s.note?`<div class="note">${s.note}</div>`:''}${s.timer?timerHTML(s.timer,true):''}</div>`:''}`,
+
+  sort: (s, i) => `${head(s)}
+    ${s.intro?`<p class="lead rv">${s.intro}</p>`:''}
+    <div class="sort-grid ${s.cols===1?'one':''}">
+      ${s.items.map((it,k) => `
+        <div class="qgroup srow rv" data-qid="s${i}-${k}">
+          <div class="s-text">${it.icon?`<span class="s-ico">${it.icon}</span>`:''}<span>${it.text}</span></div>
+          <div class="s-btns">${s.labels.map(l => `<button class="opt sm" data-act="opt" data-ok="${l.v===it.a?1:0}">${l.text}</button>`).join('')}</div>
+          ${it.explain?`<div class="explain">${it.explain}</div>`:''}
+        </div>`).join('')}
+    </div>
+    ${s.reveal?`<div class="reveal-box rv" data-act="reveal"><div class="rb-label">${s.reveal.label}</div><div class="rb-content">${s.reveal.content}</div></div>`:''}`,
+
+  tps: s => `${head(s)}
+    <div class="q-box big rv"><span class="q-ico">🎁</span><p>${s.question}</p></div>
+    <div class="tps">
+      ${s.phases.map((p,k) => `
+        <div class="phase rv" data-act="phase">
+          <div class="ph-ico">${p.icon}</div><div class="ph-name">${k+1}. ${p.name}</div><div class="ph-hint">${p.hint}</div>
+          ${p.seconds?`<div class="ph-time" data-sec="${p.seconds}">${fmt(p.seconds)}</div>`:'<div class="ph-time">🎤</div>'}
+        </div>`).join('')}
+    </div>
+    <p class="ph-tip rv">👆 اضغطي على المرحلة لبدء مؤقتها أو إيقافه</p>`,
+
+  multi: (s, i) => `${head(s)}
+    <div class="multi" data-cur="0">
+      <div class="m-top rv"><span>الموقف <b>1</b> من ${s.questions.length}</span><div class="m-dots">${s.questions.map((_,k)=>`<i class="${k?'':'on'}"></i>`).join('')}</div></div>
+      ${s.questions.map((q,k) => `
+        <div class="qgroup mq ${k?'':'show'}" data-qid="s${i}-${k}">
+          <div class="q-box"><span class="q-ico">${q.icon||'🛍️'}</span><p>${q.text}</p></div>
+          <div class="opts c3">${s.options.map((o,j) => optBtn(o, j, j===q.answer)).join('')}</div>
+          <div class="fb"></div>
+        </div>`).join('')}
+      <div class="m-nav rv"><button class="btn ghost" data-act="m-prev">← الموقف السابق</button><button class="btn primary" data-act="m-next">الموقف التالي →</button></div>
+    </div>`,
+
+  shop: s => `${head(s)}
+    <div class="shop-sim">
+      <div class="store rv">
+        <div class="store-bar">
+          <span class="st-name">🏬 ${s.storeName}</span>
+          <select class="st-sort" title="الترتيب">
+            <option value="def">الترتيب الافتراضي</option>
+            <option value="asc">حسب السعر: الأدنى للأعلى</option>
+            <option value="desc">حسب السعر: الأعلى للأدنى</option>
+          </select>
+        </div>
+        <div class="products">
+          ${s.products.map((p,k) => `
+            <div class="prod" data-k="${k}" data-price="${p.price}" style="order:${k}">
+              ${p.old?'<span class="sale">تخفيض!</span>':''}
+              <div class="p-img">${p.emoji}</div>
+              <div class="p-name">${p.name}</div>
+              <div class="p-price">${p.old?`<s>${money(p.old)}</s><br>`:''}<b>${money(p.price)}</b></div>
+              <button class="btn add" data-act="shop-add" data-k="${k}">إضافة إلى السلة 🛒</button>
+            </div>`).join('')}
+        </div>
+        <div class="shop-tip">${s.tip||''}</div>
+      </div>
+      <div class="cart rv">
+        <div class="cart-head">🛒 سلة المشتريات <span class="c-badge">0</span></div>
+        <div class="cart-items"></div>
+        <div class="coupon"><input class="cp-field" placeholder="رمز القسيمة"><button class="btn ghost sm" data-act="shop-coupon">استخدام القسيمة</button></div>
+        <div class="cart-total"><span>الإجمالي</span><b class="ct-val">${money(0)}</b></div>
+        <button class="btn primary wide" data-act="shop-checkout">إتمام الطلب ✅</button>
+        <div class="cart-msg"></div>
+      </div>
+    </div>`,
+
+  order: s => `${head(s)}
+    <div class="order-ch">
+      <div><p class="lead rv">${s.prompt}</p><div class="oc-pool rv"></div></div>
+      <div class="oc-right rv">
+        <div class="oc-ctrl">${timerHTML(s.seconds, false, true)}
+          <div class="oc-btns"><button class="btn primary big" data-act="oc-start">⏱️ ابدئي التحدي</button><button class="btn ghost" data-act="oc-reset">↺ إعادة التحدي</button></div>
+        </div>
+        <ol class="oc-done"></ol>
+        <div class="oc-msg"></div>
+      </div>
+    </div>`,
+
+  invoice: s => `${head(s)}
+    <p class="lead rv">${s.prompt}</p>
+    <div class="invoice rv">
+      <div class="inv-head"><span>🧾 ${s.storeLine}</span><span>رقم الفاتورة: #${s.no}</span></div>
+      <div class="inv-rows">${s.rows.map(r => `<div class="inv-row" data-act="reveal"><span class="ir-k">${r.k}</span><span class="ir-v">${r.v}</span><span class="ir-q">❓ اضغطي للكشف</span></div>`).join('')}</div>
+      <div class="inv-total"><span>الإجمالي</span><span>${s.total}</span></div>
+    </div>`,
+
+  explore: s => `${head(s)}
+    <div class="explore">
+      <div class="ex-list">${s.items.map((it,k) => `<button class="ex-tab rv" data-act="ex-tab" data-k="${k}"><span class="ex-i">${it.icon}</span><span class="ex-n">${it.title}</span><span class="ex-c"></span></button>`).join('')}</div>
+      <div class="ex-panel rv">
+        <div class="ex-start"><div class="ex-big">👈</div>${s.start||'اختاري من القائمة لنكتشفها معًا'}</div>
+        ${s.items.map(it => `
+          <div class="ex-pane">
+            <div class="ex-top"><div class="ex-big">${it.icon}</div><div><h3>${it.title}</h3>${it.en?`<span class="ex-en">${it.en}</span>`:''}</div></div>
+            <div class="ex-def">${it.def}</div>
+            ${it.example?`<div class="ex-eg"><span>💡</span><div>${it.example}</div></div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`,
+
+  quote: s => `${head(s)}
+    <div class="ayah rv"><span class="ay-ico">${s.icon||'📖'}</span><div><p class="ay-text ${s.plain?'plain':''}">${s.plain?`«${s.quote}»`:`﴿ ${s.quote} ﴾`}</p><span class="ay-src">${s.source}</span></div></div>
+    ${s.prompt?`<p class="lead rv" style="margin-bottom:14px">${s.prompt}</p>`:''}
+    <div class="card-grid cols-${s.cards.length}">
+      ${s.cards.map(c => `<div class="rcard rv" data-act="reveal"><div class="rc-ico">${c.icon}</div><div class="rc-title">${c.title}</div><div class="rc-detail">${c.detail}</div><div class="rc-tap">👆 اضغطي للكشف</div></div>`).join('')}
+    </div>`,
+
+  worksheet: s => `${head(s)}
+    <div class="ws-wrap">
+      <div class="rv">
+        <div class="ws-head"><p class="lead">${s.intro}</p>${s.file?`<a class="btn primary sm" href="${encodeURI(s.file)}" target="_blank">📄 فتح ورقة العمل</a>`:''}</div>
+        <ul class="ws-list">${s.tasks.map((t,k) => `<li><span class="ws-n">${k+1}</span><div><b>${t.title}</b><small>${t.desc}</small></div></li>`).join('')}</ul>
+        <div class="ws-roles">${s.roles.map(r => `<span>${r}</span>`).join('')}</div>
+      </div>
+      <div class="ws-timer rv">
+        <div class="ws-cap">⏱️ الوقت المتبقي</div>
+        ${timerHTML(s.seconds, false, false, s.endMessage||'')}
+        <button class="btn ghost" data-act="timer-reset">↺ إعادة المؤقت</button>
+      </div>
+    </div>`,
+
+  closing: s => `
+    <div class="closing">
+      <div class="cl-ico rv">📦✅</div>
+      <h1 class="rv">${s.title}</h1>
+      <p class="w-sub rv">${s.subtitle}</p>
+      <div class="cl-score rv">🛍️ مشتريات الصف اليوم: <b class="pts">0</b></div>
+      <div class="hw rv"><b>📝 الواجب:</b> ${s.homework}</div>
+      <button class="btn primary big rv" data-act="clap">👏 صفّقن لأنفسكن</button>
+    </div>`
+};
+
+/* تهيئة إضافية لبعض الأنواع بعد إنشائها */
+const INIT = {
+  shop:  el => renderCart(el),
+  order: el => renderPool(el)
+};
+
+/* 📋 التحضير: الشعب والأسماء من لوحة الإدارة */
+R.attendance = s => `${head(s)}<div class="rs-host" style="flex:1;min-height:0;margin-top:14px"></div>`;
+INIT.attendance = el => Roster.attendance($('.rs-host', el), LESSON_GRADE);
+
+/* ---------- بناء الشرائح ---------- */
+$('#brandName').textContent = LESSON.brand;
+$('#brandSub').textContent  = LESSON.lessonNo + ' • ' + LESSON.grade;
+const host = $('#slides');
+SLIDES.forEach((s, i) => {
+  const el = document.createElement('section');
+  el.className = 'slide t-' + s.type;
+  el.dataset.i = i;
+  el.innerHTML = R[s.type](s, i);
+  host.appendChild(el);
+  INIT[s.type] && INIT[s.type](el, s);
+});
+const els = $$('.slide', host);
+$('#total').textContent = SLIDES.length;
+Roster.drawButton($('.cb.clap'));
+
+/* ---------- التنقل ---------- */
+let cur = 0;
+function play(el){
+  $$('.rv', el).forEach((it, k) => it.style.animationDelay = (120 + Math.min(k,14)*80) + 'ms');
+  el.classList.remove('play'); void el.offsetWidth; el.classList.add('play');
+}
+function stopTimersIn(el){
+  $$('.timer, .ph-time[data-sec]', el).forEach(t => { if(t._t && t._t.id) tStop(t); });
+}
+function go(n){
+  if(n < 0 || n >= SLIDES.length || n === cur) return;
+  const dir = n > cur ? 1 : -1;
+  const from = els[cur], to = els[n];
+  stopTimersIn(from);
+  from.classList.remove('active','play','fx-fade','fx-slide-n','fx-slide-p','fx-zoom');
+  from.classList.add('out');
+  clearTimeout(from._o); from._o = setTimeout(() => from.classList.remove('out'), 400);
+  const f = SLIDES[n].fx || 'slide';
+  to.classList.remove('out');
+  to.classList.add('active', f === 'slide' ? (dir > 0 ? 'fx-slide-n' : 'fx-slide-p') : 'fx-' + f);
+  play(to);
+  cur = n; updateUI();
+}
+const next = () => go(cur + 1);
+const prev = () => go(cur - 1);
+function updateUI(){
+  const last = SLIDES.length - 1;
+  $('#num').textContent = cur + 1;
+  $('#btnPrev').disabled = cur === 0;
+  $('#btnNext').disabled = cur === last;
+  const p = last ? cur / last : 1;
+  $('#trackFill').style.width = `calc((100% - 120px) * ${p})`;
+  const stage = cur === last ? 3 : Math.floor(p * 3 + 1e-9);
+  $$('.tk').forEach((t, k) => t.classList.toggle('on', k <= stage));
+  try{ history.replaceState(null, '', '#' + (cur + 1)); }catch(e){}
+}
+
+/* ---------- الإجابة على الأسئلة (موحّدة لكل الأنواع) ---------- */
+function answer(btn){
+  const g = btn.closest('.qgroup');
+  if(!g || g.classList.contains('solved') || btn.disabled) return;
+  const fb = $('.fb', g);
+  if(btn.dataset.ok === '1'){
+    g.classList.add('solved'); btn.classList.add('ok');
+    $$('.opt', g).forEach(b => b.disabled = true);
+    Sound.success(); burstFrom(btn);
+    const msg = 'أحسنتِ! 👏 إجابة صحيحة';
+    if(fb){ fb.className = 'fb ok'; fb.textContent = msg; popEl(fb); } else toast(msg, 'ok');
+    addPoint(g.dataset.qid);
+  } else {
+    btn.classList.add('no'); btn.disabled = true; shake(btn); Sound.wrong();
+    const msg = 'حاولي مرة أخرى 💜';
+    if(fb){ fb.className = 'fb no'; fb.textContent = msg; popEl(fb); } else toast(msg, 'no');
+  }
+}
+
+/* ---------- الخطوات المتتابعة ---------- */
+function stepNext(slide){
+  const items = $$('.tstep', slide);
+  const nx = items.find(x => !x.classList.contains('on'));
+  if(!nx) return;
+  nx.classList.add('on'); Sound.pop();
+  if(!items.some(x => !x.classList.contains('on'))){
+    const f = $('.final', slide);
+    if(f){ f.classList.add('show'); Sound.success(); setTimeout(() => burstFrom(f), 150); }
+  }
+}
+function stepReset(slide){
+  $$('.tstep', slide).forEach(x => x.classList.remove('on'));
+  const f = $('.final', slide); f && f.classList.remove('show');
+}
+
+/* ---------- العصف الذهني ---------- */
+function addIdea(slide){
+  const inp = $('.bs-field', slide), v = inp.value.trim();
+  if(!v) return;
+  const board = $('.bs-board', slide);
+  const n = document.createElement('div');
+  n.className = 'sticky c' + (board.children.length % 5);
+  n.style.setProperty('--r', (Math.random()*8 - 4).toFixed(1) + 'deg');
+  n.textContent = v; n.title = 'اضغطي مرتين للحذف';
+  n.addEventListener('dblclick', () => { n.remove(); countIdeas(slide); });
+  board.appendChild(n);
+  inp.value = ''; inp.focus();
+  countIdeas(slide); Sound.pop();
+}
+function countIdeas(slide){ $('.bs-count', slide).textContent = $('.bs-board', slide).children.length + ' فكرة'; }
+
+/* ---------- فكر زاوج شارك ---------- */
+function phase(ph, slide){
+  $$('.phase', slide).forEach(p => {
+    if(p !== ph){ p.classList.remove('active'); const t = $('.ph-time[data-sec]', p); if(t && t._t && t._t.id) tStop(t); }
+  });
+  ph.classList.add('active'); Sound.pop();
+  const t = $('.ph-time[data-sec]', ph);
+  if(t) tToggle(t);
+}
+
+/* ---------- أسئلة متعددة داخل شريحة ---------- */
+function multiNav(slide, d){
+  const w = $('.multi', slide), qs = $$('.mq', w);
+  const c = +w.dataset.cur + d;
+  if(c < 0 || c >= qs.length) return;
+  qs.forEach((q, k) => q.classList.toggle('show', k === c));
+  w.dataset.cur = c;
+  $('.m-top b', w).textContent = c + 1;
+  $$('.m-dots i', w).forEach((dot, k) => dot.classList.toggle('on', k <= c));
+  Sound.pop();
+}
+
+/* ---------- محاكاة المتجر ---------- */
+function cartOf(slide){ return slide._cart || (slide._cart = {items:{}, disc:0}); }
+function renderCart(slide){
+  const s = SLIDES[+slide.dataset.i], c = cartOf(slide), box = $('.cart-items', slide);
+  const keys = Object.keys(c.items).filter(k => c.items[k] > 0);
+  box.innerHTML = keys.length ? keys.map(k => {
+    const p = s.products[k], q = c.items[k];
+    return `<div class="ci"><button class="ci-del" data-act="shop-del" data-k="${k}" title="حذف">✕</button><span class="ci-img">${p.emoji}</span><span class="ci-name">${p.name}</span><span class="ci-qty"><button data-act="shop-dec" data-k="${k}">−</button><b>${q}</b><button data-act="shop-inc" data-k="${k}">+</button></span><span class="ci-sub">${money(p.price*q)}</span></div>`;
+  }).join('') : '<div class="empty">السلة فارغة… أضيفي منتجًا! 🛍️</div>';
+  let total = keys.reduce((a, k) => a + s.products[k].price * c.items[k], 0);
+  if(c.disc) total *= (1 - c.disc);
+  $('.ct-val', slide).innerHTML = (c.disc ? `<small>خصم ${Math.round(c.disc*100)}%</small> ` : '') + money(total);
+  $('.c-badge', slide).textContent = keys.reduce((a, k) => a + c.items[k], 0);
+}
+function shopAct(act, slide, k){
+  const s = SLIDES[+slide.dataset.i], c = cartOf(slide);
+  if(act === 'shop-add' || act === 'shop-inc'){ c.items[k] = (c.items[k]||0) + 1; Sound.pop(); if(act==='shop-add') toast(`أُضيف «${s.products[k].name}» إلى السلة 🛒`, 'ok'); $('.c-badge', slide).animate([{transform:'scale(1)'},{transform:'scale(1.4)'},{transform:'scale(1)'}],{duration:350}); }
+  if(act === 'shop-dec'){ c.items[k] = Math.max(0, (c.items[k]||0) - 1); Sound.pop(); }
+  if(act === 'shop-del'){ delete c.items[k]; Sound.flip(); }
+  if(act === 'shop-coupon'){
+    const f = $('.cp-field', slide);
+    if(s.coupon && f.value.trim() === s.coupon.code){ c.disc = s.coupon.discount; Sound.success(); toast('تم تطبيق القسيمة 🎟️', 'ok'); }
+    else { Sound.wrong(); shake(f); toast('رمز القسيمة غير صحيح 💜', 'no'); }
+  }
+  if(act === 'shop-checkout'){
+    const count = Object.values(c.items).reduce((a, b) => a + b, 0);
+    const msg = $('.cart-msg', slide);
+    if(!count){ Sound.wrong(); toast('السلة فارغة! أضيفي منتجًا أولًا 🛍️', 'no'); return; }
+    const no = Math.floor(10000 + Math.random()*89999);
+    msg.textContent = `✅ تم استلام طلبك رقم #${no} — ستصلك رسالة تأكيد 📧`; popEl(msg);
+    c.items = {}; c.disc = 0; $('.cp-field', slide).value = '';
+    Sound.success(); rain(); addPoint('shop');
+  }
+  renderCart(slide);
+}
+
+/* ---------- تحدي الترتيب ---------- */
+function ocOf(slide){ return slide._oc || (slide._oc = {next:0, started:false, t0:0}); }
+function renderPool(slide){
+  const s = SLIDES[+slide.dataset.i];
+  const idx = s.steps.map((_, k) => k);
+  let order = shuffle(idx);
+  while(order.every((v, k) => v === k) && idx.length > 1) order = shuffle(idx);
+  $('.oc-pool', slide).innerHTML = order.map(k => `<button class="oc-item" data-act="oc-pick" data-k="${k}" disabled>${s.steps[k]}</button>`).join('');
+}
+function ocStart(slide){
+  const st = ocOf(slide); if(st.started) return;
+  Object.assign(st, {next:0, started:true, t0:Date.now()});
+  $$('.oc-item', slide).forEach(b => b.disabled = false);
+  $('[data-act="oc-start"]', slide).disabled = true;
+  const tm = $('.timer', slide);
+  tReset(tm);
+  tStart(tm, () => {
+    const total = SLIDES[+slide.dataset.i].steps.length;
+    if(st.next < total){
+      st.started = false;
+      $$('.oc-item', slide).forEach(b => b.disabled = true);
+      $('.oc-msg', slide).textContent = 'انتهى الوقت ⏰ لنرتّبها معًا!';
+      $('.oc-msg', slide).style.color = 'var(--coral)';
+    }
+  });
+  Sound.pop();
+}
+function ocPick(btn, slide){
+  const st = ocOf(slide); if(!st.started) return;
+  const s = SLIDES[+slide.dataset.i], k = +btn.dataset.k;
+  if(k === st.next){
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="oc-n">${k+1}</span><span>${s.steps[k]}</span>`;
+    $('.oc-done', slide).appendChild(li);
+    btn.remove(); st.next++; Sound.pop();
+    if(st.next === s.steps.length){
+      st.started = false;
+      tStop($('.timer', slide));
+      const sec = Math.round((Date.now() - st.t0) / 1000);
+      const m = $('.oc-msg', slide);
+      m.style.color = ''; m.textContent = `🏆 أحسنتِ! رتّبتِ الخطوات في ${sec} ثانية`; popEl(m);
+      Sound.success(); rain(); addPoint('order');
+    }
+  } else {
+    shake(btn); Sound.wrong(); toast('حاولي مرة أخرى 💜', 'no');
+  }
+}
+function ocReset(slide){
+  const st = ocOf(slide); Object.assign(st, {next:0, started:false});
+  tReset($('.timer', slide));
+  $('.oc-done', slide).innerHTML = '';
+  $('.oc-msg', slide).textContent = '';
+  $('[data-act="oc-start"]', slide).disabled = false;
+  renderPool(slide); Sound.flip();
+}
+
+/* ---------- ملء الشاشة ---------- */
+function toggleFS(){
+  const d = document, e = d.documentElement;
+  if(!d.fullscreenElement && !d.webkitFullscreenElement){ (e.requestFullscreen || e.webkitRequestFullscreen || function(){}).call(e); }
+  else { (d.exitFullscreen || d.webkitExitFullscreen || function(){}).call(d); }
+}
+
+/* ---------- الاستكشاف ---------- */
+function exShow(slide, k){
+  const ex = $('.ex-start', slide); if(ex) ex.remove();
+  $$('.ex-tab', slide).forEach((b, j) => { b.classList.toggle('on', j === k); if(j === k) b.classList.add('seen'); });
+  $$('.ex-pane', slide).forEach((p, j) => p.classList.toggle('show', j === k));
+  Sound.pop();
+}
+
+/* ---------- النقرات (تفويض الأحداث) ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if(!t) return;
+  const act = t.dataset.act, slide = t.closest('.slide');
+  if(t.tagName === 'BUTTON') t.blur();
+  switch(act){
+    case 'next': next(); break;
+    case 'prev': prev(); break;
+    case 'clap': clap(); break;
+    case 'fs': toggleFS(); break;
+    case 'flip': t.classList.toggle('flipped'); Sound.flip(); break;
+    case 'reveal': if(t.classList.toggle('open')) Sound.pop(); break;
+    case 'ex-tab': exShow(slide, +t.dataset.k); break;
+    case 'opt': answer(t); break;
+    case 'step-next': stepNext(slide); break;
+    case 'step-reset': stepReset(slide); Sound.flip(); break;
+    case 'timer': tToggle(t.closest('.timer')); Sound.pop(); break;
+    case 'timer-reset': tReset($('.timer', slide)); Sound.flip(); break;
+    case 'bs-add': addIdea(slide); break;
+    case 'bs-clear': $('.bs-board', slide).innerHTML = ''; countIdeas(slide); Sound.flip(); break;
+    case 'phase': phase(t, slide); break;
+    case 'm-next': multiNav(slide, 1); break;
+    case 'm-prev': multiNav(slide, -1); break;
+    case 'shop-add': case 'shop-inc': case 'shop-dec': case 'shop-del':
+    case 'shop-coupon': case 'shop-checkout': shopAct(act, slide, t.dataset.k); break;
+    case 'oc-start': ocStart(slide); break;
+    case 'oc-pick': ocPick(t, slide); break;
+    case 'oc-reset': ocReset(slide); break;
+  }
+});
+
+/* ترتيب المنتجات في المتجر */
+document.addEventListener('change', e => {
+  if(!e.target.classList.contains('st-sort')) return;
+  const slide = e.target.closest('.slide'), mode = e.target.value;
+  $$('.prod', slide).forEach(p => {
+    const price = Math.round(+p.dataset.price * 100);
+    p.style.order = mode === 'def' ? p.dataset.k : mode === 'asc' ? price : -price;
+  });
+  e.target.blur(); Sound.pop();
+});
+
+/* ---------- لوحة المفاتيح ---------- */
+document.addEventListener('keydown', e => {
+  const tag = e.target.tagName;
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'){
+    const slide = e.target.closest('.slide');
+    if(e.key === 'Enter' && e.target.classList.contains('bs-field')){ e.preventDefault(); addIdea(slide); }
+    else if(e.key === 'Enter' && e.target.classList.contains('cp-field')){ e.preventDefault(); shopAct('shop-coupon', slide); }
+    else if(e.key === 'Escape'){ e.target.blur(); }
+    // إذا كان الحقل فارغًا تعمل الأسهم للتنقل
+    else if(tag === 'INPUT' && !e.target.value && ['ArrowRight','ArrowLeft','PageDown','PageUp'].includes(e.key)){
+      e.preventDefault(); e.target.blur();
+      (e.key === 'ArrowRight' || e.key === 'PageDown') ? next() : prev();
+    }
+    return;
+  }
+  if(e.key === 'ArrowRight' || e.key === ' ' || e.code === 'Space' || e.key === 'PageDown'){ e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace'){ e.preventDefault(); prev(); }
+  else if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault(); }
+  else if(e.key === 'ت' || e.code === 'KeyF'){ e.preventDefault(); if(!e.repeat) clap(); }
+  else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+  else if(e.key === 'End'){ e.preventDefault(); go(SLIDES.length - 1); }
+}, {passive:false});
+document.addEventListener('keyup', e => { if(e.code === 'Space' && e.target.tagName === 'BUTTON') e.preventDefault(); });
+
+/* ---------- إخفاء شريط التحكم تلقائيًا ---------- */
+const controls = $('#controls');
+let idleT;
+function wake(){
+  document.body.classList.remove('idle');
+  clearTimeout(idleT);
+  idleT = setTimeout(() => { if(!controls.matches(':hover')) document.body.classList.add('idle'); }, 2600);
+}
+['mousemove','mousedown','touchstart'].forEach(ev => addEventListener(ev, wake, {passive:true}));
+
+/* ---------- ملاءمة المسرح للشاشة (16:9 بدون تمرير) ---------- */
+const stage = $('#stage');
+function fit(){ stage.style.transform = `scale(${Math.min(innerWidth/1600, innerHeight/900)})`; }
+addEventListener('resize', fit);
+fit();
+
+/* ---------- البدء ---------- */
+(function start(){
+  const h = parseInt((location.hash || '').slice(1), 10);
+  cur = (h >= 1 && h <= SLIDES.length) ? h - 1 : 0;
+  els[cur].classList.add('active', 'fx-zoom');
+  play(els[cur]);
+  updateUI(); wake();
+})();
+</script>
+</body>
+</html>
