@@ -5,6 +5,7 @@
    • Roster.watch(fn)          تحديث الأسماء إذا عُدّلت في اللوحة أثناء فتح الدرس
    • Roster.attendance(el, g)  شريحة التحضير كاملة (للدروس التي لا تملك شريحة تحضير خاصة)
    • Roster.draw               قرعة الأسماء من الحاضرات بدون تكرار (اختصار: ق)
+   • Roster.present()/select() للدروس التي لها قرعة خاصة بها
    ================================================================ */
 const Roster = (() => {
   const KEY = 'atheel-admin-v1';
@@ -132,15 +133,11 @@ const Roster = (() => {
       q('.rs-tag.late').textContent = '⏰ متأخرة: ' + n('l');
       q('.rs-tag.bad').textContent = '❌ غائبة: ' + n('a');
     };
-    qa('.rs-sw button').forEach(b => b.onclick = () => {
-      if (b.dataset.c === st.cur) return;
-      st.cur = b.dataset.c; try { localStorage.setItem('att-class', st.cur); } catch (e) {}
-      loadAtt(); draw.picked = []; hosts.forEach(paint);
-    });
+    qa('.rs-sw button').forEach(b => b.onclick = () => select(b.dataset.c));
     if (!st.students.length) return;
     qa('.rs-stu').forEach(b => b.onclick = () => { const k = +b.dataset.k; st.att[k] = NEXT[st.att[k]]; saveAtt(); update(); });
     q('[data-act=all]').onclick = () => { st.att.fill('p'); saveAtt(); update(); };
-    q('[data-act=draw]').onclick = () => draw.show();
+    q('[data-act=draw]').onclick = () => opener ? opener() : draw.show();
     q('[data-act=copy]').onclick = e => {
       const pick = v => st.students.filter((n, k) => st.att[k] === v);
       const abs = pick('a'), late = pick('l');
@@ -193,6 +190,16 @@ const Roster = (() => {
     }
   };
 
+  /* ---------- للدروس التي لها قرعة خاصة بها: الشعبة الحالية وأسماء الحاضرات ---------- */
+  const listeners = [];
+  let opener = null;                  // نافذة القرعة الخاصة بالدرس (إن وُجدت)
+  const changed = () => listeners.forEach(f => f());
+  function select(c) {
+    if (!st.classes[c] || c === st.cur) return;
+    st.cur = c; try { localStorage.setItem('att-class', c); } catch (e) {}
+    loadAtt(); draw.picked = []; hosts.forEach(paint); changed();
+  }
+
   /* زر القرعة في شريط التحكم + اختصارات لوحة المفاتيح (تسبق أوامر التنقل) */
   function drawButton(after) {
     const b = document.createElement('button');
@@ -207,11 +214,15 @@ const Roster = (() => {
       e.preventDefault(); e.stopImmediatePropagation();
       if (e.key === ' ' || e.key === 'Enter') draw.spin();
       else if (e.key === 'Escape' || e.key === 'ق') draw.hide();
-    } else if (e.key === 'ق' && st.grade) { e.preventDefault(); e.stopImmediatePropagation(); draw.show(); }
+    } else if (e.key === 'ق' && st.grade && !opener) { e.preventDefault(); e.stopImmediatePropagation(); draw.show(); }
   }, true);
 
   /* تحديث شريحة التحضير إذا عُدّلت الأسماء في لوحة الإدارة */
-  watch(() => { if (!st.grade) return; const keep = st.cur; useGrade(st.grade); if (st.classes[keep]) { st.cur = keep; loadAtt(); } draw.picked = []; hosts.forEach(paint); });
+  watch(() => { if (!st.grade) return; const keep = st.cur; useGrade(st.grade); if (st.classes[keep]) { st.cur = keep; loadAtt(); } draw.picked = []; hosts.forEach(paint); changed(); });
 
-  return { KEY, load, watch, attendance, draw, drawButton, use: useGrade };
+  return {
+    KEY, load, watch, attendance, draw, drawButton, use: useGrade, select,
+    current: () => st.cur, sections: () => Object.keys(st.classes), present: () => draw.avail(),
+    onChange: fn => listeners.push(fn), customDraw: fn => { opener = fn; }
+  };
 })();

@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>محاكي أكسس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;700&display=swap">
+<style>
+/* Layout: lesson strip → instruction card → scaled Access window (1000×620). Single light look on purpose: it mirrors the real app. */
+:root{
+  --paper:#f3f5f8; --card:#ffffff; --ink:#1b2230; --muted:#5b6578; --line:#dde2ea;
+  --step:#0b78c2; --step-soft:#e3f1fb; --tip:#e2007a; --tip-soft:#fde8f3;
+  --acc:#a4373a; --ok:#1f8a4c; --warn:#d97706;
+  --f-ui:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --f-disp:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-win:"Segoe UI",Tahoma,"IBM Plex Sans Arabic",Arial,sans-serif;
+  color-scheme:light;
+}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-ui);font-size:15px;padding:16px;padding-block:14px 40px}
+*{box-sizing:border-box}
+.page{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:42px;height:42px;border-radius:8px;background:var(--acc);color:#fff;display:grid;place-items:center;font:700 22px var(--f-win)}
+.brand h1{font:700 22px/1.2 var(--f-disp);margin:0;text-wrap:balance}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.mode{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
+.mode button{border:0;background:transparent;font:600 14px var(--f-ui);padding:8px 16px;border-radius:999px;cursor:pointer;color:var(--muted)}
+.mode button.on{background:var(--ink);color:#fff}
+.mode button:focus-visible,.btn:focus-visible,.chip:focus-visible{outline:3px solid var(--step);outline-offset:2px}
+.lessons{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.lgroup{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.lgroup .gl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em;min-width:150px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:5px 10px;font:500 13px var(--f-ui);cursor:pointer;color:var(--ink);display:flex;gap:6px;align-items:center}
+.chip .n{font:700 11px var(--f-win);background:var(--line);border-radius:999px;width:20px;height:20px;display:grid;place-items:center}
+.chip.on{background:var(--step);border-color:var(--step);color:#fff}
+.chip.on .n{background:#fff;color:var(--step)}
+.chip.fin .n{background:var(--ok);color:#fff}
+.guide{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.g-main{min-width:0;display:flex;flex-direction:column;gap:8px}
+.g-meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:var(--muted);font-size:13px}
+.g-meta b{color:var(--ink);font:700 16px var(--f-disp)}
+.prog{display:flex;gap:3px;flex-wrap:wrap}
+.prog i{width:16px;height:5px;border-radius:3px;background:var(--line)}
+.prog i.d{background:var(--step)}
+.prog i.c{background:var(--warn)}
+.g-step{display:flex;gap:12px;align-items:flex-start}
+.stepnum{flex:none;width:34px;height:34px;border-radius:50%;background:var(--step);color:#fff;display:grid;place-items:center;font:700 16px var(--f-win);box-shadow:0 0 0 4px var(--step-soft)}
+.g-text{font-size:18px;line-height:1.7;min-width:0}
+.g-text b{color:var(--step)}
+.g-text .exp{display:inline-block;background:#fff6dd;border:1px dashed #e0b44c;border-radius:6px;padding:0 8px;font-weight:700;color:#7a4b00;direction:rtl}
+.tip{background:var(--tip-soft);border-inline-start:4px solid var(--tip);border-radius:8px;padding:8px 12px;font-size:13.5px;line-height:1.6;color:#5c0a33}
+.tip b{color:var(--tip)}
+.done{background:#e8f6ee;border:1px solid #b6e0c6;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.done h3{margin:0;font:700 18px var(--f-disp);color:var(--ok)}
+.g-ctrl{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:170px}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px;font:600 14px var(--f-ui);cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{background:#e9edf3}
+.btn.pri{background:var(--step);border-color:var(--step);color:#fff}
+.btn.pri:hover{background:#0969a9}
+.btn.auto{background:var(--tip);border-color:var(--tip);color:#fff}
+.btn[disabled]{opacity:.45;cursor:default}
+.row2{display:flex;gap:6px}
+.row2 .btn{flex:1}
+.score{font-size:12.5px;color:var(--muted);text-align:center}
+.toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);justify-content:center;cursor:pointer}
+#stage{position:relative;width:100%;overflow:hidden;border-radius:6px;box-shadow:0 10px 30px rgba(20,30,50,.14)}
+#win{position:absolute;top:0;right:0;width:1000px;height:620px;transform-origin:top right;background:#fff;font-family:var(--f-win);font-size:12px;color:#222;direction:rtl;overflow:hidden;user-select:none;-webkit-user-select:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:60;max-width:calc(100% - 32px);text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.bad{background:#b42318}
+#badge{position:fixed;width:30px;height:30px;border-radius:50%;background:var(--step);color:#fff;font:700 15px var(--f-win);display:grid;place-items:center;z-index:40;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.3);border:2px solid #fff}
+#badge[hidden]{display:none}
+#cursor{position:fixed;z-index:55;pointer-events:none;width:26px;height:30px;transition:left .65s cubic-bezier(.4,.1,.2,1),top .65s cubic-bezier(.4,.1,.2,1);left:-60px;top:-60px}
+.ripple{position:fixed;z-index:54;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:3px solid var(--tip);pointer-events:none;animation:rip .5s ease-out forwards}
+.ripple.r{border-color:var(--warn)}
+@keyframes rip{to{transform:scale(3.2);opacity:0}}
+#ghost{position:fixed;z-index:56;pointer-events:none;background:#fff3c4;border:1px solid #c9a227;padding:2px 8px;font:12px var(--f-win);border-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.foot{color:var(--muted);font-size:12.5px;line-height:1.6}
+@media (max-width:760px){.guide{grid-template-columns:1fr}.g-ctrl{min-width:0}.g-text{font-size:16px}.lgroup .gl{min-width:0;width:100%}}
+@media (prefers-reduced-motion:reduce){#cursor{transition:none}.ripple{animation:none;display:none}.glow{animation:none!important}}
+
+/* ===== Access window ===== */
+#win button{font-family:inherit}
+.glow{outline:3px solid #ff9d00!important;outline-offset:1px;animation:pulse 1.1s ease-in-out infinite;position:relative;z-index:3}
+@keyframes pulse{50%{outline-color:#ffd27a;box-shadow:0 0 0 6px rgba(255,157,0,.25)}}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
+[data-t]{cursor:pointer}
+input[data-t],select[data-t]{cursor:text}
+/* desktop */
+.desk{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 30%,#2f7fd3,#0d3a7a 70%);}
+.desk .wall{position:absolute;left:60px;top:70px;color:rgba(255,255,255,.85);font:600 28px var(--f-win)}
+.taskbar{position:absolute;left:0;right:0;bottom:0;height:40px;background:#1f2a38;display:flex;align-items:center;gap:4px;padding:0 6px}
+.tb-i{width:36px;height:32px;display:grid;place-items:center;border-radius:4px;color:#cfd8e3}
+.tb-i:hover{background:#2e3b4d}
+.startbtn{width:44px;height:34px;display:grid;place-items:center;border-radius:4px}
+.startbtn:hover{background:#2e3b4d}
+.smenu{position:absolute;right:0;bottom:40px;width:330px;height:430px;background:#2b2b2b;color:#fff;display:flex;box-shadow:0 0 20px rgba(0,0,0,.5)}
+.smenu .rail{width:48px;display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:12px;color:#ddd;border-left:1px solid #3a3a3a}
+.smenu .apps{flex:1;overflow-y:auto;padding:8px 10px;direction:ltr}
+.smenu .apps::-webkit-scrollbar{width:6px}.smenu .apps::-webkit-scrollbar-thumb{background:#666}
+.smenu .let{color:#bbb;font-size:12px;padding:8px 6px 4px}
+.smenu .app{display:flex;align-items:center;gap:10px;padding:6px;border-radius:2px;font-size:13px}
+.smenu .app:hover{background:#3d3d3d}
+.app .ico{width:24px;height:24px;border-radius:3px;display:grid;place-items:center;font:700 12px var(--f-win);color:#fff}
+/* frame */
+.title{height:32px;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:12.5px}
+.title .q{display:flex;gap:10px;align-items:center}
+.title .q span{width:24px;height:22px;display:grid;place-items:center;border-radius:2px}
+.title .q span:hover{background:rgba(255,255,255,.15)}
+.title .ctr{display:flex;gap:16px;align-items:center;direction:ltr}
+.title .ctr>span:not(.user){font-size:14px;width:28px;text-align:center}
+.title .user{font-size:12px}
+.rtab svg{width:13px;height:13px}
+.user{display:flex;align-items:center;gap:6px}
+.user i{width:22px;height:22px;border-radius:50%;background:#c2185b;color:#fff;font:600 10px var(--f-win);display:grid;place-items:center;font-style:normal}
+.rtabs{height:28px;display:flex;align-items:flex-end;gap:2px;padding:0 6px;background:#f3f3f3;border-bottom:1px solid #d6d6d6}
+.rtab{padding:5px 11px;font-size:12.5px;color:#333;border-bottom:3px solid transparent}
+.rtab:hover{background:#e6e6e6}
+.rtab.on{border-bottom-color:var(--acc);font-weight:700;color:#111}
+.rtab.ctx{color:var(--acc)}
+.rtab.tell{margin-right:auto;color:#555;display:flex;gap:4px;align-items:center}
+.ribbon{height:92px;background:#f3f3f3;border-bottom:1px solid #d0d0d0;display:flex;align-items:stretch;padding:4px 4px 0;overflow:hidden}
+.rg{display:flex;flex-direction:column;border-left:1px solid #d6d6d6;padding:0 4px}
+.rg .its{flex:1;display:flex;gap:2px;align-items:flex-start}
+.rg .gl{font-size:10.5px;color:#666;text-align:center;padding:2px 0 3px;white-space:nowrap}
+.rb{display:flex;align-items:center;gap:4px;padding:2px 5px;border-radius:2px;font-size:11.5px;color:#222;white-space:nowrap;border:1px solid transparent}
+.rb:hover{background:#dcdcdc}
+.rb.big{flex-direction:column;justify-content:flex-start;width:auto;min-width:46px;max-width:78px;text-align:center;white-space:normal;line-height:1.25;padding:3px 4px;height:68px}
+.rb.big svg{width:28px;height:28px}
+.rb svg{width:15px;height:15px;flex:none}
+.rb.on{background:#cfcfcf}
+.rb.dis{color:#999}
+.smallcol{display:flex;flex-direction:column;gap:1px}
+.fmt{display:flex;flex-direction:column;gap:4px;padding:4px;color:#555;font-size:11px}
+.fmt .fb{display:flex;gap:4px;align-items:center}
+.fmt .box{border:1px solid #bbb;background:#fff;padding:1px 6px;min-width:110px}
+.main{position:absolute;top:152px;bottom:22px;left:0;right:0;display:flex}
+.nav{width:220px;border-left:1px solid #c8c8c8;background:#fff;display:flex;flex-direction:column;flex:none}
+.nav-h{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:17px;color:var(--acc);border-bottom:1px solid #e0e0e0}
+.nav-h small{font-size:11px;color:#666}
+.nav-s{margin:4px 6px;border:1px solid #c8c8c8;padding:2px 6px;color:#999;display:flex;justify-content:space-between}
+.nav-g{font-weight:700;padding:5px 8px 2px;display:flex;justify-content:space-between;color:#333}
+.nav-i{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 6px;margin:0 2px;font-size:12px}
+.nav-i:hover{background:#f0d6d7}
+.nav-i.on{background:#f4b6b9}
+.nav-i svg{width:15px;height:15px;flex:none}
+.doc{flex:1;position:relative;background:#fff;display:flex;flex-direction:column;min-width:0}
+.dtabs{height:24px;display:flex;align-items:flex-end;background:#f6f6f6;border-bottom:1px solid #c8c8c8;padding-right:4px}
+.dtab{display:flex;align-items:center;gap:5px;padding:3px 8px;font-size:12px;background:#ececec;border:1px solid #c8c8c8;border-bottom:0;margin-left:2px}
+.dtab.on{background:#fff;border-top:2px solid var(--acc);font-weight:700}
+.dtab svg{width:14px;height:14px}
+.dtab .x{color:#777;margin-right:4px}
+.dbody{flex:1;position:relative;overflow:hidden}
+.empty-doc{position:absolute;inset:0;background:#e6e6e6}
+.status{position:absolute;bottom:0;left:0;right:0;height:22px;background:#f0f0f0;border-top:1px solid #d0d0d0;display:flex;justify-content:space-between;align-items:center;padding:0 8px;font-size:11px;color:#444}
+/* datasheet */
+.ds{position:absolute;inset:0;overflow:auto;background:#fff}
+.ds table{border-collapse:collapse;font-size:12px}
+.ds th{background:#f0f0f0;border:1px solid #d4d4d4;font-weight:400;padding:3px 8px;text-align:right;white-space:nowrap;min-width:90px;height:22px}
+.ds th.sel,.ds td.sel{min-width:18px;width:18px;padding:0;background:#f0f0f0;text-align:center;color:#555}
+.ds th.add{color:#777;font-style:italic;min-width:100px;background:#fbe9a8}
+.ds td{border:1px solid #e4e4e4;padding:2px 8px;height:21px;white-space:nowrap}
+.ds td.num{text-align:left;direction:ltr}
+.ds tr.cur td{background:#d9e8f6}
+.ds tr.newrow td.sel{color:#999}
+.ds tr.edit td.sel{color:#333}
+.ds tr.fill td{border-color:#f0f0f0}
+.cell{width:100%;min-width:120px;border:1px solid #4a90d9;padding:1px 4px;font:12px var(--f-win);background:#fffde6;outline:0}
+/* design */
+.dv{position:absolute;inset:0;display:flex;flex-direction:column}
+.dv .grid{height:230px;overflow:auto;border-bottom:4px solid #ddd}
+.dv table{border-collapse:collapse;width:100%;font-size:12.5px}
+.dv th{background:#fce4a0;border:1px solid #d9c27a;padding:3px 8px;text-align:right;font-weight:700}
+.dv th.sel{width:20px;background:#ececec;border-color:#d4d4d4}
+.dv td{border:1px solid #e0e0e0;padding:0 8px;height:22px}
+.dv td.sel{width:20px;background:#f0f0f0;text-align:center;padding:0}
+.dv tr.on td{background:#fde7e4}
+.dv tr.on td.sel{background:#f3c7c0}
+.dv td .tw{display:flex;justify-content:space-between}
+.dv select,.dv .cell{font:12.5px var(--f-win);width:100%;min-width:0}
+.dv select{border:1px solid #4a90d9;background:#fffde6}
+.props{flex:1;display:flex;gap:10px;padding:6px 8px;overflow:hidden}
+.props .pbox{width:430px;border:1px solid #ccc;font-size:11.5px;flex:none}
+.props .ptabs{display:flex;gap:2px;padding:3px 4px 0;background:#f4f4f4;border-bottom:1px solid #ccc}
+.props .ptabs span{padding:2px 10px;border:1px solid #ccc;border-bottom:0;background:#e9e9e9}
+.props .ptabs span.on{background:#fff}
+.props table{width:100%;border-collapse:collapse}
+.props td{border:1px solid #e3e3e3;padding:1px 6px;height:19px}
+.props td:first-child{width:46%;color:var(--acc)}
+.props select{font:11.5px var(--f-win);width:100%;border:1px solid #4a90d9;background:#fffde6}
+.props .help{flex:1;display:grid;place-items:center;color:#555;font-size:11.5px;line-height:1.6;padding:0 20px;text-align:center}
+.dv .ptitle{font-size:11px;color:#555;text-align:center;padding-top:4px}
+/* rel & query canvas */
+.canvas{position:absolute;inset:0;background:#fff;overflow:hidden}
+.canvas svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.tbox{position:absolute;width:200px;background:#fff;border:1px solid #a4373a;box-shadow:2px 2px 0 rgba(0,0,0,.08);font-size:11.5px}
+.tbox .th{padding:4px 8px;font-weight:700;border-bottom:1px solid #a4373a;background:#fff}
+.tbox .tf{padding:2px 8px;display:flex;gap:4px;align-items:center;white-space:nowrap;overflow:hidden}
+.tbox .tf:hover{background:#f6dcdc}
+.tbox .tf svg{width:11px;height:11px;flex:none}
+.tbox .tf.drag{background:#f4b6b9}
+.qd{position:absolute;inset:0;display:flex;flex-direction:column}
+.qd .up{position:relative;height:250px;border-bottom:5px solid #c9c9e8;background:#fff}
+.qd .low{flex:1;overflow:auto;background:#fff;padding:6px}
+.qgrid{border-collapse:collapse;font-size:11.5px}
+.qgrid th{text-align:left;font-weight:400;color:#333;padding:1px 6px;white-space:nowrap;direction:rtl}
+.qgrid td{border:1px solid #d6d6d6;width:118px;height:20px;padding:0 4px;text-align:center}
+.qgrid td.l{text-align:right}
+.qgrid select,.qgrid .cell{width:100%;min-width:0;font:11.5px var(--f-win)}
+.qgrid select{border:1px solid #4a90d9;background:#fffde6}
+.chk{display:inline-block;width:12px;height:12px;border:1px solid #666;position:relative;vertical-align:middle}
+.chk.on:after{content:"";position:absolute;left:3px;top:0;width:3px;height:7px;border:solid #222;border-width:0 2px 2px 0;transform:rotate(45deg)}
+/* pane */
+.pane{position:absolute;left:0;top:0;bottom:0;width:210px;background:#fff;border-right:1px solid #c8c8c8;box-shadow:3px 0 8px rgba(0,0,0,.08);display:flex;flex-direction:column;padding:8px;gap:6px;z-index:5}
+.pane .ph{display:flex;justify-content:space-between;align-items:center}
+.pane .ph b{font-size:17px;color:var(--acc);font-weight:400}
+.pane .px{font-size:16px;width:22px;height:22px;display:grid;place-items:center}
+.pane .pt{display:flex;gap:10px;font-size:12px;color:#666;border-bottom:1px solid #ddd;padding-bottom:3px}
+.pane .pt span.on{color:#000;font-weight:700;border-bottom:2px solid var(--acc)}
+.pane .ps{border:1px solid #ccc;padding:2px 6px;color:#999}
+.pane .pl{flex:1;border:1px solid #ccc;padding:2px;overflow:auto}
+.pane .pi{padding:2px 6px}
+.pane .pi.on{background:#f4b6b9}
+.pane .pb{border:1px solid #bbb;padding:4px;text-align:center;background:#f7f7f7}
+.pane .pb:hover{background:#eee}
+/* form view */
+.fv{position:absolute;inset:0;overflow:auto;background:#fff;display:flex;flex-direction:column}
+.fv .fh{background:#dfe5ee;padding:16px 20px;font-size:20px;color:#3d4a5c;border-bottom:1px solid #c8d0dc}
+.fv .fb{flex:1;display:flex}
+.fv .rsel{width:16px;background:#e8e8e8;border-left:1px solid #ccc;display:flex;justify-content:center;padding-top:6px;color:#333}
+.fv .rsel.on{background:#bcd3ee}
+.fv .fields{flex:1;padding:14px 20px;display:flex;flex-direction:column;gap:9px}
+.fv .fr{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:10px}
+.fv .fr label{color:#555}
+.fv .fr .v{border:1px solid #b8b8b8;padding:3px 6px;min-height:24px;max-width:520px;background:#fff}
+.fv .fr .v.s{max-width:90px}
+.fv .fr .cell{max-width:520px;height:24px}
+.fv .rnav{display:flex;align-items:center;gap:6px;border-top:1px solid #ccc;background:#f3f3f3;padding:3px 8px;font-size:11.5px}
+.fv .rnav .nb{padding:0 4px;color:#333}
+.fv .rnav input{width:56px;text-align:center;font:11.5px var(--f-win);border:1px solid #aaa;padding:1px}
+.fv .rnav .flt{color:#999;margin-right:10px}
+/* dialogs */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.12);display:grid;place-items:center;z-index:20}
+.dlg{background:#fff;border:1px solid #888;box-shadow:0 8px 28px rgba(0,0,0,.3);font-size:12px}
+.dlg .dh{display:flex;justify-content:space-between;align-items:center;padding:6px 10px}
+.dlg .dbtns{display:flex;gap:8px;justify-content:flex-start;padding:10px 12px;direction:ltr}
+.dlg .db{border:1px solid #adadad;background:#e1e1e1;padding:4px 18px;min-width:76px;text-align:center;font-size:12px}
+.dlg .db.def{border:2px solid #0078d7}
+.dlg .db:hover{background:#e5f1fb;border-color:#0078d7}
+.dlg .din{width:100%;border:1px solid #7a7a7a;padding:3px 5px;font:12px var(--f-win)}
+.msgb{width:420px}
+.msgb .mb{display:flex;gap:14px;padding:14px 16px;align-items:flex-start}
+.msgb .mi{width:32px;height:32px;flex:none}
+.msgb .mt b{display:block;margin-bottom:4px;font-size:12.5px}
+.blank{width:600px;height:330px;display:flex}
+.blank .bl{flex:1;padding:30px 24px;display:flex;flex-direction:column;gap:6px}
+.blank .bl h3{margin:0 0 8px;font-size:20px;font-weight:400}
+.blank .ill{width:260px;border-right:1px solid #ddd;display:grid;place-items:center;background:#fff}
+.createbtn{width:56px;height:56px;background:var(--acc);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;gap:2px;margin-top:20px;border:2px solid #6b1f22}
+.fw{width:640px}
+.fw .fwb{display:flex;gap:14px;padding:10px 14px;min-height:300px}
+.fw .fwart{width:150px;background:linear-gradient(#fbd34d,#f59e0b);border:1px solid #d18b00;flex:none}
+.fw .fwm{flex:1;display:flex;flex-direction:column;gap:8px}
+.fw .lists{display:flex;gap:8px;align-items:stretch}
+.fw .lb{flex:1;border:1px solid #888;height:140px;overflow:auto;padding:2px}
+.fw .lb div{padding:1px 4px}
+.fw .lb div.on{background:#0078d7;color:#fff}
+.fw .mv{display:flex;flex-direction:column;gap:5px;justify-content:center}
+.fw .mv span{border:1px solid #aaa;background:#eee;width:34px;text-align:center;padding:2px 0;direction:ltr}
+.fw select{font:12px var(--f-win);border:1px solid #7a7a7a;padding:2px}
+.radio{display:flex;align-items:center;gap:6px;padding:3px 4px}
+.radio i{width:12px;height:12px;border:1px solid #333;border-radius:50%;position:relative;flex:none}
+.radio.on i:after{content:"";position:absolute;inset:2px;border-radius:50%;background:#222}
+.editrel{width:470px}
+.editrel .eb{display:flex;gap:10px;padding:8px 12px}
+.editrel .em{flex:1;display:flex;flex-direction:column;gap:6px}
+.editrel .pair{display:grid;grid-template-columns:1fr 1fr;border:1px solid #aaa}
+.editrel .pair div{border:1px solid #ddd;padding:2px 6px;height:20px}
+.editrel .ebtn{display:flex;flex-direction:column;gap:6px;width:96px}
+.cbx{display:flex;align-items:center;gap:6px;padding:2px}
+.cbx i{width:13px;height:13px;border:1px solid #333;background:#fff;position:relative;flex:none}
+.cbx.on i:after{content:"";position:absolute;left:3px;top:0;width:4px;height:8px;border:solid #111;border-width:0 2px 2px 0;transform:rotate(45deg)}
+/* menus */
+.menu{position:absolute;background:#fff;border:1px solid #bdbdbd;box-shadow:2px 3px 10px rgba(0,0,0,.2);z-index:25;min-width:190px;padding:2px 0;font-size:12px}
+.mi2{display:flex;align-items:center;gap:8px;padding:5px 12px}
+.mi2:hover{background:#e6e6e6}
+.mi2 svg{width:16px;height:16px}
+.mi2.dis{color:#aaa}
+.msep{border-top:1px solid #e3e3e3;margin:2px 0}
+/* backstage */
+.bs{position:absolute;inset:0;display:flex}
+.bs .side{width:200px;background:var(--acc);color:#fff;display:flex;flex-direction:column}
+.bs .side h2{font-weight:400;font-size:22px;margin:22px 18px 18px}
+.bs .side div{padding:9px 18px;display:flex;gap:8px;align-items:center;font-size:13px}
+.bs .side div.on{background:#7c2629}
+.bs .bm{flex:1;background:#fff;display:flex;flex-direction:column}
+.bs .bt{height:32px;display:flex;justify-content:space-between;align-items:center;padding:0 10px;font-size:12px;border-bottom:1px solid #eee}
+.bs .bt .ctr{display:flex;gap:16px;direction:ltr}
+.bs h3{font-weight:400;font-size:26px;margin:22px 30px 10px}
+.bs .nw{margin:0 30px;padding:10px 0;border-top:1px solid #ddd;font-weight:700;font-size:13px}
+.bs .tpls{display:flex;gap:26px;margin:6px 30px}
+.tpl{width:170px;border:1px solid transparent;padding:8px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12.5px}
+.tpl:hover{border-color:#bbb;background:#f6f6f6}
+.tpl .th{width:150px;height:110px;border:1px solid #ddd;display:grid;place-items:center;background:#fafafa}
+</style>
+
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div><h1>محاكي مايكروسوفت أكسس</h1><p>تطبيق خطوات الكتاب خطوة بخطوة · قاعدة البيانات والاستعلام</p></div>
+    </div>
+    <div class="mode" role="tablist" aria-label="وضع المحاكي">
+      <button id="m-demo" class="on" role="tab">عرض المعلمة</button>
+      <button id="m-prac" role="tab">تدريب الطالبة</button>
+    </div>
+  </header>
+  <nav class="lessons" id="lessons" aria-label="الدروس"></nav>
+  <section class="guide" id="guide" aria-live="polite"></section>
+  <div id="stage"><div id="win"></div></div>
+  <p class="foot">المحاكي تمثيل تعليمي لواجهة أكسس بحسب صور الكتاب (ص 50–84)، يعمل على أي جهاز وعلى السبورة الذكية. في وضع التدريب تضغط الطالبة بنفسها على العنصر الصحيح، وتظهر لها رسالة إذا اختارت عنصرًا خاطئًا.</p>
+</div>
+<div id="badge" hidden></div>
+<svg id="cursor" viewBox="0 0 26 30" aria-hidden="true"><path d="M3 2v22l6-5 4 9 4-2-4-9h8z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>
+<div id="toast" role="status"></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- helpers ---------- */
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const norm=s=>String(s??'').trim().replace(/ـ/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ');
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const md=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const AUTO='ترقيم تلقائي';
+const TYPES=['نص مختصر','نص طويل','رقم','رقم كبير','تاريخ/وقت','تم توسيع التاريخ/الوقت','عملة',AUTO,'نعم/لا','عنصر OLE','ارتباط تشعبي','مرفق','محسوب','معالج البحث...'];
+
+/* ---------- icons ---------- */
+const P={
+ grid:'<rect x="3" y="4" width="18" height="16" rx="1" fill="#fff"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16"/>',
+ view:'<rect x="3" y="3" width="13" height="13" fill="#fff"/><path d="M3 8h13M8 3v13"/><path d="M10 21l9-9 2 2-9 9h-2z" fill="#f2c94c"/>',
+ tdesign:'<rect x="3" y="4" width="14" height="16" fill="#fff"/><path d="M3 9h14M3 14h14M9 4v16"/><path d="M13 21l8-8v8z" fill="#ddd"/>',
+ key:'<circle cx="8" cy="12" r="4" fill="#f2c94c"/><path d="M12 12h9M18 12v4M21 12v3"/>',
+ run:'<path d="M12 3v12" stroke="#d1262e" stroke-width="3.4" stroke-linecap="round"/><circle cx="12" cy="20" r="2" fill="#d1262e" stroke="none"/>',
+ wiz:'<path d="M4 20 15 9"/><path d="M15 3v3M18 6h3M17 4l2-2M12 6l1 1M18 9l1 1" stroke="#e2a200"/>',
+ qwiz:'<rect x="3" y="4" width="12" height="10" fill="#fff"/><path d="M3 8h12M7 4v10"/><path d="M12 21l7-7M19 10v2M21 14h-2" stroke="#e2a200"/>',
+ qdesign:'<rect x="3" y="4" width="12" height="10" fill="#fff"/><path d="M3 8h12M7 4v10"/><path d="M14 13h7l-3 4v4l-2-1v-3z" fill="#9bc3ea"/>',
+ form:'<rect x="4" y="3" width="16" height="18" rx="1" fill="#fff"/><path d="M7 7h10M7 11h4M12 11h5M7 15h4M12 15h5"/>',
+ fdesign:'<rect x="4" y="3" width="16" height="18" fill="#fff"/><path d="M7 7h10M7 11h10"/><path d="M14 21l6-6 1 1-6 6z" fill="#f2c94c"/>',
+ bform:'<rect x="4" y="3" width="16" height="18" fill="#fff"/>',
+ report:'<rect x="4" y="3" width="16" height="18" fill="#fff"/><path d="M7 15v3M11 11v7M15 8v10"/>',
+ rdesign:'<rect x="4" y="3" width="16" height="18" fill="#fff"/><path d="M7 7h10M7 11h6"/><path d="M14 21l6-6 1 1-6 6z" fill="#f2c94c"/>',
+ rel:'<rect x="2" y="3" width="9" height="8" fill="#fff"/><rect x="13" y="13" width="9" height="8" fill="#fff"/><path d="M11 7h5v6"/>',
+ dep:'<rect x="3" y="3" width="7" height="6" fill="#fff"/><rect x="14" y="15" width="7" height="6" fill="#fff"/><path d="M6 9v9h8"/>',
+ save:'<path d="M4 4h13l3 3v13H4z" fill="#fff"/><path d="M8 4v5h8V4M7 20v-6h10v6"/>',
+ new:'<path d="M5 5h10v14H5z" fill="#fff"/><path d="M15 10h6M18 7v6" stroke="#1f8a4c"/>',
+ del:'<path d="M6 6l12 12M18 6 6 18" stroke="#d1262e" stroke-width="2.4"/>',
+ asc:'<path d="M6 4v16M3 17l3 3 3-3"/><text x="12" y="10" font-size="8" fill="#1b5fae" stroke="none">A</text><text x="12" y="20" font-size="8" fill="#555" stroke="none">Z</text>',
+ desc:'<path d="M6 4v16M3 17l3 3 3-3"/><text x="12" y="10" font-size="8" fill="#555" stroke="none">Z</text><text x="12" y="20" font-size="8" fill="#1b5fae" stroke="none">A</text>',
+ rm:'<path d="M5 6h14M5 12h9M5 18h5M15 15l5 5M20 15l-5 5" />',
+ filter:'<path d="M3 5h18l-7 8v6l-4 2v-8z" fill="#fff"/>',
+ paste:'<rect x="5" y="5" width="14" height="16" rx="1" fill="#e9d9b6"/><path d="M9 5V3h6v2"/><rect x="9" y="9" width="10" height="12" fill="#fff"/>',
+ cut:'<circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="18" r="2.5"/><path d="M8.5 16 17 4M15.5 16 7 4"/>',
+ copy:'<rect x="8" y="8" width="12" height="13" fill="#fff"/><path d="M5 16V4h11"/>',
+ search:'<circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/>',
+ refresh:'<path d="M5 3h10l4 4v14H5z" fill="#fff"/><path d="M16 15a4 4 0 1 1-1-3M16 9v3h-3" stroke="#1f8a4c"/>',
+ db:'<ellipse cx="12" cy="6" rx="7" ry="3" fill="#e9c88a"/><path d="M5 6v12c0 1.7 3 3 7 3s7-1.3 7-3V6"/>',
+ parts:'<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/>',
+ list:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+ tadd:'<rect x="3" y="6" width="14" height="14" fill="#fff"/><path d="M3 11h14M8 6v14"/><path d="M19 2v6M16 5h6" stroke="#1f8a4c"/>',
+ ins:'<path d="M3 6h18M3 12h18M3 18h18"/><path d="M8 9l4 3-4 3" fill="#1f8a4c" stroke="none"/>',
+ delr:'<path d="M3 6h18M3 12h18M3 18h18"/><path d="M9 10l6 4M15 10l-6 4" stroke="#d1262e"/>',
+ props:'<rect x="4" y="3" width="16" height="18" fill="#fff"/><path d="M7 7h3M12 7h5M7 11h3M12 11h5M7 15h3M12 15h5"/>',
+ idx:'<path d="M5 4h14v16H5z" fill="#fff"/><path d="M8 8h8M8 12h8M8 16h5"/><circle cx="17" cy="17" r="3" fill="#f2c94c"/>',
+ macro:'<path d="M4 19 19 4M10 4h9v9"/>',
+ sum:'<path d="M18 4H6l7 8-7 8h12"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17v.5"/>',
+ x:'<path d="M6 6l12 12M18 6 6 18"/>',
+ chk:'<rect x="4" y="4" width="16" height="16"/><path d="M8 12l3 3 5-6"/>',
+ txt:'<path d="M5 6h14M12 6v13"/>',
+ num:'<text x="3" y="17" font-size="11" fill="#333" stroke="none">12</text>',
+ cal:'<rect x="3" y="5" width="18" height="16"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ excel:'<rect x="3" y="3" width="18" height="18" fill="#1d6f42" stroke="none"/><path d="M8 8l8 8M16 8l-8 8" stroke="#fff"/>',
+ pdf:'<rect x="4" y="3" width="16" height="18" fill="#fff"/><text x="6" y="16" font-size="7" fill="#c00" stroke="none">PDF</text>',
+ doc:'<path d="M5 3h10l4 4v14H5z" fill="#fff"/>',
+ perf:'<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/>',
+ vb:'<rect x="3" y="4" width="18" height="16" fill="#fff"/><text x="6" y="16" font-size="8" fill="#245" stroke="none">VB</text>',
+ label:'<rect x="3" y="6" width="18" height="12" rx="2" fill="#fff"/>',
+ nav:'<rect x="3" y="4" width="18" height="16" fill="#fff"/><path d="M3 8h18"/>',
+ more:'<rect x="4" y="4" width="16" height="16" fill="#fff"/><path d="M8 12h8M12 8v8"/>',
+ fb:'<path d="M4 5h16v11H9l-5 4z" fill="#fff"/>',
+ query:'<rect x="2" y="4" width="11" height="9" fill="#fff"/><path d="M2 8h11M6 4v9"/><rect x="10" y="11" width="11" height="9" fill="#fff"/><path d="M10 15h11M14 11v9"/>',
+ pk:'<circle cx="6" cy="12" r="3.5" fill="#f2c94c"/><path d="M9.5 12h11M17 12v4M20 12v3"/>'
+};
+const ic=(n,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="#3b3b3b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${P[n]||P.bform}</svg>`;
+const tIcon='<svg viewBox="0 0 24 24" fill="none" stroke="#2b6cb0" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" fill="#e8f1fb"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16"/></svg>';
+const qIcon=ic('query');
+const fIcon='<svg viewBox="0 0 24 24" fill="none" stroke="#a4373a" stroke-width="1.6"><rect x="4" y="3" width="16" height="18" fill="#fde8e8"/><path d="M7 7h10M7 11h10M7 15h6"/></svg>';
+
+/* ---------- textbook data ---------- */
+const F_STU=[
+ {n:'رقم الطالب',t:AUTO,d:'الرقم الشخصي للطالب',pk:true},
+ {n:'الاسم',t:'نص مختصر',d:'اسم الطالب'},
+ {n:'اسم العائلة',t:'نص مختصر',d:'لقب الطالب'},
+ {n:'العنوان الوطني',t:'نص مختصر',d:'عنوان الطالب'},
+ {n:'الصف الدراسي',t:'نص مختصر',d:'الصف الدراسي للطالب'},
+ {n:'رقم الفصل',t:'رقم',d:'رقم الشعبة للطالب'}];
+const R_STU=[[1,'أحمد','وليد','RBBD**21','الثالث المتوسط',2],[2,'جابر','يحيى','RBBD**32','الثالث المتوسط',3],[3,'خالد','بلال','RBBD**23','الثالث المتوسط',2],[4,'فهد','حامد','RBBD**24','الثالث المتوسط',3],[5,'ناصر','سامي','RBBD**18','الثالث المتوسط',2],[6,'أسامة','سعود','RBBD**26','الثالث المتوسط',2],[7,'طلال','محمد','RBBD**52','الثالث المتوسط',3],[8,'زياد','عبدالله','RBBD**12','الثالث المتوسط',3]];
+const F_SUB=[{n:'رقم المادة',t:AUTO,d:'',pk:true},{n:'اسم المادة',t:'نص مختصر',d:''}];
+const R_SUB=[[1,'الدراسات الإسلامية'],[2,'اللغة العربية'],[3,'اللغة الإنجليزية'],[4,'الرياضيات']];
+const F_GR=['رقم الطالب','رقم المادة','درجة منتصف الفصل الدراسي الأول','الدرجة النهائية للفصل الدراسي الأول','درجة منتصف الفصل الدراسي الثاني','الدرجة النهائية للفصل الدراسي الثاني','درجة منتصف الفصل الدراسي الثالث','الدرجة النهائية للفصل الدراسي الثالث','الدرجة النهائية'].map((n,i)=>({n,t:'رقم',d:'',pk:i<2}));
+const g=(s,m,f)=>[s,m,...[1,-2,2,0,-1,1].map(d=>Math.max(0,Math.min(100,f+d))),f];
+const R_GR=[g(1,1,98),g(1,2,74),g(2,3,99),g(2,4,98),g(3,1,85),g(3,2,98),g(4,3,85),g(4,4,98),g(5,1,99),g(5,4,98),g(6,1,62),g(6,2,99),g(7,2,98),g(7,3,99),g(8,1,98),g(8,2,99)];
+const RELS=[{a:{t:'المواد الدراسية',f:'رقم المادة'},b:{t:'درجات الطلبة',f:'رقم المادة'},enforce:true},{a:{t:'بيانات الطلبة',f:'رقم الطالب'},b:{t:'درجات الطلبة',f:'رقم الطالب'},enforce:true}];
+
+const tStu=(rows=true)=>({fields:clone(F_STU),rows:rows?clone(R_STU):[]});
+const tSub=(rows=true)=>({fields:clone(F_SUB),rows:rows?clone(R_SUB):[]});
+const tGr=()=>({fields:clone(F_GR),rows:clone(R_GR)});
+function app(tables,extra){return Object.assign({screen:'app',db:'عينة1',tables,rels:[],queries:{},forms:{},tabs:[],active:-1,ribbon:'home',menu:null,dialog:null,pane:null},extra||{})}
+function allTables(){return {'المواد الدراسية':tSub(),'بيانات الطلبة':tStu(),'درجات الطلبة':tGr()}}
+function newDb(name){return app({'جدول1':{fields:[{n:'المعرف',t:AUTO,d:'',pk:true}],rows:[],temp:true}},{db:name,tabs:[{kind:'ds',name:'جدول1'}],active:0})}
+
+/* ---------- lessons (steps follow the textbook) ---------- */
+const G1='الدرس الأول: إنشاء قاعدة البيانات', G2='الدرس الثاني: الاستعلام في قاعدة البيانات';
+const LESSONS=[
+{g:G1,title:'إنشاء قاعدة البيانات',pages:'50–51',
+ tip:'من خلال **طريقة عرض ورقة البيانات** يمكنك إضافة البيانات مباشرة إلى جدولك، وسيهيكل البرنامج الجدول بشكل مبدئي.',
+ setup:()=>({screen:'desktop'}),
+ steps:[
+  {t:'start',text:'اضغطي زر **بدء (Start)** في شريط المهام.',label:'زر بدء في شريط المهام'},
+  {t:'app-access',text:'مرّري الشريط الجانبي للأسفل وصولًا للتطبيقات، ثم اضغطي على **أكسس (Access)**.',label:'أكسس في قائمة التطبيقات'},
+  {t:'blankdb',text:'سيفتح برنامج **مايكروسوفت أكسس**. من قائمة **جديد (New)** اختاري **قاعدة بيانات فارغة (Blank Database)**.',label:'قاعدة بيانات فارغة'},
+  {t:'dbname',act:'type',v:'عينة1',text:'في صندوق **اسم الملف** اكتبي اسمًا لقاعدة البيانات الجديدة:',label:'صندوق اسم الملف'},
+  {t:'create',text:'اضغطي على **إنشاء (Create)**.',label:'زر إنشاء'}],
+ done:'تم إنشاء قاعدة بيانات جديدة باسم «عينة1»، ويعرض أكسس جدولًا فارغًا باسم «جدول1» بطريقة عرض ورقة البيانات.'},
+{g:G1,title:'إنشاء جدول بطريقة عرض التصميم',pages:'52–53',
+ tip:'عليك **تخطيط هيكل الجدول** قبل إنشائه: حددي أنواع البيانات التي تحتاجين تخزينها، واستخدمي نوع البيانات المناسب لكل حقل.',
+ setup:()=>newDb('عينة1'),
+ steps:[
+  {t:'rb-view',text:'من تبويب **الشريط الرئيسي (Home)**، مجموعة **طرق عرض**، اضغطي على **عرض (View)**.',label:'زر عرض في الشريط'},
+  {t:'menu-design',text:'اختاري من القائمة المنسدلة **طريقة عرض التصميم (Design View)**.',label:'طريقة عرض التصميم'},
+  {t:'dlg-name',act:'type',v:'بيانات الطلبة',text:'في نافذة **حفظ باسم (Save As)** اكتبي اسم الجدول:',label:'مربع اسم الجدول'},
+  {t:'dlg-ok',text:'اضغطي على **موافق (OK)**.',label:'زر موافق'},
+  {t:'fname-0',act:'type',v:'رقم الطالب',text:'في عمود **اسم الحقل** غيّري «المعرف» إلى اسم الحقل الأول، ونوعه **ترقيم تلقائي**:',label:'خانة اسم الحقل الأول'},
+  {t:'fname-1',act:'type',v:'الاسم',text:'في الصف الثاني اكتبي اسم الحقل التالي (نوعه **نص مختصر**):',label:'خانة اسم الحقل في الصف الثاني'},
+  {t:'fdesc-1',act:'type',v:'اسم الطالب',text:'يمكنك إدخال معلومات إضافية عن الحقل في خانة **الوصف (Description)**. اكتبي:',label:'خانة الوصف في الصف الثاني'},
+  {t:'auto',act:'auto',text:'أكملي بقية الحقول النصية بالطريقة نفسها: **اسم العائلة**، **العنوان الوطني**، **الصف الدراسي**.',autoLabel:'أكملي الحقول الثلاثة',label:'زر إكمال الحقول',
+   after:S=>{const F=S.tables['بيانات الطلبة'].fields;F[0].d='الرقم الشخصي للطالب';[F_STU[2],F_STU[3],F_STU[4]].forEach((f,k)=>F[2+k]=clone(f));}},
+  {t:'fname-5',act:'type',v:'رقم الفصل',text:'اكتبي اسم الحقل الأخير:',label:'خانة اسم الحقل في الصف السادس'},
+  {t:'ftype-5',act:'select',v:'رقم',text:'من قائمة **نوع البيانات (Data Type)** اختاري النوع المناسب لرقم الفصل:',label:'قائمة نوع البيانات'},
+  {t:'qa-save',text:'اضغطي على زر **حفظ (Save)** أعلى النافذة.',label:'زر الحفظ في شريط العنوان'}],
+ done:'أصبح جدول «بيانات الطلبة» جاهزًا بستة حقول، ولكل حقل نوع بيانات مناسب.'},
+{g:G1,title:'الحقل المطلوب',pages:'55–56',
+ tip:'الحقل المطلوب لا يمكن تركه فارغًا؛ إذا حاول المستخدم حفظ السجل دون إكماله يعرض أكسس **رسالة خطأ** ويمنع الحفظ.',
+ setup:()=>app({'بيانات الطلبة':tStu(false)},{tabs:[{kind:'design',name:'بيانات الطلبة',sel:0}],active:0,ribbon:'tdesign'}),
+ steps:[
+  {t:'frow-1',text:'حدّدي الحقل الذي تريدين أن تكون له قيمة إلزامية، وليكن حقل **الاسم**.',label:'صف حقل الاسم'},
+  {t:'prop-required',act:'select',v:'نعم',text:'في جزء **خصائص الحقل**، تبويب **عام (General)**، عيّني الخاصية **مطلوب (Required)** إلى:',label:'خاصية مطلوب في خصائص الحقل'},
+  {t:'rb-view',text:'من تبويب **تصميم (Design)**، مجموعة **طرق عرض**، اضغطي على **عرض (View)**.',label:'زر عرض'},
+  {t:'menu-datasheet',text:'حدّدي **طريقة عرض ورقة البيانات (Datasheet View)**.',label:'طريقة عرض ورقة البيانات'},
+  {t:'msg-yes',text:'تظهر رسالة **قم بحفظ الجدول أولاً**. اضغطي على **نعم (Yes)**.',label:'زر نعم',
+   after:S=>{const t=S.tabs[S.active];t.pending=[1,'','وليد','RBBD**21','الثالث المتوسط',2];}},
+  {t:'rb-save',text:'هذا سجل جديد دون **اسم**. جرّبي حفظه: من مجموعة **سجلات** اضغطي **حفظ**.',label:'زر حفظ في مجموعة سجلات'},
+  {t:'msg-ok',text:'ظهرت رسالة: **يجب إدخال قيمة في الحقل**. اضغطي **موافق**.',label:'زر موافق في الرسالة'},
+  {t:'cell-pend|الاسم',act:'type',v:'أحمد',text:'اكتبي قيمة في حقل **الاسم**:',label:'خانة الاسم في السجل'},
+  {t:'rb-save',text:'اضغطي **حفظ** مرة أخرى.',label:'زر حفظ'}],
+ done:'حُفظ السجل لأن حقل «الاسم» أصبح فيه قيمة. الحقول المطلوبة تحافظ على تكامل البيانات.'},
+{g:G1,title:'المفتاح الأساسي',pages:'57–58',
+ tip:'يضمن **الترقيم التلقائي** مع **المفتاح الأساسي** أن يكون لكل سجل رقم فريد يميزه عن غيره من السجلات.',
+ setup:()=>app({'بيانات الطلبة':tStu()}),
+ steps:[
+  {t:'tab-create',text:'لننشئ جدول **المواد الدراسية**. اضغطي على تبويب **إنشاء (Create)**.',label:'تبويب إنشاء'},
+  {t:'rb-tabledesign',text:'من مجموعة **جداول** اضغطي **تصميم الجدول**.',label:'زر تصميم الجدول'},
+  {t:'fname-0',act:'type',v:'رقم المادة',text:'اكتبي اسم الحقل الأول:',label:'خانة اسم الحقل الأول'},
+  {t:'ftype-0',act:'select',v:AUTO,text:'من قائمة **نوع البيانات** اختاري:',label:'قائمة نوع البيانات'},
+  {t:'fname-1',act:'type',v:'اسم المادة',text:'اكتبي اسم الحقل الثاني (نوعه **نص مختصر**):',label:'خانة اسم الحقل الثاني'},
+  {t:'frow-0',text:'حدّدي حقل **رقم المادة** (اضغطي على صفه).',label:'صف حقل رقم المادة'},
+  {t:'rb-pk',text:'من تبويب **تصميم**، مجموعة **أدوات**، اضغطي **مفتاح أساسي (Primary Key)**.',label:'زر مفتاح أساسي'},
+  {t:'qa-save',text:'اضغطي زر **حفظ** أعلى النافذة.',label:'زر الحفظ'},
+  {t:'dlg-name',act:'type',v:'المواد الدراسية',text:'اكتبي اسم الجدول:',label:'مربع اسم الجدول'},
+  {t:'dlg-ok',text:'اضغطي **موافق (OK)**.',label:'زر موافق'}],
+ done:'ظهر رمز المفتاح بجوار «رقم المادة»، وأُضيف جدول «المواد الدراسية» إلى شريط التنقل.'},
+{g:G1,title:'إنشاء العلاقات بين الجداول',pages:'62–64',
+ tip:'**فرض التكامل المرجعي** يضمن وجود قيمة المفتاح الأجنبي في أحد الجداول كقيمة مفتاح أساسي في الجدول الآخر، فيمنع إدخال بيانات غير صالحة.',
+ setup:()=>app(allTables()),
+ steps:[
+  {t:'tab-dbtools',text:'اضغطي على تبويب **أدوات قاعدة البيانات (Database Tools)**.',label:'تبويب أدوات قاعدة البيانات'},
+  {t:'rb-rel',text:'من مجموعة **العلاقات** اضغطي على **علاقات (Relationships)**.',label:'زر علاقات'},
+  {t:'at-list',text:'من لوحة **إضافة جداول**، حدّدي جميع الجداول (اضغطي على القائمة).',label:'قائمة الجداول في لوحة إضافة جداول'},
+  {t:'at-add',text:'اضغطي **إضافة الجداول المحددة**.',label:'زر إضافة الجداول المحددة'},
+  {t:'at-close',text:'اضغطي **إغلاق ×**.',label:'زر الإغلاق في اللوحة'},
+  {t:'rf|المواد الدراسية|رقم المادة',to:'rf|درجات الطلبة|رقم المادة',act:'drag',text:'اسحبي حقل **رقم المادة** من جدول **المواد الدراسية** وأفلتيه على **رقم المادة** في جدول **درجات الطلبة**.',label:'حقل رقم المادة في جدول المواد الدراسية'},
+  {t:'er-enforce',text:'في نافذة **تحرير علاقات** اضغطي على **فرض التكامل المرجعي**.',label:'خيار فرض التكامل المرجعي'},
+  {t:'er-create',text:'اضغطي **إنشاء (Create)**.',label:'زر إنشاء'},
+  {t:'rf|بيانات الطلبة|رقم الطالب',to:'rf|درجات الطلبة|رقم الطالب',act:'drag',text:'بنفس الطريقة اسحبي **رقم الطالب** من جدول **بيانات الطلبة** وأفلتيه على **رقم الطالب** في جدول **درجات الطلبة**.',label:'حقل رقم الطالب في جدول بيانات الطلبة'},
+  {t:'er-enforce',text:'اضغطي على **فرض التكامل المرجعي**.',label:'خيار فرض التكامل المرجعي'},
+  {t:'er-create',text:'اضغطي **إنشاء (Create)**.',label:'زر إنشاء'}],
+ done:'أصبحت الجداول مرتبطة معًا بعلاقتين من نوع رأس بأطراف (1 – ∞).'},
+{g:G1,title:'إضافة السجلات',pages:'64–65',
+ tip:'حقل رقم المادة من نوع **ترقيم تلقائي**، فيُعطى كل سجل جديد رقمه تلقائيًا ولا تكتبينه بنفسك.',
+ setup:()=>app({'المواد الدراسية':tSub(false),'بيانات الطلبة':tStu()}),
+ steps:[
+  {t:'nav-المواد الدراسية',act:'dbl',text:'من شريط تصفح الجداول، اضغطي **ضغطًا مزدوجًا** على جدول **المواد الدراسية**.',label:'جدول المواد الدراسية في شريط التنقل'},
+  {t:'cell-new|اسم المادة',act:'type',v:'الدراسات الإسلامية',text:'في خانة **اسم المادة** أضيفي:',label:'خانة اسم المادة في السجل الجديد'},
+  {t:'cell-new|اسم المادة',act:'type',v:'اللغة العربية',text:'يُعد كل سطر سجلًا جديدًا. أضيفي المادة الثانية:',label:'خانة اسم المادة'},
+  {t:'cell-new|اسم المادة',act:'type',v:'اللغة الإنجليزية',text:'أضيفي المادة الثالثة:',label:'خانة اسم المادة'},
+  {t:'cell-new|اسم المادة',act:'type',v:'الرياضيات',text:'أكملي بقية السجلات:',label:'خانة اسم المادة'}],
+ done:'أصبح في جدول المواد الدراسية أربعة سجلات، ولكل منها رقم مادة فريد.'},
+{g:G1,title:'إنشاء نموذج بالمعالج',pages:'66–68',
+ tip:'**النموذج (Form)** واجهة رسومية تسهّل إدخال البيانات وتعديلها وحذفها والبحث عنها.',
+ setup:()=>app(allTables(),{rels:clone(RELS)}),
+ steps:[
+  {t:'tab-create',text:'اضغطي على تبويب **إنشاء (Create)**.',label:'تبويب إنشاء'},
+  {t:'rb-formwiz',text:'من مجموعة **نماذج** اضغطي **معالج النماذج (Form Wizard)**.',label:'زر معالج النماذج'},
+  {t:'fw-table',act:'select',v:'الجدول: بيانات الطلبة',text:'من حقل **جداول/استعلامات** اختاري:',label:'قائمة جداول/استعلامات'},
+  {t:'fw-all',text:'اضغطي الزر **>>** لتضمين جميع الحقول في النموذج.',label:'زر >> لتضمين كل الحقول'},
+  {t:'fw-next',text:'اضغطي **التالي (Next)**.',label:'زر التالي'},
+  {t:'fw-col',text:'اختاري التخطيط **عمودي (Columnar)**.',label:'خيار عمودي'},
+  {t:'fw-next',text:'اضغطي **التالي (Next)**.',label:'زر التالي'},
+  {t:'fw-title',act:'type',v:'نموذج للتعامل مع بيانات طالب',text:'اكتبي اسم النموذج:',label:'مربع عنوان النموذج'},
+  {t:'fw-open',text:'حدّدي الخيار **فتح النموذج لعرض المعلومات أو إدخالها**.',label:'خيار فتح النموذج'},
+  {t:'fw-finish',text:'اضغطي **إنهاء (Finish)**.',label:'زر إنهاء'}],
+ done:'فُتح النموذج على الشاشة، ويمكنك الآن عرض السجلات وإضافتها والبحث عنها وتعديلها.'},
+{g:G1,title:'إضافة سجل باستخدام النموذج',pages:'68–69',
+ tip:'لتعبئة النموذج بسرعة اضغطي مفتاح **Tab** بعد كل حقل للانتقال إلى الحقل التالي.',
+ setup:()=>app(allTables(),{forms:{'نموذج للتعامل مع بيانات طالب':{table:'بيانات الطلبة'}},tabs:[{kind:'form',name:'نموذج للتعامل مع بيانات طالب',table:'بيانات الطلبة',idx:0}],active:0}),
+ steps:[
+  {t:'rb-new',text:'من تبويب **الشريط الرئيسي**، مجموعة **سجلات**، اضغطي **جديد (New)**.',label:'زر جديد في مجموعة سجلات'},
+  {t:'fm|الاسم',act:'type',v:'أحمد',text:'أدخلي البيانات في حقول النموذج. **الاسم**:',label:'مربع الاسم في النموذج'},
+  {t:'fm|اسم العائلة',act:'type',v:'عبدالله',text:'**اسم العائلة**:',label:'مربع اسم العائلة'},
+  {t:'fm|العنوان الوطني',act:'type',v:'RBBD**13',text:'**العنوان الوطني**:',label:'مربع العنوان الوطني'},
+  {t:'fm|الصف الدراسي',act:'type',v:'الثالث المتوسط',text:'**الصف الدراسي**:',label:'مربع الصف الدراسي'},
+  {t:'fm|رقم الفصل',act:'type',v:'2',text:'**رقم الفصل**:',label:'مربع رقم الفصل'},
+  {t:'rb-save',text:'من مجموعة **سجلات** اضغطي **حفظ (Save)**.',label:'زر حفظ'},
+  {t:'nav-بيانات الطلبة',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على جدول **بيانات الطلبة** لعرض سجلات الجدول.',label:'جدول بيانات الطلبة في شريط التنقل'}],
+ done:'ظهر السجل التاسع الذي أضفتِه بالنموذج داخل جدول بيانات الطلبة.'},
+{g:G1,title:'حذف سجل',pages:'70',
+ tip:'قبل حذف أي سجل تأكدي أنه غير ضروري، ومن الأفضل الاحتفاظ **بنسخ احتياطية** من قاعدة البيانات.',
+ setup:()=>{const T=allTables();T['بيانات الطلبة'].rows.push([9,'أحمد','عبدالله','RBBD**13','الثالث المتوسط',2]);return app(T,{forms:{'نموذج للتعامل مع بيانات طالب':{table:'بيانات الطلبة'}},tabs:[{kind:'form',name:'نموذج للتعامل مع بيانات طالب',table:'بيانات الطلبة',idx:0}],active:0});},
+ steps:[
+  {t:'fm-recnum',act:'type',v:'9',text:'من شريط أدوات التنقل، في مربع **السجل الحالي** اكتبي رقم السجل الذي تريدين حذفه:',label:'مربع السجل الحالي أسفل النموذج'},
+  {t:'fm-selector',text:'اضغطي على **محدد السجل ◂** بجوار السجل لتحديده.',label:'محدد السجل بجانب النموذج'},
+  {t:'rb-delete',text:'من مجموعة **سجلات** اضغطي على السهم بجوار **حذف (Delete)**.',label:'زر حذف'},
+  {t:'menu-delrec',text:'اضغطي **حذف سجل (Delete Record)**.',label:'حذف سجل'},
+  {t:'msg-yes',text:'في رسالة التحذير اضغطي **نعم (Yes)**.',label:'زر نعم'}],
+ done:'حُذف السجل التاسع، ولا يمكن التراجع عن عملية الحذف.'},
+{g:G2,title:'إنشاء استعلام وحفظه',pages:'76–78',
+ tip:'**الاستعلام** سؤال محدد تطبّقه على قاعدة البيانات لاسترجاع بيانات محددة وفق معايير تحددها.',
+ setup:()=>app(allTables(),{rels:clone(RELS),forms:{'نموذج للتعامل مع بيانات طالب':{table:'بيانات الطلبة'}}}),
+ steps:[
+  {t:'tab-create',text:'اضغطي على تبويب **إنشاء (Create)**.',label:'تبويب إنشاء'},
+  {t:'rb-qdesign',text:'من مجموعة **استعلامات** اضغطي **تصميم الاستعلام (Query Design)**.',label:'زر تصميم الاستعلام'},
+  {t:'at-item-بيانات الطلبة',text:'من لوحة **إضافة جداول** اضغطي على جدول **بيانات الطلبة**.',label:'بيانات الطلبة في لوحة إضافة جداول'},
+  {t:'at-add',text:'اضغطي **إضافة الجداول المحددة**.',label:'زر إضافة الجداول المحددة'},
+  {t:'at-close',text:'اضغطي **إغلاق ×**.',label:'زر الإغلاق'},
+  {t:'qf|بيانات الطلبة|الاسم',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على الحقل **الاسم** ليظهر أسفل النافذة.',label:'حقل الاسم في مربع الجدول'},
+  {t:'qf|بيانات الطلبة|اسم العائلة',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على **اسم العائلة**.',label:'حقل اسم العائلة'},
+  {t:'qf|بيانات الطلبة|العنوان الوطني',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على **العنوان الوطني**.',label:'حقل العنوان الوطني'},
+  {t:'rb-run',text:'من تبويب **تصميم الاستعلام**، مجموعة **النتائج**، اضغطي **تشغيل (Run)**.',label:'زر تشغيل (!)'},
+  {t:'doctab-0',act:'ctx',text:'لحفظ الاستعلام: اضغطي **بزر الفأرة الأيمن** على علامة تبويب الاستعلام.',label:'علامة تبويب الاستعلام'},
+  {t:'ctx-save',text:'اضغطي **حفظ (Save)**.',label:'حفظ في القائمة'},
+  {t:'dlg-name',act:'type',v:'أدوات التواصل',text:'اكتبي اسم الاستعلام:',label:'مربع اسم الاستعلام'},
+  {t:'dlg-ok',text:'اضغطي **موافق (OK)**.',label:'زر موافق'}],
+ done:'ظهر الاستعلام «أدوات التواصل» في شريط تصفح عناصر قاعدة البيانات، ويمكن تشغيله مرة أخرى دون إعادة إنشائه.'},
+{g:G2,title:'فرز نتائج الاستعلام',pages:'79',
+ tip:'يمكن فرز نتائج الاستعلام **تصاعديًا** أو **تنازليًا** لتنظيم البيانات وتسهيل فهمها.',
+ setup:()=>app(allTables(),{rels:clone(RELS),queries:{'أدوات التواصل':{name:'أدوات التواصل',tables:['بيانات الطلبة'],cols:['الاسم','اسم العائلة','العنوان الوطني'].map(f=>({t:'بيانات الطلبة',f,sort:'',show:true,crit:''}))}},forms:{'نموذج للتعامل مع بيانات طالب':{table:'بيانات الطلبة'}}}),
+ steps:[
+  {t:'nav-أدوات التواصل',act:'ctx',text:'اضغطي **بزر الفأرة الأيمن** على الاستعلام **أدوات التواصل**.',label:'الاستعلام أدوات التواصل في شريط التنقل'},
+  {t:'ctx-design',text:'اضغطي **عرض التصميم (Design View)**.',label:'عرض التصميم في القائمة'},
+  {t:'qg-sort-0',act:'select',v:'تنازلي',text:'في عمود الحقل **الاسم**، من صف **فرز (Sort)** اختاري:',label:'خانة فرز تحت الاسم'},
+  {t:'rb-run',text:'من مجموعة **النتائج** اضغطي **تشغيل (Run)**.',label:'زر تشغيل'}],
+ done:'ظهرت جميع النتائج مرتبة حسب الاسم ترتيبًا تنازليًا.'},
+{g:G2,title:'استعلام من عدة جداول',pages:'80–81',
+ tip:'الاستعلام يمكنه **جمع البيانات من عدة جداول** مرتبطة بعلاقات، وعرض السجلات التي تستوفي معيارًا تحددينه.',
+ setup:()=>app(allTables(),{rels:clone(RELS),queries:{'أدوات التواصل':{name:'أدوات التواصل',tables:['بيانات الطلبة'],cols:['الاسم','اسم العائلة','العنوان الوطني'].map(f=>({t:'بيانات الطلبة',f,sort:'',show:true,crit:''}))}},forms:{'نموذج للتعامل مع بيانات طالب':{table:'بيانات الطلبة'}}}),
+ steps:[
+  {t:'tab-create',text:'اضغطي على تبويب **إنشاء (Create)**.',label:'تبويب إنشاء'},
+  {t:'rb-qdesign',text:'اضغطي **تصميم الاستعلام (Query Design)**.',label:'زر تصميم الاستعلام'},
+  {t:'at-list',text:'من لوحة **إضافة جداول** اختاري **كافة الجداول** (اضغطي على القائمة).',label:'قائمة الجداول'},
+  {t:'at-add',text:'اضغطي **إضافة الجداول المحددة**.',label:'زر إضافة الجداول المحددة'},
+  {t:'at-close',text:'اضغطي **إغلاق ×**.',label:'زر الإغلاق'},
+  {t:'qf|بيانات الطلبة|الاسم',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على **الاسم** من جدول بيانات الطلبة.',label:'حقل الاسم'},
+  {t:'qf|المواد الدراسية|اسم المادة',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على **اسم المادة** من جدول المواد الدراسية.',label:'حقل اسم المادة'},
+  {t:'qf|درجات الطلبة|الدرجة النهائية',act:'dbl',text:'اضغطي ضغطًا مزدوجًا على **الدرجة النهائية** من جدول درجات الطلبة.',label:'حقل الدرجة النهائية'},
+  {t:'qg-crit-2',act:'type',v:'<95',text:'في عمود **الدرجة النهائية**، صف **المعايير (Criteria)** اكتبي:',label:'خانة المعايير تحت الدرجة النهائية'},
+  {t:'rb-run',text:'اضغطي **تشغيل (Run)**.',label:'زر تشغيل'},
+  {t:'doctab-0',act:'ctx',text:'احفظي الاستعلام: اضغطي **بزر الفأرة الأيمن** على علامة تبويبه.',label:'علامة تبويب الاستعلام'},
+  {t:'ctx-save',text:'اضغطي **حفظ**.',label:'حفظ'},
+  {t:'dlg-name',act:'type',v:'الاستعلام عن بيانات طالب',text:'اكتبي اسم الاستعلام:',label:'مربع اسم الاستعلام'},
+  {t:'dlg-ok',text:'اضغطي **موافق**.',label:'زر موافق'}],
+ done:'عرض الاستعلام الطلبة الذين درجتهم النهائية أقل من 95 مع اسم المادة: أحمد، خالد، فهد، أسامة.'}
+];
+
+LESSONS.forEach(l=>l.steps.forEach(s=>{s.act=s.act||'click'}));
+/* ---------- state ---------- */
+let L=0,SI=0,S=null,MODE='demo',mistakes=0,busy=false,done=false,playing=false,armed=false,glowOff=false,suppress=0;
+const finished=new Set();
+const win=document.getElementById('win'),stage=document.getElementById('stage');
+const cur=()=>LESSONS[L].steps[SI];
+const isT=id=>!done&&!!cur()&&cur().t===id;
+const A=()=>S.tabs[S.active];
+const tgt=id=>{if(id==='auto')return document.getElementById('autoBtn');return [...win.querySelectorAll('[data-t]')].find(e=>e.dataset.t===id)};
+let scale=1;
+
+function fieldsOf(t){return t.isNew?t.fields:S.tables[t.name].fields}
+function nextId(tb){return Math.max(0,...tb.rows.map(r=>+r[0]||0))+1}
+function defRibbon(t){return t.kind==='design'?'tdesign':t.kind==='qdesign'?'qdesign':t.kind==='rel'?'reldesign':'home'}
+function openTab(tab){const i=S.tabs.findIndex(t=>t.name===tab.name);if(i>=0){S.tabs[i]=Object.assign(S.tabs[i],tab);S.active=i}else{S.tabs.push(tab);S.active=S.tabs.length-1}S.ribbon=defRibbon(A())}
+function renameTable(o,n){const T={};for(const k of Object.keys(S.tables))T[k===o?n:k]=S.tables[k];S.tables=T}
+function tableNames(){return Object.keys(S.tables).sort((a,b)=>a.localeCompare(b,'ar'))}
+
+/* ---------- actions: what each click does inside Access ---------- */
+const YES={
+ saveToDs(){const t=A();t.dirty=false;t.kind='ds';S.ribbon='home'},
+ deleteRecord(){const t=A();const R=S.tables[t.table].rows;R.splice(t.idx,1);t.idx=Math.max(0,Math.min(t.idx,R.length-1));t.selRec=false;toast('تم حذف السجل')}
+};
+function act(id,val,kind){
+ const t=S.tabs?A():null; const m=S.menu;
+ if(id!=='rb-view'&&id!=='rb-delete'&&!(kind==='ctx'))S.menu=null;
+ if(id==='start'){S.startOpen=true;return}
+ if(id==='app-access'){S.screen='backstage';S.startOpen=false;return}
+ if(id==='blankdb'){S.dialog={type:'blankdb',name:'Database1'};return}
+ if(id==='dbname'){S.dialog.name=val;return}
+ if(id==='create'){Object.assign(S,newDb(S.dialog.name.trim()||'Database1'));S.dialog=null;return}
+ if(id.startsWith('tab-')){S.ribbon=id.slice(4);return}
+ if(id==='rb-view'){S.menu={kind:'view',anchor:'rb-view'};return}
+ if(id==='menu-design'){const tb=S.tables[t.name];if(tb&&tb.temp){S.dialog={type:'saveas',label:'اسم الجدول:',name:t.name,purpose:'tableToDesign'}}else{t.kind='design';t.sel=t.sel||0;S.ribbon='tdesign'}return}
+ if(id==='menu-datasheet'){if(t.dirty)S.dialog={type:'msg',icon:'info',title:'قم بحفظ الجدول أولاً.',text:'هل تريد حفظ الجدول الآن؟',buttons:[['msg-yes','نعم'],['msg-no','لا']],yes:'saveToDs'};else{t.kind='ds';S.ribbon='home'}return}
+ if(id==='dlg-name'){S.dialog.name=val;return}
+ if(id==='dlg-cancel'){S.dialog=null;return}
+ if(id==='dlg-ok'){const d=S.dialog;S.dialog=null;const n=d.name.trim();
+   if(d.purpose==='tableToDesign'){renameTable(t.name,n);S.tables[n].temp=false;t.name=n;t.kind='design';t.sel=0;S.ribbon='tdesign'}
+   else if(d.purpose==='saveNewTable'){S.tables[n]={fields:t.fields,rows:[]};t.name=n;t.isNew=false;delete t.fields;t.dirty=false;toast('تم حفظ الجدول')}
+   else if(d.purpose==='saveQuery'){t.q.name=n;S.queries[n]=t.q;t.name=n;toast('تم حفظ الاستعلام')}
+   return}
+ let mm;
+ if((mm=id.match(/^f(name|type|desc)-(\d+)$/))){const i=+mm[2],F=fieldsOf(t);if(!F[i])F[i]={n:'',t:'نص مختصر',d:''};F[i][{name:'n',type:'t',desc:'d'}[mm[1]]]=val;t.sel=i;t.dirty=true;return}
+ if((mm=id.match(/^frow-(\d+)$/))){t.sel=+mm[1];return}
+ if(id==='prop-required'){fieldsOf(t)[t.sel].req=(val==='نعم');t.dirty=true;return}
+ if(id==='rb-pk'){const F=fieldsOf(t);F.forEach(f=>f.pk=false);if(F[t.sel])F[t.sel].pk=true;t.dirty=true;return}
+ if(id==='qa-save'){
+   if(t&&t.kind==='design'){if(t.isNew)S.dialog={type:'saveas',label:'اسم الجدول:',name:'جدول1',purpose:'saveNewTable'};else{t.dirty=false;toast('تم حفظ تصميم الجدول')}}
+   else if(t&&t.q&&!t.q.name)S.dialog={type:'saveas',label:'اسم الاستعلام:',name:t.name,purpose:'saveQuery'};
+   else toast('تم الحفظ');return}
+ if(id==='msg-yes'||id==='msg-ok'||id==='msg-no'||id==='msg-help'){const d=S.dialog;S.dialog=null;if(id==='msg-yes'&&d&&d.yes)YES[d.yes]();return}
+ if(id==='rb-save'){
+   if(t&&t.kind==='ds'&&t.pending){const tb=S.tables[t.name];const miss=tb.fields.findIndex((f,i)=>f.req&&!String(t.pending[i]??'').trim());
+     if(miss>=0){S.dialog={type:'msg',icon:'warn',title:'',text:`يجب إدخال قيمة في الحقل '${t.name}.${tb.fields[miss].n}'.`,buttons:[['msg-ok','موافق'],['msg-help','تعليمات']]};return}
+     tb.rows.push(t.pending);t.pending=null;toast('تم حفظ السجل');return}
+   if(t&&t.kind==='form'&&t.newRec){const tb=S.tables[t.table];tb.rows.push(t.newRec);t.idx=tb.rows.length-1;t.newRec=null;toast('تم حفظ السجل');return}
+   toast('تم الحفظ');return}
+ if(id.startsWith('cell-pend|')){const tb=S.tables[t.name];const i=tb.fields.findIndex(f=>f.n===id.slice(10));t.pending[i]=val;return}
+ if(id.startsWith('cell-new|')){const tb=S.tables[t.name];const fn=id.slice(9);const row=tb.fields.map(f=>f.t===AUTO?nextId(tb):'');row[tb.fields.findIndex(f=>f.n===fn)]=val;tb.rows.push(row);return}
+ if(id==='rb-tabledesign'){let k=1;while(S.tabs.some(x=>x.name==='جدول'+k)||S.tables['جدول'+k])k++;openTab({kind:'design',name:'جدول'+k,isNew:true,fields:[],sel:0});return}
+ if(id==='rb-rel'){openTab({kind:'rel',name:'علاقات',tables:[]});S.pane={sel:[]};return}
+ if(id==='at-list'){S.pane.sel=tableNames();return}
+ if(id.startsWith('at-item-')){const n=id.slice(8),s=S.pane.sel;S.pane.sel=s.includes(n)?s.filter(x=>x!==n):[...s,n];return}
+ if(id==='at-add'){const list=t.kind==='rel'?t.tables:t.q.tables;S.pane.sel.forEach(n=>{if(!list.includes(n))list.push(n)});S.pane.sel=[];return}
+ if(id==='at-close'){S.pane=null;return}
+ if(id.startsWith('rf|')){const [,ta,fa]=id.split('|');const [,tb2,fb]=String(val).split('|');S.dialog={type:'editrel',a:{t:ta,f:fa},b:{t:tb2,f:fb},enforce:false};return}
+ if(id==='er-enforce'){S.dialog.enforce=!S.dialog.enforce;return}
+ if(id==='er-create'){const d=S.dialog;S.rels.push({a:d.a,b:d.b,enforce:d.enforce});S.dialog=null;return}
+ if(id==='er-cancel'){S.dialog=null;return}
+ if(id.startsWith('nav-')){const n=id.slice(4);
+   if(kind==='ctx'){S.menu={kind:'ctx',anchor:id,for:n,items:[['ctx-open','فتح','doc'],['ctx-design','عرض التصميم','view'],0,['ctx-export','تصدير','doc'],['ctx-rename','إعادة تسمية','txt'],['ctx-hide','إخفاء في هذه المجموعة','x'],['ctx-del','حذف','del'],0,['ctx-cut','قص','cut'],['ctx-copy','نسخ','copy'],['ctx-paste','لصق','paste',1],0,['ctx-props','خصائص العنصر','props']]};return}
+   if(S.tables[n])openTab({kind:'ds',name:n});else if(S.queries[n])openTab({kind:'qres',name:n,q:S.queries[n]});else if(S.forms[n])openTab({kind:'form',name:n,table:S.forms[n].table,idx:0});return}
+ if(id.startsWith('doctab-')){const i=+id.slice(7);S.active=i;S.ribbon=defRibbon(A());
+   if(kind==='ctx')S.menu={kind:'ctx',anchor:id,for:'tab',items:[['ctx-save','حفظ','save'],['ctx-close','إغلاق','x'],['ctx-closeall','إغلاق الكل','bform'],0,['ctx-design','طريقة عرض التصميم','view'],['ctx-sql','طريقة عرض SQL','txt'],['ctx-ds','طريقة عرض ورقة البيانات','grid']]};return}
+ if(id==='ctx-save'){if(t&&t.q&&!t.q.name)S.dialog={type:'saveas',label:'اسم الاستعلام:',name:t.name,purpose:'saveQuery'};else toast('تم الحفظ');return}
+ if(id==='ctx-design'){if(m&&m.for&&m.for!=='tab'&&S.queries[m.for]){openTab({kind:'qdesign',name:m.for,q:S.queries[m.for]})}else if(t&&t.q){t.kind='qdesign';S.ribbon='qdesign'}return}
+ if(id==='rb-qdesign'){let k=1;while(S.tabs.some(x=>x.name==='استعلام'+k))k++;openTab({kind:'qdesign',name:'استعلام'+k,q:{name:null,tables:[],cols:[]}});S.pane={sel:[]};return}
+ if(id.startsWith('qf|')){const [,tn,f]=id.split('|');t.q.cols.push({t:tn,f,sort:'',show:true,crit:''});return}
+ if((mm=id.match(/^qg-(sort|crit)-(\d+)$/))){t.q.cols[+mm[2]][mm[1]]=val;return}
+ if(id==='rb-run'){t.kind='qres';S.ribbon='home';S.pane=null;return}
+ if(id==='rb-formwiz'){S.dialog={type:'fw',page:1,table:'الجدول: المواد الدراسية',sel:[],layout:'',title:'',open:false};return}
+ if(id==='fw-table'){S.dialog.table=val;S.dialog.sel=[];return}
+ if(id==='fw-all'){S.dialog.sel=S.tables[S.dialog.table.replace('الجدول: ','')].fields.map(f=>f.n);return}
+ if(id==='fw-next'){const d=S.dialog;d.page++;if(d.page===3&&!d.title)d.title=d.table.replace('الجدول: ','');return}
+ if(id==='fw-col'){S.dialog.layout='عمودي';return}
+ if(id==='fw-title'){S.dialog.title=val;return}
+ if(id==='fw-open'){S.dialog.open=true;return}
+ if(id==='fw-finish'||id==='fw-cancel'){const d=S.dialog;S.dialog=null;if(id==='fw-cancel')return;const tn=d.table.replace('الجدول: ','');S.forms[d.title]={table:tn};openTab({kind:'form',name:d.title,table:tn,idx:0});return}
+ if(id==='rb-new'){if(t&&t.kind==='form'){const tb=S.tables[t.table];t.newRec=tb.fields.map(f=>f.t===AUTO?nextId(tb):'');t.selRec=false}return}
+ if(id.startsWith('fm|')){const tb=S.tables[t.table];const i=tb.fields.findIndex(f=>f.n===id.slice(3));if(t.newRec)t.newRec[i]=val;else tb.rows[t.idx][i]=val;return}
+ if(id==='fm-recnum'){const n=S.tables[t.table].rows.length;t.idx=Math.max(0,Math.min(n-1,(+val||1)-1));t.newRec=null;return}
+ if(id==='fm-selector'){t.selRec=true;return}
+ if(id==='rb-delete'){S.menu={kind:'del',anchor:'rb-delete'};return}
+ if(id==='menu-delrec'){S.dialog={type:'msg',icon:'warn',title:'أنت على وشك القيام بحذف 1 سجل/سجلات.',text:'إذا نقرت "نعم"، لن يمكنك "التراجع عن" عملية الحذف هذه. تريد بالتأكيد حذف هذه السجلات؟',buttons:[['msg-yes','نعم'],['msg-no','لا']],yes:'deleteRecord'};return}
+}
+
+/* ---------- query engine ---------- */
+function runQuery(q){
+ const tabs=q.tables;let base;
+ const objOf=(tn,r)=>{const o={};S.tables[tn].fields.forEach((f,i)=>o[f.n]=r[i]);return o};
+ if(tabs.length===1)base=S.tables[tabs[0]].rows.map(r=>({[tabs[0]]:objOf(tabs[0],r)}));
+ else{const hub=tabs.find(tn=>tabs.every(o=>o===tn||S.rels.some(r=>(r.a.t===o&&r.b.t===tn)||(r.b.t===o&&r.a.t===tn))))||tabs[0];
+   base=S.tables[hub].rows.map(r=>({[hub]:objOf(hub,r)}));
+   tabs.filter(x=>x!==hub).forEach(o=>{const rel=S.rels.find(r=>(r.a.t===o&&r.b.t===hub)||(r.b.t===o&&r.a.t===hub));
+     const fo=rel?(rel.a.t===o?rel.a.f:rel.b.f):null,fh=rel?(rel.a.t===o?rel.b.f:rel.a.f):null;
+     base.forEach(rec=>{const hit=S.tables[o].rows.map(r=>objOf(o,r)).find(x=>fo&&String(x[fo])===String(rec[hub][fh]));rec[o]=hit||{}})})}
+ let rows=base.filter(rec=>q.cols.every(c=>{if(!c.crit)return true;const m=String(c.crit).trim().match(/^(<=|>=|<>|<|>|=)?\s*(.+)$/);const op=m[1]||'=',v=m[2].replace(/^"|"$/g,'');const x=rec[c.t][c.f];const a=isNaN(+x)||isNaN(+v)?String(x):+x,b=isNaN(+x)||isNaN(+v)?v:+v;
+   return op==='<'?a<b:op==='>'?a>b:op==='<='?a<=b:op==='>='?a>=b:op==='<>'?a!=b:a==b}));
+ const sc=q.cols.filter(c=>c.sort==='تصاعدي'||c.sort==='تنازلي');
+ if(sc.length)rows.sort((r1,r2)=>{for(const c of sc){const a=r1[c.t][c.f],b=r2[c.t][c.f];const d=(typeof a==='number'&&typeof b==='number')?a-b:String(a).localeCompare(String(b),'ar');if(d)return c.sort==='تنازلي'?-d:d}return 0});
+ const cols=q.cols.filter(c=>c.show);
+ return{cols,rows:rows.map(rec=>cols.map(c=>rec[c.t][c.f]))};
+}
+
+/* ---------- rendering ---------- */
+const isNum=f=>f.t==='رقم'||f.t===AUTO||f.t==='رقم كبير'||f.t==='عملة';
+function inp(id,v,cls){return isT(id)?`<input data-t="${esc(id)}" class="${cls}" value="${esc(v)}" autocomplete="off" spellcheck="false">`:`<span>${esc(v)}</span>`}
+function sel(id,opts,v){return `<select data-t="${esc(id)}">${opts.map(o=>`<option${o===v?' selected':''}>${esc(o)}</option>`).join('')}</select>`}
+
+function rDesktop(){
+ const app=(id,name,bg,l)=>`<div class="app" data-t="${id}"><span class="ico" style="background:${bg}">${l}</span>${name}</div>`;
+ return `<div class="desk"><div class="wall">Windows</div>
+ ${S.startOpen?`<div class="smenu"><div class="apps" id="apps">
+  <div class="let">#</div>${app('app-3d','3D Viewer','#555','3D')}${app('app-alarm','Alarms &amp; Clock','#1565c0','⏰')}
+  <div class="let">A</div>${app('app-access','Access','#a4373a','A')}${app('app-aud','Audacity','#e65100','♪')}
+  <div class="let">C</div>${app('app-canva','Canva','#00a3c4','C')}${app('app-kodu','Configure Kodu Game Lab','#444','K')}${app('app-cortana','Cortana','#0b5cad','○')}
+  <div class="let">E</div>${app('app-excel','Excel','#1d6f42','X')}
+  <div class="let">F</div>${app('app-ff','Firefox','#e66000','F')}
+  <div class="let">P</div>${app('app-ppt','PowerPoint','#c43e1c','P')}
+  <div class="let">W</div>${app('app-word','Word','#185abd','W')}</div>
+  <div class="rail"><span>☰</span><span style="margin-top:auto">👤</span><span>📄</span><span>🖼</span><span>⚙</span><span style="margin-bottom:12px">⏻</span></div></div>`:''}
+ <div class="taskbar"><div class="startbtn" data-t="start"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4fc3f7" d="M0 0h8v8H0zM10 0h8v8h-8zM0 10h8v8H0zM10 10h8v8h-8z"/></svg></div>
+  <div class="tb-i" data-t="tb-search">${ic('search')}</div><div class="tb-i" data-t="tb-task">▭</div><div class="tb-i" data-t="tb-edge" style="color:#3fa9f5">e</div><div class="tb-i" data-t="tb-files" style="color:#f2c94c">▬</div>
+  <div style="margin-right:auto;color:#cfd8e3;font-size:11px;direction:ltr">07:15 ص</div></div></div>`;
+}
+function rBackstage(){
+ const blank=`<svg width="120" height="96" viewBox="0 0 120 96"><path d="M30 6h40l14 14v70H30z" fill="#fff" stroke="#777" stroke-width="2"/><path d="M70 6v14h14" fill="none" stroke="#777" stroke-width="2"/><ellipse cx="84" cy="62" rx="16" ry="6" fill="#e8c27a" stroke="#c49a4a"/><path d="M68 62v22c0 3.3 7 6 16 6s16-2.7 16-6V62" fill="#e8c27a" stroke="#c49a4a"/></svg>`;
+ let h=`<div class="bs"><div class="side"><h2>Access</h2><div class="on" data-t="bs-home">⌂ الصفحة الرئيسية</div><div data-t="bs-new">▢ جديد</div><div data-t="bs-open">📂 فتح</div></div>
+ <div class="bm"><div class="bt"><div class="ctr"><span>×</span><span>□</span><span>–</span><span>?</span><span class="user"><i>BA</i> Binary Academy</span></div><div>Access</div></div>
+ <h3>مساء الخير</h3><div class="nw">جديد ⌄</div>
+ <div class="tpls"><div class="tpl" data-t="blankdb"><div class="th">${blank}</div>قاعدة بيانات فارغة</div>
+  <div class="tpl" data-t="tpl-assets"><div class="th"><svg width="70" height="80" viewBox="0 0 70 80"><rect x="6" y="8" width="58" height="40" fill="#2b7bd6"/><rect x="2" y="50" width="66" height="6" fill="#9aa"/><rect x="10" y="60" width="18" height="18" fill="#cfd8e3"/></svg></div>تعقب الأصول</div>
+  <div class="tpl" data-t="tpl-contacts"><div class="th"><svg width="130" height="80" viewBox="0 0 130 80"><rect x="2" y="2" width="126" height="76" fill="#fff" stroke="#bbb"/><rect x="2" y="2" width="126" height="10" fill="#7b5aa6"/><path d="M2 22h126M2 32h126M2 42h126M2 52h126M2 62h126M40 12v66M80 12v66" stroke="#ddd"/></svg></div>جهات الاتصال</div></div></div></div>`;
+ return h;
+}
+function rRibbon(){
+ const t=S.tabs[S.active];
+ const base=[['file','ملف'],['home','الشريط الرئيسي'],['create','إنشاء'],['ext','بيانات خارجية'],['dbtools','أدوات قاعدة البيانات'],['help','تعليمات']];
+ const ctx=!t?[]:t.kind==='ds'?[['fields','الحقول'],['tablectx','جدول']]:t.kind==='design'?[['tdesign','تصميم']]:t.kind==='qdesign'?[['qdesign','تصميم الاستعلام']]:t.kind==='rel'?[['reldesign','تصميم العلاقات']]:[];
+ let h='<div class="rtabs">'+[...base,...ctx].map(([k,l])=>`<div class="rtab${S.ribbon===k?' on':''}${ctx.some(c=>c[0]===k)?' ctx':''}" data-t="tab-${k}">${l}</div>`).join('')+`<div class="rtab tell" data-t="tell">${ic('search')} أخبرني بما تريد القيام به</div></div>`;
+ const R=RB[S.ribbon==='tablectx'?'fields':S.ribbon]||RB.home;
+ h+='<div class="ribbon">'+R.map(gr=>{const big=gr.it.filter(i=>i.big),small=gr.it.filter(i=>!i.big&&!i.fmt);let inner=big.map(btn).join('');
+   for(let k=0;k<small.length;k+=3)inner+='<div class="smallcol">'+small.slice(k,k+3).map(btn).join('')+'</div>';
+   if(gr.it.some(i=>i.fmt))inner+=`<div class="fmt"><div class="fb"><span class="box">Calibri (تفصيل)</span><span class="box" style="min-width:34px">11</span></div><div class="fb"><b>B</b> <i>I</i> <u>U</u> &nbsp; <span style="color:#c00">A</span> ▾ &nbsp; ≡ ≡ ≡</div></div>`;
+   return `<div class="rg"><div class="its">${inner}</div><div class="gl">${gr.g}</div></div>`}).join('')+'</div>';
+ return h;
+}
+function btn(b){return `<div class="rb${b.big?' big':''}${b.on?' on':''}" data-t="${b.id}">${ic(b.i)}<span>${b.l}${b.dd?' ⌄':''}</span></div>`}
+const RB={
+home:[{g:'طرق عرض',it:[{id:'rb-view',l:'عرض',i:'view',big:1,dd:1}]},{g:'الحافظة',it:[{id:'rb-paste',l:'لصق',i:'paste',big:1},{id:'rb-cut',l:'قص',i:'cut'},{id:'rb-copy',l:'نسخ',i:'copy'},{id:'rb-fmtp',l:'نسخ التنسيق',i:'paste'}]},{g:'فرز وتصفية',it:[{id:'rb-filter',l:'عامل تصفية',i:'filter',big:1},{id:'rb-asc',l:'تصاعدي',i:'asc'},{id:'rb-desc',l:'تنازلي',i:'desc'},{id:'rb-rmsort',l:'إزالة الفرز',i:'rm'}]},{g:'سجلات',it:[{id:'rb-refresh',l:'تحديث الكل',i:'refresh',big:1,dd:1},{id:'rb-new',l:'جديد',i:'new'},{id:'rb-save',l:'حفظ',i:'save'},{id:'rb-delete',l:'حذف',i:'del',dd:1}]},{g:'بحث',it:[{id:'rb-find',l:'بحث',i:'search',big:1}]},{g:'تنسيق النص',it:[{fmt:1}]}],
+create:[{g:'قوالب',it:[{id:'rb-parts',l:'أجزاء التطبيق',i:'parts',big:1,dd:1}]},{g:'جداول',it:[{id:'rb-table',l:'جدول',i:'grid',big:1},{id:'rb-tabledesign',l:'تصميم الجدول',i:'tdesign',big:1},{id:'rb-sp',l:'قوائم SharePoint',i:'list',big:1,dd:1}]},{g:'استعلامات',it:[{id:'rb-qwiz',l:'معالج الاستعلامات',i:'qwiz',big:1},{id:'rb-qdesign',l:'تصميم الاستعلام',i:'qdesign',big:1}]},{g:'نماذج',it:[{id:'rb-form',l:'نموذج',i:'form',big:1},{id:'rb-formdesign',l:'تصميم النموذج',i:'fdesign',big:1},{id:'rb-blankform',l:'نموذج فارغ',i:'bform',big:1},{id:'rb-formwiz',l:'معالج النماذج',i:'wiz'},{id:'rb-navf',l:'التنقل',i:'nav',dd:1},{id:'rb-moref',l:'نماذج إضافية',i:'more',dd:1}]},{g:'تقارير',it:[{id:'rb-report',l:'تقرير',i:'report',big:1},{id:'rb-rdesign',l:'تصميم التقرير',i:'rdesign',big:1},{id:'rb-rwiz',l:'معالج التقارير',i:'wiz'},{id:'rb-labels',l:'ملصقات',i:'label'}]},{g:'وحدات ماكرو ورمز',it:[{id:'rb-macro',l:'ماكرو',i:'macro',big:1}]}],
+ext:[{g:'استيراد وارتباط',it:[{id:'rb-newsrc',l:'مصدر بيانات جديد',i:'db',big:1,dd:1},{id:'rb-saved',l:'عمليات الاستيراد المحفوظة',i:'list',big:1}]},{g:'تصدير',it:[{id:'rb-excel',l:'Excel',i:'excel',big:1},{id:'rb-txt',l:'ملف نصي',i:'doc',big:1},{id:'rb-pdf',l:'PDF أو XPS',i:'pdf',big:1}]}],
+dbtools:[{g:'أدوات',it:[{id:'rb-compact',l:'ضغط قاعدة بيانات وإصلاحها',i:'db',big:1}]},{g:'ماكرو',it:[{id:'rb-vb',l:'Visual Basic',i:'vb',big:1},{id:'rb-runm',l:'تشغيل ماكرو',i:'macro',big:1}]},{g:'العلاقات',it:[{id:'rb-rel',l:'علاقات',i:'rel',big:1},{id:'rb-dep',l:'تبعيات العنصر',i:'dep',big:1}]},{g:'تحليل',it:[{id:'rb-doc',l:'توثيق قاعدة بيانات',i:'doc'},{id:'rb-perf',l:'تحليل الأداء',i:'perf'},{id:'rb-anal',l:'تحليل الجدول',i:'grid'}]},{g:'نقل البيانات',it:[{id:'rb-spm',l:'SharePoint',i:'list',big:1},{id:'rb-accm',l:'قاعدة بيانات Access',i:'db',big:1}]},{g:'الوظائف الإضافية',it:[{id:'rb-addins',l:'وظائف إضافية',i:'more',big:1,dd:1}]}],
+help:[{g:'تعليمات',it:[{id:'rb-help',l:'تعليمات',i:'help',big:1},{id:'rb-contact',l:'الاتصال بالدعم',i:'help',big:1},{id:'rb-fb',l:'ملاحظات',i:'fb',big:1}]}],
+fields:[{g:'طرق عرض',it:[{id:'rb-view',l:'عرض',i:'view',big:1,dd:1}]},{g:'إضافة وحذف',it:[{id:'rb-sht',l:'نص قصير',i:'txt',big:1},{id:'rb-num',l:'رقم',i:'num',big:1},{id:'rb-cur',l:'عملة',i:'num'},{id:'rb-dt',l:'التاريخ والوقت',i:'cal'},{id:'rb-yn',l:'نعم/لا',i:'chk'}]},{g:'الخصائص',it:[{id:'rb-fname',l:'الاسم والتسمية التوضيحية',i:'txt'},{id:'rb-fdef',l:'القيمة الافتراضية',i:'txt'},{id:'rb-fsize',l:'حجم الحقل',i:'txt'}]},{g:'تنسيق',it:[{id:'rb-dtype',l:'نوع البيانات',i:'txt'},{id:'rb-fmt',l:'تنسيق',i:'txt'}]}],
+tdesign:[{g:'طرق عرض',it:[{id:'rb-view',l:'عرض',i:'view',big:1,dd:1}]},{g:'أدوات',it:[{id:'rb-pk',l:'مفتاح أساسي',i:'key',big:1},{id:'rb-builder',l:'منشئ',i:'wiz',big:1},{id:'rb-test',l:'اختبار قواعد التحقق من الصحة',i:'chk',big:1},{id:'rb-insrow',l:'إدراج صفوف',i:'ins'},{id:'rb-delrow',l:'حذف صفوف',i:'delr'},{id:'rb-mlookup',l:'تعديل عمليات البحث',i:'search'}]},{g:'إظهار/إخفاء',it:[{id:'rb-props',l:'ورقة الخصائص',i:'props',big:1},{id:'rb-idx',l:'فهارس',i:'idx',big:1}]},{g:'الحقل والسجل وأحداث الجدول',it:[{id:'rb-mac',l:'إنشاء وحدات ماكرو البيانات',i:'macro',big:1,dd:1}]},{g:'علاقات',it:[{id:'rb-rel2',l:'علاقات',i:'rel',big:1},{id:'rb-dep2',l:'تبعيات العنصر',i:'dep',big:1}]}],
+qdesign:[{g:'النتائج',it:[{id:'rb-qview',l:'عرض',i:'view',big:1,dd:1},{id:'rb-run',l:'تشغيل',i:'run',big:1}]},{g:'نوع الاستعلام',it:[{id:'rb-qsel',l:'تحديد',i:'grid',big:1,on:1},{id:'rb-qmk',l:'تكوين جدول',i:'grid',big:1},{id:'rb-qapp',l:'إلحاق',i:'ins',big:1},{id:'rb-qupd',l:'تحديث',i:'refresh'},{id:'rb-qx',l:'جدولي',i:'grid'},{id:'rb-qdel',l:'حذف',i:'del'}]},{g:'إعداد الاستعلام',it:[{id:'rb-addt',l:'إضافة جداول',i:'tadd',big:1},{id:'rb-insc',l:'إدراج صفوف',i:'ins'},{id:'rb-delc',l:'حذف صفوف',i:'delr'}]},{g:'إظهار/إخفاء',it:[{id:'rb-tot',l:'الإجماليات',i:'sum',big:1},{id:'rb-params',l:'معلمات',i:'props'},{id:'rb-propsq',l:'ورقة الخصائص',i:'props'},{id:'rb-tnames',l:'أسماء الجداول',i:'grid'}]}],
+reldesign:[{g:'أدوات',it:[{id:'rb-editrel',l:'تحرير علاقات',i:'rel',big:1},{id:'rb-clr',l:'مسح التخطيط',i:'del'},{id:'rb-relrep',l:'تقرير العلاقات',i:'report'}]},{g:'العلاقات',it:[{id:'rb-addt',l:'إضافة جداول',i:'tadd',big:1},{id:'rb-hide',l:'إخفاء الجدول',i:'grid'},{id:'rb-direct',l:'علاقات مباشرة',i:'rel'},{id:'rb-allrel',l:'كافة العلاقات',i:'rel'}]},{g:'إغلاق',it:[{id:'rb-close',l:'إغلاق',i:'x',big:1}]}]
+};
+function rNav(){
+ const t=S.tabs[S.active];const act=t?t.name:'';
+ const item=(n,icon)=>`<div class="nav-i${act===n?' on':''}" data-t="nav-${esc(n)}">${icon}<span>${esc(n)}</span></div>`;
+ const tn=tableNames().filter(n=>!(S.tables[n].temp&&false));
+ let h=`<div class="nav"><div class="nav-h"><span>كافة عناصر Access</span><small>⊙ «</small></div><div class="nav-s"><span>بحث...</span>⌕</div>`;
+ h+=`<div class="nav-g">جداول <small>︽</small></div>`+tn.map(n=>item(n,tIcon)).join('');
+ const qs=Object.keys(S.queries);if(qs.length)h+=`<div class="nav-g">استعلامات <small>︽</small></div>`+qs.map(n=>item(n,qIcon)).join('');
+ const fs=Object.keys(S.forms);if(fs.length)h+=`<div class="nav-g">نماذج <small>︽</small></div>`+fs.map(n=>item(n,fIcon)).join('');
+ return h+'</div>';
+}
+function rDs(t){
+ const tb=S.tables[t.name],F=tb.fields;
+ let h='<div class="ds"><table><thead><tr><th class="sel"></th>'+F.map(f=>`<th>${esc(f.n)} ▾</th>`).join('')+'<th class="add">انقر للإضافة ▾</th></tr></thead><tbody>';
+ tb.rows.forEach((r,ri)=>{h+=`<tr${ri===tb.rows.length-1&&!t.pending?' class="cur"':''}><td class="sel"></td>`+F.map((f,i)=>`<td class="${isNum(f)?'num':''}">${esc(r[i])}</td>`).join('')+'<td></td></tr>'});
+ if(t.pending)h+='<tr class="edit"><td class="sel">✎</td>'+F.map((f,i)=>`<td class="${isNum(f)?'num':''}">${isT('cell-pend|'+f.n)?inp('cell-pend|'+f.n,t.pending[i]??'','cell'):`<span${f.req&&!t.pending[i]?' style="display:block;min-width:90px;outline:2px solid #f2c94c"':''}>${esc(t.pending[i])}</span>`}</td>`).join('')+'<td></td></tr>';
+ h+='<tr class="newrow"><td class="sel">✱</td>'+F.map(f=>`<td class="${isNum(f)?'num':''}">${f.t===AUTO?'(جديد)':(isT('cell-new|'+f.n)?inp('cell-new|'+f.n,'','cell'):'')}</td>`).join('')+'<td></td></tr>';
+ for(let k=0;k<14;k++)h+='<tr class="fill"><td class="sel" style="background:#fff"></td>'+F.map(()=>'<td></td>').join('')+'<td></td></tr>';
+ return h+'</tbody></table></div>';
+}
+function rDesign(t){
+ const F=fieldsOf(t),n=Math.max(F.length+3,9);const s=F[t.sel];
+ let h='<div class="dv"><div class="grid"><table><thead><tr><th class="sel"></th><th>اسم الحقل</th><th>نوع البيانات</th><th>الوصف (اختياري)</th></tr></thead><tbody>';
+ for(let i=0;i<n;i++){const f=F[i]||{n:'',t:'',d:''};const on=t.sel===i;
+  h+=`<tr data-t="frow-${i}"${on?' class="on"':''}><td class="sel">${f.pk?ic('pk'):(on?'▸':'')}</td><td>${inp('fname-'+i,f.n,'cell')}</td><td>${isT('ftype-'+i)?sel('ftype-'+i,TYPES,f.t):`<div class="tw"><span>${esc(f.t)}</span>${on&&f.t?'<span>⌄</span>':''}</div>`}</td><td>${inp('fdesc-'+i,f.d,'cell')}</td></tr>`}
+ h+='</tbody></table></div><div class="ptitle">خصائص الحقل</div><div class="props">';
+ if(s&&s.n){const num=isNum(s);const rq=s.req?'نعم':'لا';
+  const rows=s.t===AUTO?[['حجم الحقل','عدد صحيح طويل'],['قيم جديدة','متزايدة'],['تنسيق',''],['تسمية توضيحية',''],['مفهرس','نعم (التكرار غير مقبول)'],['محاذاة النص','عام']]:
+   num?[['حجم الحقل','عدد صحيح طويل'],['تنسيق',''],['المنازل العشرية','تلقائي'],['قناع الإدخال',''],['تسمية توضيحية',''],['القيمة الافتراضية','0'],['قاعدة التحقق من الصحة',''],['نص التحقق من الصحة',''],['مطلوب',null],['مفهرس','لا'],['محاذاة النص','عام']]:
+   [['حجم الحقل','255'],['تنسيق',''],['قناع الإدخال',''],['تسمية توضيحية',''],['القيمة الافتراضية',''],['قاعدة التحقق من الصحة',''],['نص التحقق من الصحة',''],['مطلوب',null],['السماح بطول صفري','نعم'],['مفهرس','لا'],['ضغط Unicode','نعم'],['محاذاة النص','عام']];
+  h+='<div class="pbox"><div class="ptabs"><span class="on">عام</span><span>بحث</span></div><table>'+rows.map(([k,v])=>`<tr><td>${k}</td><td>${v===null?(isT('prop-required')?sel('prop-required',['لا','نعم'],rq):`<span data-t="prop-req-view">${rq}</span>`):esc(v)}</td></tr>`).join('')+'</table></div>';
+  h+=`<div class="help">${rows.some(r=>r[1]===null)?'يتطلب إدخال بيانات في هذا الحقل؟ ':''}وصف الحقل اختياري، ويساعدك على وصف الحقل كما يظهر على شريط المعلومات عند تحديدك هذا الحقل من النموذج. اضغط F1 للحصول على تعليمات حول وصف الحقل.</div>`}
+ else h+='<div class="help">اسم الحقل يمكن أن يصل إلى 64 حرفًا، بما في ذلك المسافات. اضغط F1 للحصول على تعليمات حول أسماء الحقول.</div>';
+ return h+'</div></div>';
+}
+const POS={'بيانات الطلبة':[24,30],'درجات الطلبة':[262,40],'المواد الدراسية':[520,30]};
+function tbox(tn,i,pre,y0,star){const p=POS[tn]||[24+i*240,30];const F=S.tables[tn].fields;
+ return `<div class="tbox" data-box="${esc(tn)}" style="left:${p[0]}px;top:${y0??p[1]}px;width:${tn==='درجات الطلبة'?232:190}px"><div class="th">${esc(tn)}</div>${star?'<div class="tf">*</div>':''}${F.map(f=>`<div class="tf" data-t="${pre}|${esc(tn)}|${esc(f.n)}" data-f="${esc(tn)}|${esc(f.n)}">${f.pk?ic('pk'):'<span style="width:11px"></span>'}${esc(f.n)}</div>`).join('')}</div>`}
+function rRel(t){return `<div class="canvas" id="cv"><svg class="links"></svg>${t.tables.map((n,i)=>tbox(n,i,'rf')).join('')}</div>`}
+function rQd(t){const q=t.q;let h=`<div class="qd"><div class="up canvas" id="cv"><svg class="links"></svg>${q.tables.map((n,i)=>tbox(n,i,'qf',14,1)).join('')}</div><div class="low"><table class="qgrid">`;
+ const N=Math.max(q.cols.length+2,6),C=[...q.cols];while(C.length<N)C.push(null);
+ const row=(lab,fn)=>`<tr><th>${lab}</th>${C.map((c,i)=>`<td>${fn(c,i)}</td>`).join('')}</tr>`;
+ h+=row('الحقل:',c=>c?esc(c.f):'')+row('الجدول:',c=>c?esc(c.t):'')+
+   row('فرز:',(c,i)=>c?(isT('qg-sort-'+i)?sel('qg-sort-'+i,['','تصاعدي','تنازلي','(غير مفروزة)'],c.sort):esc(c.sort)):'')+
+   row('إظهار:',c=>c?`<span class="chk${c.show?' on':''}"></span>`:'<span class="chk"></span>')+
+   row('المعايير:',(c,i)=>c?(isT('qg-crit-'+i)?inp('qg-crit-'+i,c.crit,'cell'):`<span style="direction:ltr;display:inline-block">${esc(c.crit)}</span>`):'')+row('أو:',()=> '');
+ return h+'</table></div></div>'}
+function rQres(t){const r=runQuery(t.q);let h='<div class="ds"><table><thead><tr><th class="sel"></th>'+r.cols.map(c=>`<th>${esc(c.f)} ▾</th>`).join('')+'</tr></thead><tbody>';
+ r.rows.forEach((row,i)=>{h+=`<tr${i===0?' class="cur"':''}><td class="sel"></td>`+row.map(v=>`<td class="${typeof v==='number'?'num':''}">${esc(v)}</td>`).join('')+'</tr>'});
+ h+='<tr class="newrow"><td class="sel">✱</td>'+r.cols.map(()=>'<td></td>').join('')+'</tr>';for(let k=0;k<12;k++)h+='<tr class="fill"><td class="sel" style="background:#fff"></td>'+r.cols.map(()=>'<td></td>').join('')+'</tr>';return h+'</tbody></table></div>'}
+function rForm(t){const tb=S.tables[t.table],F=tb.fields,rec=t.newRec||tb.rows[t.idx]||[];const n=tb.rows.length+(t.newRec?1:0),cur=t.newRec?n:t.idx+1;
+ let h=`<div class="fv"><div class="fh">${esc(t.name)}</div><div class="fb"><div class="rsel${t.selRec?' on':''}" data-t="fm-selector">◂</div><div class="fields">`;
+ F.forEach((f,i)=>{const id='fm|'+f.n;h+=`<div class="fr"><label>${esc(f.n)}</label>${isT(id)?inp(id,rec[i]??'','cell'):`<div class="v${isNum(f)?' s':''}" data-t="${esc(id)}">${esc(rec[i]??'')}</div>`}</div>`});
+ h+=`</div></div><div class="rnav">السجل: <span class="nb" data-t="nv-first">|◂</span><span class="nb" data-t="nv-prev">◂</span>`+
+   (isT('fm-recnum')?`<input data-t="fm-recnum" value="${cur} لـ ${n}" autocomplete="off">`:`<input readonly tabindex="-1" data-t="fm-recnum-v" value="${cur} لـ ${n}">`)+
+   `<span class="nb" data-t="nv-next">▸</span><span class="nb" data-t="nv-last">▸|</span><span class="nb" data-t="nv-new">▸✱</span><span class="flt">بلا عامل تصفية</span><span>بحث</span></div></div>`;return h}
+function rPane(){const t=S.tabs[S.active];const names=tableNames();
+ return `<div class="pane"><div class="ph"><b>إضافة جداول</b><span class="px" data-t="at-close">×</span></div><div class="pt"><span class="on">جداول</span><span>ارتباطات</span><span>استعلامات</span><span>الكل</span></div><div class="ps">بحث</div>
+ <div class="pl" data-t="at-list">${names.map(n=>`<div class="pi${S.pane.sel.includes(n)?' on':''}" data-t="at-item-${esc(n)}">${esc(n)}</div>`).join('')}</div><div class="pb" data-t="at-add">إضافة الجداول المحددة</div></div>`}
+function rDialog(){const d=S.dialog;if(!d)return'';let b='';
+ if(d.type==='blankdb'){b=`<div class="dlg blank"><div class="bl"><div style="text-align:left" data-t="bd-x">×</div><h3>قاعدة بيانات فارغة</h3><div style="font-size:11px;color:#555">اسم الملف</div><div style="display:flex;gap:6px;align-items:center"><span style="border:1px solid #999;padding:0 4px">📁</span>${isT('dbname')?`<input data-t="dbname" class="din" value="${esc(d.name)}" autocomplete="off">`:`<span class="din" style="display:block">${esc(d.name)}</span>`}<span>.accdb</span></div><div style="font-size:10.5px;color:#666;direction:ltr;text-align:right">C:\\Users\\Documents\\</div><div class="createbtn" data-t="create">▢<span>إنشاء</span></div></div><div class="ill"><svg width="200" height="250" viewBox="0 0 200 250"><path d="M30 20h100l40 40v170H30z" fill="#fff" stroke="#777" stroke-width="3"/><path d="M130 20v40h40" fill="none" stroke="#777" stroke-width="3"/><ellipse cx="140" cy="150" rx="40" ry="14" fill="#e8c27a" stroke="#c49a4a" stroke-width="2"/><path d="M100 150v70c0 8 18 14 40 14s40-6 40-14v-70" fill="#e8c27a" stroke="#c49a4a" stroke-width="2"/></svg></div></div>`}
+ else if(d.type==='saveas'){b=`<div class="dlg" style="width:330px"><div class="dh"><b style="font-weight:400">حفظ باسم</b><span>?&nbsp;&nbsp;&nbsp;×</span></div><div style="padding:4px 12px"><div style="margin-bottom:4px">${d.label}</div>${isT('dlg-name')?`<input data-t="dlg-name" class="din" value="${esc(d.name)}" autocomplete="off">`:`<div class="din">${esc(d.name)}</div>`}</div><div class="dbtns"><span class="db" data-t="dlg-cancel">إلغاء الأمر</span><span class="db def" data-t="dlg-ok">موافق</span></div></div>`}
+ else if(d.type==='msg'){const iconSvg=d.icon==='warn'?'<svg class="mi" viewBox="0 0 32 32"><path d="M16 3 30 28H2z" fill="#f2c94c" stroke="#b8860b"/><path d="M16 12v8" stroke="#222" stroke-width="2.5"/><circle cx="16" cy="24" r="1.5" fill="#222"/></svg>':'<svg class="mi" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#1e6fd9"/><path d="M16 14v9" stroke="#fff" stroke-width="3"/><circle cx="16" cy="9.5" r="1.8" fill="#fff"/></svg>';
+   b=`<div class="dlg msgb"><div class="dh"><span>Microsoft Access</span><span>×</span></div><div class="mb">${iconSvg}<div class="mt">${d.title?`<b>${esc(d.title)}</b>`:''}${esc(d.text)}</div></div><div class="dbtns" style="background:#f0f0f0">${d.buttons.slice().reverse().map(([id,l],k)=>`<span class="db${k===d.buttons.length-1?' def':''}" data-t="${id}">${l}</span>`).join('')}</div></div>`}
+ else if(d.type==='editrel'){b=`<div class="dlg editrel"><div class="dh"><b style="font-weight:400">تحرير علاقات</b><span>?&nbsp;&nbsp;&nbsp;×</span></div><div class="eb"><div class="em"><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px"><span>جدول/استعلام:</span><span>جدول/استعلام مرتبط:</span><span class="din">${esc(d.a.t)}</span><span class="din">${esc(d.b.t)}</span></div><div class="pair"><div>${esc(d.a.f)}</div><div>${esc(d.b.f)}</div><div></div><div></div></div>
+  <div class="cbx${d.enforce?' on':''}" data-t="er-enforce"><i></i>فرض التكامل المرجعي</div><div class="cbx" style="color:${d.enforce?'#222':'#999'}"><i></i>تتالي تحديث الحقول المرتبطة</div><div class="cbx" style="color:${d.enforce?'#222':'#999'}"><i></i>تتالي حذف السجلات المرتبطة</div><div style="display:flex;gap:10px;align-items:center;margin-top:4px"><span>نوع العلاقة:</span><span class="din" style="width:auto">علاقة رأس بأطراف</span></div></div>
+  <div class="ebtn"><span class="db def" data-t="er-create">إنشاء</span><span class="db" data-t="er-cancel">إلغاء الأمر</span><span class="db">نوع الربط...</span><span class="db">إنشاء جديد...</span></div></div></div>`}
+ else if(d.type==='fw'){const tn=d.table.replace('الجدول: ','');const F=S.tables[tn].fields.map(f=>f.n);let m='';
+   if(d.page===1)m=`<b>ما هي الحقول التي تريدها في النموذج؟</b><div style="color:#555">يمكنك الاختيار من أكثر من جدول أو استعلام واحد.</div><div>جداول/استعلامات</div>${isT('fw-table')?sel('fw-table',tableNames().map(n=>'الجدول: '+n),d.table):`<div class="din">${esc(d.table)}</div>`}
+    <div class="lists"><div style="flex:1"><div>الحقول المتوفرة:</div><div class="lb">${F.filter(f=>!d.sel.includes(f)).map((f,i)=>`<div${i===0?' class="on"':''}>${esc(f)}</div>`).join('')}</div></div><div class="mv"><span data-t="fw-one">&gt;</span><span data-t="fw-all">&gt;&gt;</span><span data-t="fw-back">&lt;</span><span data-t="fw-none">&lt;&lt;</span></div><div style="flex:1"><div>الحقول المحددة:</div><div class="lb">${d.sel.map(f=>`<div>${esc(f)}</div>`).join('')}</div></div></div>`;
+   else if(d.page===2)m=`<b>ما هو التخطيط الذي تريده للنموذج؟</b><div style="display:flex;gap:20px;margin-top:10px"><div style="width:220px;height:170px;border:1px solid #ccc;background:repeating-linear-gradient(#fff 0 10px,#f7c46c 10px 16px,#fff 16px 26px)"></div><div>${['عمودي','جدولي','ورقة بيانات','ضبط'].map(l=>`<div class="radio${(d.layout||'')===l?' on':''}" ${l==='عمودي'?'data-t="fw-col"':`data-t="fw-l-${l}"`}><i></i>${l}</div>`).join('')}</div></div>`;
+   else m=`<b>ما هو العنوان الذي تريده للنموذج؟</b>${isT('fw-title')?`<input data-t="fw-title" class="din" value="${esc(d.title)}" autocomplete="off">`:`<div class="din">${esc(d.title)}</div>`}<div style="margin-top:14px;color:#555">هذه هي كافة المعلومات التي يحتاج إليها المعالج لإنشاء النموذج.</div><div>هل ترغب في فتح النموذج أو تعديل تصميمه؟</div><div class="radio${d.open?' on':''}" data-t="fw-open"><i></i>فتح النموذج لعرض المعلومات أو إدخالها.</div><div class="radio" data-t="fw-modify"><i></i>تعديل تصميم النموذج.</div>`;
+   b=`<div class="dlg fw"><div class="dh"><span>معالج النماذج</span><span>×</span></div><div class="fwb"><div class="fwm">${m}</div><div class="fwart"></div></div><div class="dbtns" style="border-top:1px solid #ddd"><span class="db" data-t="fw-finish">إنهاء</span><span class="db def" data-t="fw-next" ${d.page===3?'style="color:#999"':''}>التالي &gt;</span><span class="db" data-t="fw-prev">&lt; السابق</span><span class="db" data-t="fw-cancel">إلغاء الأمر</span></div></div>`}
+ return `<div class="dim">${b}</div>`}
+function rMenu(){const m=S.menu;if(!m)return'';let items;
+ if(m.kind==='view'){const t=A();items=[['menu-datasheet','طريقة عرض ورقة البيانات','grid'],['menu-design','طريقة عرض التصميم','tdesign']];if(t&&t.kind==='design')items=items;}
+ else if(m.kind==='del')items=[['menu-del','حذف','del'],['menu-delrec','حذف سجل','del'],['menu-delcol','حذف عمود','del',1]];
+ else items=m.items;
+ return `<div class="menu" data-anchor="${esc(m.anchor)}">${items.map(it=>it?`<div class="mi2${it[3]?' dis':''}" data-t="${it[0]}">${ic(it[2])}${it[1]}</div>`:'<div class="msep"></div>').join('')}</div>`}
+function statusText(t){if(!t)return'جاهز';return t.kind==='design'?'طريقة عرض التصميم. F6 = تبديل الأجزاء. F1 = تعليمات.':t.kind==='ds'||t.kind==='qres'?'طريقة عرض ورقة البيانات':t.kind==='form'?'طريقة عرض النموذج':t.kind==='qdesign'?'جاهز':'جاهز'}
+function rApp(){
+ const t=S.tabs[S.active];
+ let h=`<div class="title"><div class="q"><span data-t="qa-save">${ic('save').replace('stroke="#3b3b3b"','stroke="#fff"')}</span><span>↶</span><span>↷</span><span>⌄</span></div><div>${esc(S.db)}</div><div class="ctr"><span>×</span><span>□</span><span>–</span><span class="user"><i>BA</i> Binary Academy</span></div></div>`;
+ h+=rRibbon();
+ h+='<div class="main">'+rNav()+'<div class="doc">';
+ if(S.tabs.length){h+='<div class="dtabs">'+S.tabs.map((x,i)=>`<div class="dtab${i===S.active?' on':''}" data-t="doctab-${i}">${x.kind==='form'?fIcon:x.kind==='qdesign'||x.kind==='qres'?qIcon:x.kind==='rel'?ic('rel'):tIcon}<span>${esc(x.name)}</span><span class="x">×</span></div>`).join('')+'</div>';
+  h+='<div class="dbody">'+(t.kind==='ds'?rDs(t):t.kind==='design'?rDesign(t):t.kind==='rel'?rRel(t):t.kind==='qdesign'?rQd(t):t.kind==='qres'?rQres(t):t.kind==='form'?rForm(t):'')+(S.pane?rPane():'')+'</div>';}
+ else h+='<div class="dbody"><div class="empty-doc"></div></div>';
+ h+=`</div></div><div class="status"><span>${statusText(t)}</span><span style="direction:ltr">Num Lock</span></div>`;
+ return h;
+}
+function rWin(){if(S.screen==='desktop')return rDesktop();if(S.screen==='backstage')return rBackstage()+rDialog();return rApp()+rDialog()+rMenu()}
+
+/* ---------- post-render: links, menus, glow ---------- */
+function rect(el){const r=el.getBoundingClientRect(),w=win.getBoundingClientRect();return{x:(r.left-w.left)/scale,y:(r.top-w.top)/scale,w:r.width/scale,h:r.height/scale}}
+function drawLinks(){const cv=document.getElementById('cv');if(!cv)return;const svg=cv.querySelector('svg.links');const c=rect(cv);let s='';
+ S.rels.forEach(r=>{const fa=cv.querySelector(`[data-f="${CSS.escape(r.a.t+'|'+r.a.f)}"]`),fb=cv.querySelector(`[data-f="${CSS.escape(r.b.t+'|'+r.b.f)}"]`);if(!fa||!fb)return;
+  const A1=rect(fa),B1=rect(fb),ba=rect(fa.closest('.tbox')),bb=rect(fb.closest('.tbox'));
+  const aRight=ba.x>bb.x;const ax=(aRight?ba.x:ba.x+ba.w)-c.x,ay=A1.y+A1.h/2-c.y,bx=(aRight?bb.x+bb.w:bb.x)-c.x,by=B1.y+B1.h/2-c.y;const st=aRight?-14:14;
+  s+=`<path d="M${ax} ${ay}h${st}L${bx-st} ${by}H${bx}" fill="none" stroke="#333" stroke-width="1.3"/>`;
+  if(r.enforce)s+=`<text x="${ax+st/2-3}" y="${ay-4}" font-size="11" fill="#111">1</text><text x="${bx-st/2-6}" y="${by-3}" font-size="13" fill="#111">∞</text>`});
+ svg.innerHTML=s}
+function placeMenu(){const m=win.querySelector('.menu');if(!m)return;const a=tgt(m.dataset.anchor);if(!a)return;const r=rect(a);let x=r.x+r.w-m.offsetWidth,y=r.y+r.h+2;if(x<4)x=4;if(m.dataset.anchor.startsWith('nav-')||m.dataset.anchor.startsWith('doctab-'))x=r.x+r.w-m.offsetWidth+30;if(y+m.offsetHeight>610)y=610-m.offsetHeight;m.style.left=x+'px';m.style.top=y+'px'}
+function fit(){scale=Math.min(1.35,Math.max(.3,stage.clientWidth/1000));win.style.transform=`scale(${scale})`;stage.style.height=(620*scale)+'px'}
+const badge=document.getElementById('badge');
+function placeBadge(){const st=cur();const el=st&&!done?tgt(st.t):null;if(!el||(MODE==='prac'&&glowOff)){badge.hidden=true;return}const r=el.getBoundingClientRect();if(!r.width){badge.hidden=true;return}badge.hidden=false;badge.textContent=SI+1;badge.style.left=Math.max(4,r.right-14)+'px';badge.style.top=Math.max(4,r.top-18)+'px'}
+
+function render(){
+ win.innerHTML=rWin();fit();drawLinks();placeMenu();
+ const apps=document.getElementById('apps');if(apps&&isT('app-access'))apps.scrollTop=0;
+ const st=cur();
+ if(st&&!done){const el=tgt(st.t);if(el){if(!(MODE==='prac'&&glowOff))el.classList.add('glow');
+   if(MODE==='prac'&&(st.act==='type')&&el.tagName==='INPUT'){setTimeout(()=>{try{el.focus({preventScroll:true});el.select()}catch(e){}},30)}}
+  if(st.to){const d=tgt(st.to);if(d&&!(MODE==='prac'&&glowOff))d.style.outline='2px dashed #0b78c2'}}
+ renderGuide();placeBadge();
+}
+
+/* ---------- guide & lessons ---------- */
+function renderLessons(){let h='';[G1,G2].forEach(gr=>{h+=`<div class="lgroup"><span class="gl">${gr}</span>`+LESSONS.map((l,i)=>l.g!==gr?'':`<button class="chip${i===L?' on':''}${finished.has(i)?' fin':''}" data-l="${i}"><span class="n">${i+1}</span>${l.title}</button>`).join('')+'</div>'});document.getElementById('lessons').innerHTML=h}
+function renderGuide(){
+ const les=LESSONS[L],st=cur(),n=les.steps.length;
+ let h=`<div class="g-main"><div class="g-meta"><b>${les.title}</b><span>صفحة الكتاب ${les.pages}</span><span>${done?'اكتمل الدرس':`الخطوة ${SI+1} من ${n}`}</span><div class="prog">${les.steps.map((_,i)=>`<i class="${i<SI||done?'d':i===SI?'c':''}"></i>`).join('')}</div></div>`;
+ if(done)h+=`<div class="done"><h3>أحسنتِ! أنهيتِ الدرس</h3><div>${esc(les.done)}</div>${MODE==='prac'?`<div style="color:var(--muted);font-size:13px">عدد المحاولات الخاطئة: ${mistakes}</div>`:''}</div>`;
+ else{h+=`<div class="g-step"><span class="stepnum">${SI+1}</span><div class="g-text">${md(st.text)} ${st.act==='type'||st.act==='select'?`<span class="exp">${esc(st.v)}</span>`:''}</div></div>`;
+   if(st.act==='auto')h+=`<div><button class="btn auto" id="autoBtn">${esc(st.autoLabel)}</button></div>`;}
+ h+=`<div class="tip">${md(les.tip)}</div></div><div class="g-ctrl">`;
+ if(done)h+=`<button class="btn pri" id="nextLesson"${L>=LESSONS.length-1?' disabled':''}>الدرس التالي</button><button class="btn" id="restart">إعادة الدرس</button>`;
+ else if(MODE==='demo')h+=`<button class="btn pri" id="play">${playing?'إيقاف مؤقت':'تشغيل تلقائي'}</button><div class="row2"><button class="btn" id="stepBtn"${playing?' disabled':''}>نفّذ الخطوة</button><button class="btn" id="restart">إعادة</button></div><div class="score">يمكنك أيضًا الضغط بنفسك على العنصر المضيء</div>`;
+ else h+=`<button class="btn" id="hint">تلميح</button><button class="btn" id="showme">أريني الخطوة</button><button class="btn" id="restart">إعادة الدرس</button><label class="toggle"><input type="checkbox" id="glowT"${glowOff?' checked':''}> تحدٍّ بدون إضاءة</label><div class="score">محاولات خاطئة: ${mistakes}</div>`;
+ h+='</div>';
+ const gEl=document.getElementById('guide');gEl.innerHTML=h;
+ const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f};
+ on('autoBtn',()=>{if(!busy&&cur()&&cur().act==='auto')complete()});
+ on('play',()=>{playing=!playing;renderGuide();if(playing)autoplay()});
+ on('stepBtn',()=>{if(!busy)demoStep()});
+ on('restart',()=>startLesson(L));
+ on('nextLesson',()=>startLesson(L+1));
+ on('hint',()=>{const el=tgt(cur().t);if(el){el.classList.add('glow');el.scrollIntoView({block:'nearest',inline:'nearest'});badge.hidden=false;placeBadge();}toast('ابحثي عن: '+cur().label)});
+ on('showme',()=>{if(!busy)demoStep()});
+ const gt=document.getElementById('glowT');if(gt)gt.onchange=()=>{glowOff=gt.checked;render()};
+}
+function startLesson(i){L=i;SI=0;done=false;mistakes=0;playing=false;armed=false;S=Object.assign({},LESSONS[i].setup());renderLessons();render();}
+function complete(val){const st=cur();if(!st||done)return;armed=false;act(st.t,val!==undefined?val:(st.act==='drag'?st.to:st.v),st.act);if(st.after)st.after(S);SI++;if(SI>=LESSONS[L].steps.length){done=true;playing=false;finished.add(L);renderLessons();}render()}
+
+/* ---------- toast ---------- */
+let tt;const toastEl=document.getElementById('toast');
+function toast(m,bad){toastEl.textContent=m;toastEl.className='show'+(bad?' bad':'');clearTimeout(tt);tt=setTimeout(()=>toastEl.className='',2200)}
+function wrong(el){if(MODE==='prac')mistakes++;const st=cur();toast('ليست هذه الخطوة. ابحثي عن: '+st.label,true);if(el){el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),400)}
+ if(MODE==='prac'&&glowOff&&mistakes%2===0){const t=tgt(st.t);if(t)t.classList.add('glow')}renderGuide()}
+
+/* ---------- demo cursor ---------- */
+const cursor=document.getElementById('cursor');
+function center(el){const r=el.getBoundingClientRect();return{x:r.left+Math.min(r.width/2,60),y:r.top+r.height/2}}
+async function moveTo(el){el.scrollIntoView({block:'nearest',inline:'nearest'});const p=center(el);if(parseFloat(cursor.style.left)<0||!cursor.style.left){cursor.style.transition='none';cursor.style.left=(p.x+120)+'px';cursor.style.top=(p.y+80)+'px';cursor.getBoundingClientRect();cursor.style.transition=''}cursor.style.left=p.x+'px';cursor.style.top=p.y+'px';await wait(matchMedia('(prefers-reduced-motion: reduce)').matches?80:700);return p}
+function ripple(p,r){const d=document.createElement('div');d.className='ripple'+(r?' r':'');d.style.left=p.x+'px';d.style.top=p.y+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),550)}
+async function demoStep(){const st=cur();if(!st||done||busy)return;const el=tgt(st.t);if(!el){console.warn('missing',st.t);return}busy=true;
+ try{const p=await moveTo(el);
+  if(st.act==='type'){ripple(p);el.focus({preventScroll:true});el.value='';for(const ch of st.v){el.value+=ch;await wait(70)}await wait(350)}
+  else if(st.act==='select'){ripple(p);await wait(250);el.value=st.v;await wait(400)}
+  else if(st.act==='dbl'){ripple(p);await wait(140);ripple(p);await wait(250)}
+  else if(st.act==='ctx'){ripple(p,1);toast('ضغط بزر الفأرة الأيمن');await wait(350)}
+  else if(st.act==='drag'){ripple(p);const gh=document.createElement('div');gh.id='ghost';gh.textContent=el.textContent.trim();document.body.appendChild(gh);const d=tgt(st.to);const q=center(d);const steps=24;for(let k=1;k<=steps;k++){const x=p.x+(q.x-p.x)*k/steps,y=p.y+(q.y-p.y)*k/steps;gh.style.left=(x+8)+'px';gh.style.top=(y+6)+'px';cursor.style.transition='none';cursor.style.left=x+'px';cursor.style.top=y+'px';await wait(28)}cursor.style.transition='';gh.remove();ripple(q);await wait(200)}
+  else{ripple(p);await wait(300)}
+ }finally{busy=false}
+ complete(st.act==='type'||st.act==='select'?st.v:undefined)}
+async function autoplay(){while(playing&&!done){await demoStep();await wait(700)}playing=false;renderGuide()}
+
+/* ---------- student interaction ---------- */
+function tOf(e){const el=e.target.closest('[data-t]');return el&&win.contains(el)?el:null}
+win.addEventListener('click',e=>{if(busy||done||Date.now()<suppress)return;const el=tOf(e);const st=cur();if(!st)return;
+ if(el&&el.dataset.t===st.t){if(st.act==='click')return complete();if(st.act==='dbl')return toast('اضغطي ضغطًا مزدوجًا (مرتين بسرعة)');if(st.act==='ctx')return toast('اضغطي بزر الفأرة الأيمن (أو اضغطي مطولًا)');if(st.act==='drag'){armed=true;el.classList.add('drag');return toast('اسحبي الحقل وأفلتيه على الحقل المقابل، أو اضغطي على الحقل المقابل الآن')}return}
+ if(el&&st.act==='drag'&&armed&&el.dataset.t===st.to)return complete();
+ if(el&&el.dataset.t===st.to)return;
+ if(el)wrong(el)});
+win.addEventListener('dblclick',e=>{if(busy||done)return;const el=tOf(e);const st=cur();if(el&&st&&st.act==='dbl'&&el.dataset.t===st.t)complete()});
+win.addEventListener('contextmenu',e=>{e.preventDefault();if(busy||done)return;const el=tOf(e);const st=cur();if(!el||!st)return;if(st.act==='ctx'&&el.dataset.t===st.t)complete();else wrong(el)});
+win.addEventListener('input',e=>{if(busy)return;const el=e.target,st=cur();if(!st||el.dataset.t!==st.t||st.act!=='type')return;
+ if(norm(el.value)===norm(st.v)){el.style.background='#e3f6e9';const v=el.value;setTimeout(()=>{if(cur()===st&&!busy)complete(st.v)},450)}});
+win.addEventListener('keydown',e=>{const el=e.target,st=cur();if(e.key!=='Enter'||!st||el.dataset.t!==st.t)return;e.preventDefault();if(norm(el.value)===norm(st.v))complete(st.v);else toast('اكتبي بالضبط: '+st.v,true)});
+win.addEventListener('focusin',e=>{const el=e.target;if(el.tagName==='INPUT'&&el.dataset.t&&isT(el.dataset.t))setTimeout(()=>{try{el.select()}catch(_){}},0)});
+win.addEventListener('change',e=>{if(busy)return;const el=e.target,st=cur();if(el.tagName!=='SELECT'||!st||el.dataset.t!==st.t)return;if(el.value===st.v)complete(st.v);else{if(MODE==='prac')mistakes++;toast('اختاري: '+st.v,true);renderGuide()}});
+/* drag with pointer (mouse, pen, touch) */
+let drag=null;const ghostEl=()=>document.getElementById('ghost');
+win.addEventListener('pointerdown',e=>{const st=cur();if(busy||done||!st||st.act!=='drag')return;const el=tOf(e);if(!el||el.dataset.t!==st.t)return;e.preventDefault();drag={x:e.clientX,y:e.clientY,moved:false};const g=document.createElement('div');g.id='ghost';g.textContent=el.textContent.trim();g.style.left=(e.clientX+8)+'px';g.style.top=(e.clientY+6)+'px';g.hidden=true;document.body.appendChild(g);try{win.setPointerCapture(e.pointerId)}catch(_){}});
+win.addEventListener('pointermove',e=>{if(!drag)return;const g=ghostEl();if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>6){drag.moved=true;g.hidden=false}g.style.left=(e.clientX+8)+'px';g.style.top=(e.clientY+6)+'px'});
+win.addEventListener('pointerup',e=>{if(!drag)return;const g=ghostEl();if(g)g.remove();const moved=drag.moved;drag=null;if(!moved)return;const under=document.elementFromPoint(e.clientX,e.clientY);const d=under&&under.closest('[data-t]');const st=cur();suppress=Date.now()+120;
+ if(d&&st&&d.dataset.t===st.to)complete();else toast('أفلتي الحقل فوق: '+(st.to||'').split('|').slice(1).reverse().join(' في جدول '),true)});
+
+/* ---------- chrome ---------- */
+document.getElementById('lessons').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b)startLesson(+b.dataset.l)});
+function setMode(m){MODE=m;playing=false;document.getElementById('m-demo').classList.toggle('on',m==='demo');document.getElementById('m-prac').classList.toggle('on',m==='prac');startLesson(L)}
+document.getElementById('m-demo').onclick=()=>setMode('demo');
+document.getElementById('m-prac').onclick=()=>setMode('prac');
+addEventListener('resize',()=>{fit();placeBadge()});
+addEventListener('scroll',placeBadge,{passive:true});
+win.addEventListener('scroll',placeBadge,true);
+setInterval(placeBadge,500);
+window.__sim={LESSONS,get S(){return S},complete,startLesson,cur:()=>cur(),tgt,isDone:()=>done};
+startLesson(0);
+})();
+</script>
+
+</body>
+</html>

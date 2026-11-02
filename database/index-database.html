@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إنشاء قاعدة بيانات — مهارات رقمية</title>
+<!-- الخط العربي (يعمل مع الإنترنت، وعند عدم توفره يُستخدم خط النظام تلقائيًا) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   🎨 الألوان والهوية البصرية
+   ========================================================= */
+:root{
+  --p900:#2c1659; --p800:#3c1e78; --p700:#5227a6; --p600:#6a3bd0; --p500:#7f55e0;
+  --p400:#a283ee; --p300:#c6b3f7; --p200:#e0d4fb; --p100:#f2ecff; --p50:#faf7ff;
+  --mint:#1fbf9f; --mint-l:#d8f7ef; --sun:#ffb93f; --sun-l:#fff2d8;
+  --rose:#ec5f93; --rose-l:#ffe4ee;
+  --ok:#17a877; --ok-l:#ddf7ec; --bad:#e0517c; --bad-l:#ffe6ee;
+  --ink:#2a2140; --muted:#716a8a;
+  --shadow:0 20px 50px -22px rgba(70,35,150,.40);
+  --r:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  font-family:'Tajawal','Segoe UI',Tahoma,Arial,sans-serif;color:var(--ink);
+  background:#1b1133;user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+body.idle{cursor:none}
+button{font-family:inherit}
+
+/* =========================================================
+   🖥️ المسرح: 1920×1080 ويُكبَّر/يُصغَّر ليناسب أي شاشة (16:9)
+   ========================================================= */
+#viewport{position:fixed;inset:0;overflow:hidden;background:radial-gradient(circle at 30% 20%,#2f1b5c,#150c2a)}
+#stage{
+  position:absolute;width:1920px;height:1080px;left:50%;top:50%;
+  transform-origin:center center;overflow:hidden;background:var(--p50);
+}
+
+/* ---------- الشرائح ---------- */
+.slide{
+  position:absolute;inset:0;visibility:hidden;opacity:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(162,131,238,.20) 0 220px, transparent 221px),
+    radial-gradient(circle at 4% 96%, rgba(31,191,159,.13) 0 260px, transparent 261px),
+    var(--p50);
+}
+.slide.active{visibility:visible;opacity:1;pointer-events:auto;z-index:2}
+.slide.out{visibility:visible;z-index:1;animation:aOut .45s ease both}
+.slide.active.a-fade{animation:aFade .7s ease both}
+.slide.active.a-slide{animation:aSlideN .7s cubic-bezier(.2,.8,.2,1) both}
+.slide.active.a-slide.back{animation-name:aSlideB}
+.slide.active.a-zoom{animation:aZoom .75s cubic-bezier(.2,.8,.2,1) both}
+@keyframes aFade{from{opacity:0}to{opacity:1}}
+@keyframes aSlideN{from{opacity:0;transform:translateX(-90px)}to{opacity:1;transform:none}}
+@keyframes aSlideB{from{opacity:0;transform:translateX(90px)}to{opacity:1;transform:none}}
+@keyframes aZoom{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:none}}
+@keyframes aOut{from{opacity:1}to{opacity:0}}
+
+/* ظهور العناصر بالتتابع */
+.slide.active .rv{animation:rise .7s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0) * 110ms + 180ms)}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-12px)}40%{transform:translateX(12px)}60%{transform:translateX(-8px)}80%{transform:translateX(6px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,185,63,.65)}50%{box-shadow:0 0 0 12px rgba(255,185,63,0)}}
+.float{animation:float 3.6s ease-in-out infinite;display:inline-block}
+
+.slide-inner{position:absolute;inset:0;padding:60px 110px 120px;display:flex;flex-direction:column}
+.s-head{display:flex;align-items:center;gap:26px;margin-bottom:34px;flex-wrap:wrap}
+.badge{background:#fff;color:var(--p700);font-weight:800;font-size:26px;padding:10px 26px;border-radius:999px;border:3px solid var(--p200);box-shadow:0 8px 20px -12px rgba(82,39,166,.5)}
+.s-head h2{font-size:62px;font-weight:900;color:var(--p900);line-height:1.2}
+.lead{font-size:34px;font-weight:700;color:var(--muted);margin-bottom:26px}
+.row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.row.center{justify-content:center}
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:38px}
+.pill{background:var(--p100);color:var(--p700);font-weight:800;border-radius:999px;padding:8px 22px;font-size:24px}
+.note{font-size:26px;color:var(--muted);font-weight:700;margin-top:22px}
+
+/* ---------- الأزرار ---------- */
+.btn{
+  font-weight:800;font-size:30px;border:none;border-radius:20px;padding:16px 34px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  transition:transform .15s ease, box-shadow .25s ease, background .25s ease, opacity .25s;
+}
+.btn:hover{transform:translateY(-3px)}
+.btn:active{transform:scale(.95)}
+.btn.primary{background:linear-gradient(135deg,var(--p600),var(--p500));color:#fff;box-shadow:0 14px 28px -12px rgba(106,59,208,.8)}
+.btn.ghost{background:#fff;color:var(--p700);border:3px solid var(--p200)}
+.btn.ghost:hover{border-color:var(--p400)}
+.btn.sun{background:var(--sun);color:#3d2700;box-shadow:0 14px 28px -14px rgba(255,170,30,.9)}
+.btn.mint{background:var(--mint);color:#fff}
+.btn.big{font-size:36px;padding:20px 44px;border-radius:24px}
+.btn.sm{font-size:24px;padding:10px 22px;border-radius:14px}
+.who-name{color:var(--p600);font-weight:900;min-width:20px}
+.who-name.landed,.lc-name.landed,.m-name.landed{animation:pop .5s ease}
+
+/* =========================================================
+   1) الشريحة الترحيبية
+   ========================================================= */
+.welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:linear-gradient(140deg,#4a23a0 0%,#6a3bd0 50%,#8f63e8 100%);color:#fff;overflow:hidden}
+.welcome::before,.welcome::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.08)}
+.welcome::before{width:700px;height:700px;top:-260px;right:-200px}
+.welcome::after{width:520px;height:520px;bottom:-220px;left:-140px}
+.w-icon{font-size:150px;margin-bottom:10px;filter:drop-shadow(0 20px 30px rgba(0,0,0,.25))}
+.w-meta{background:rgba(255,255,255,.18);padding:12px 34px;border-radius:999px;font-size:32px;font-weight:700;margin-bottom:22px}
+.welcome h1{font-size:136px;font-weight:900;line-height:1.1;text-shadow:0 10px 30px rgba(0,0,0,.2)}
+.w-lesson{font-size:40px;font-weight:800;color:var(--sun);margin:14px 0 26px}
+.w-greet{font-size:42px;font-weight:700;margin-bottom:36px}
+.w-teacher{font-size:30px;font-weight:700;background:#fff;color:var(--p700);padding:14px 36px;border-radius:20px}
+.deco{position:absolute;font-size:70px;opacity:.85}
+
+/* =========================================================
+   2) التحضير والمراجعة (قرعة الأسماء)
+   ========================================================= */
+.review-grid{display:grid;grid-template-columns:680px 1fr;gap:40px;flex:1;min-height:0}
+.lotto-card{display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;
+  background:linear-gradient(170deg,#fff,var(--p100))}
+.lc-top{display:flex;align-items:center;gap:20px;align-self:stretch}
+.lc-ico{font-size:72px}
+.lc-title{font-size:40px;font-weight:900;color:var(--p800);text-align:right}
+.lc-sub{font-size:24px;color:var(--muted);font-weight:700;text-align:right}
+.lc-name{font-size:96px;font-weight:900;color:var(--p600);min-height:150px;display:flex;align-items:center;justify-content:center}
+.rq-card{display:flex;flex-direction:column;gap:26px}
+.rq-top{display:flex;justify-content:space-between;align-items:center}
+.rq-dots{display:flex;gap:10px}
+.rq-dots i{width:16px;height:16px;border-radius:50%;background:var(--p200)}
+.rq-dots i.on{background:var(--p600)}
+.rq-q{font-size:52px;font-weight:900;color:var(--p900);line-height:1.45;flex:1;display:flex;align-items:center}
+.rq-q.pop{animation:pop .45s ease}
+.rq-a{font-size:40px;font-weight:800;color:#0d7a62;background:var(--mint-l);border-radius:22px;padding:22px 30px;
+  opacity:0;transform:scale(.92);transition:all .4s cubic-bezier(.2,.8,.2,1);min-height:90px}
+.rq-a.show{opacity:1;transform:none}
+
+/* =========================================================
+   3) الأهداف
+   ========================================================= */
+.goals{display:flex;flex-direction:column;gap:20px;max-width:1400px}
+.goal{display:flex;align-items:center;gap:28px;background:#fff;border-radius:26px;padding:18px 30px;box-shadow:var(--shadow);
+  cursor:pointer;border:4px solid transparent;transition:border-color .3s, background .3s}
+.goal:hover{border-color:var(--p200)}
+.g-ico{width:80px;height:80px;border-radius:22px;background:var(--p100);display:grid;place-items:center;font-size:44px;flex:none}
+.g-txt{font-size:38px;font-weight:800;flex:1}
+.g-check{width:64px;height:64px;border-radius:50%;border:4px dashed var(--p300);display:grid;place-items:center;font-size:34px;color:transparent;flex:none;transition:all .3s}
+.goal.done{background:var(--ok-l);border-color:var(--ok)}
+.goal.done .g-check{background:var(--ok);border:4px solid var(--ok);color:#fff;animation:pop .45s}
+
+/* =========================================================
+   4) ماذا تتوقعين؟ (الأوراق المبعثرة ← جدول منظّم)
+   ========================================================= */
+.predict{display:grid;grid-template-columns:1fr 960px;gap:44px;flex:1;min-height:0}
+.pr-side{display:flex;flex-direction:column;gap:22px}
+.scenario{display:flex;gap:24px;align-items:center;padding:30px 34px}
+.sc-ico{font-size:80px}
+.scenario p{font-size:32px;font-weight:700;line-height:1.55}
+.ask-q{font-size:40px;font-weight:900;color:var(--p700);line-height:1.5}
+.ask{padding:28px 34px;background:linear-gradient(135deg,var(--p100),#fff)}
+.thoughts{display:flex;flex-direction:column;gap:12px}
+.thought{font-size:30px;font-weight:800;background:#fff;border:3px dashed var(--p300);border-radius:22px;padding:12px 24px;animation:pop .45s}
+.pr-result{font-size:40px;font-weight:900;color:#fff;background:linear-gradient(135deg,var(--mint),#16a2a0);border-radius:24px;padding:22px 30px;
+  opacity:0;transform:scale(.9);transition:all .5s .9s}
+.pr-result.show{opacity:1;transform:none}
+.pr-area{position:relative;height:720px}
+.paper{position:absolute;width:250px;left:var(--x);top:var(--y);transform:rotate(var(--r));
+  background:#fffbe6;border-radius:14px;padding:16px 20px;box-shadow:0 14px 30px -12px rgba(80,60,20,.45);
+  display:grid;gap:4px;font-size:24px;font-weight:700;color:#5a4a26;
+  transition:left .9s cubic-bezier(.6,.05,.3,1), top .9s cubic-bezier(.6,.05,.3,1), width .9s, transform .9s, background .6s;
+  transition-delay:calc(var(--k) * 90ms)}
+.paper::before{content:"📌";position:absolute;top:-18px;left:50%;font-size:28px;transition:opacity .4s}
+.paper span:first-child{font-size:30px;font-weight:900;color:var(--p800)}
+.pr-area.org .paper{left:0;width:100%;top:calc(96px + var(--k) * 94px);transform:none;background:#fff;
+  grid-template-columns:repeat(4,1fr);align-items:center;padding:20px 28px;color:var(--ink);border-radius:14px}
+.pr-area.org .paper::before{opacity:0}
+.pr-area.org .paper span:first-child{font-size:26px}
+.pr-header{position:absolute;top:0;left:0;right:0;height:80px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;
+  padding:0 28px;background:var(--p600);color:#fff;font-size:28px;font-weight:900;border-radius:14px;
+  opacity:0;transform:translateY(-20px);transition:all .6s .9s}
+.pr-area.org .pr-header{opacity:1;transform:none}
+
+/* =========================================================
+   جداول إكسل (مشتركة)
+   ========================================================= */
+.xl-wrap{border-radius:18px;overflow:hidden;box-shadow:var(--shadow);border:4px solid #fff;background:#fff;align-self:start}
+.xl{border-collapse:collapse;background:#fff;font-size:24px}
+.xl th,.xl td{border:1px solid #dcd7e8;padding:12px 16px;white-space:nowrap;text-align:right;transition:background .3s,color .3s}
+.xl thead th{background:#f1eff6;color:#6a6480;font-weight:700;text-align:center;font-size:20px;padding:6px 10px}
+.xl .rn{background:#f1eff6;color:#6a6480;text-align:center;font-weight:700;font-size:20px;width:56px}
+.xl td.hd{font-weight:700}
+.xl .corner{background:#e6e3ee}
+
+/* =========================================================
+   5) لاحظي واكتشفي
+   ========================================================= */
+.disc{display:grid;grid-template-columns:1fr 520px;gap:40px;align-items:start}
+.disc-t .rn,.disc-t .colh,.disc-t td{cursor:pointer}
+.disc-t .rn:hover,.disc-t .colh:hover{background:var(--p200)}
+.disc-t td.hd{font-weight:900;color:var(--p800)}
+.disc-t .c-on{background:#d8f7ef}
+.disc-t th.c-on{background:var(--mint);color:#fff}
+.disc-t .r-on{background:var(--p100)}
+.disc-t th.r-on{background:var(--p500);color:#fff}
+.disc-t .x-on{outline:4px solid var(--sun);outline-offset:-4px;background:var(--sun-l)}
+.disc-info{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:430px;justify-content:center}
+.disc-info.pop{animation:pop .45s}
+.di-ico{font-size:96px}
+.di-title{font-size:46px;font-weight:900;color:var(--p800)}
+.di-txt{font-size:32px;font-weight:700;color:var(--muted);line-height:1.5}
+.concl{font-size:34px;font-weight:900;color:var(--p800);background:#fff;border:4px solid var(--mint);border-radius:22px;padding:16px 28px;
+  opacity:0;transform:scale(.9);transition:all .4s}
+.concl.show{opacity:1;transform:none}
+
+/* =========================================================
+   6) بطاقات المفاهيم القابلة للقلب
+   ========================================================= */
+.flips{display:grid;grid-template-columns:repeat(5,1fr);gap:28px;height:600px}
+.flip{perspective:1400px;cursor:pointer}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .75s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:28px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;gap:16px}
+.flip .front{color:#fff;background:linear-gradient(160deg,var(--p700),var(--p400));box-shadow:var(--shadow)}
+.flip:nth-child(2) .front{background:linear-gradient(160deg,#15a08a,#4fd6b8)}
+.flip:nth-child(3) .front{background:linear-gradient(160deg,#d94d86,#f590b8)}
+.flip:nth-child(4) .front{background:linear-gradient(160deg,#e8920e,#ffc457)}
+.flip:nth-child(5) .front{background:linear-gradient(160deg,#3a63c9,#79a0f2)}
+.flip .back{background:#fff;transform:rotateY(180deg);border:4px solid var(--p300);box-shadow:var(--shadow)}
+.f-ico{font-size:100px}
+.f-title{font-size:40px;font-weight:900}
+.f-hint{font-size:22px;opacity:.85;font-weight:700}
+.flip .back .f-title{font-size:32px;color:var(--p700)}
+.flip .back p{font-size:30px;font-weight:700;line-height:1.55}
+
+/* =========================================================
+   7) العصف الذهني
+   ========================================================= */
+.bs{display:grid;grid-template-columns:1100px 1fr;gap:40px;flex:1;min-height:0}
+.bs-map{position:relative;height:760px}
+.bs-map svg{position:absolute;inset:0;width:100%;height:100%}
+.bs-map line{stroke:var(--p300);stroke-width:4;stroke-dasharray:10 12}
+.bs-center{position:absolute;left:400px;top:230px;width:300px;height:300px;border-radius:50%;
+  background:linear-gradient(140deg,var(--p700),var(--p500));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;font-size:32px;font-weight:900;padding:30px;box-shadow:0 24px 50px -20px rgba(82,39,166,.8);line-height:1.4}
+.bs-c-ico{font-size:64px}
+.bs-node{position:absolute;width:250px;height:150px;border:4px solid var(--p200);border-radius:30px;background:#fff;box-shadow:var(--shadow);
+  cursor:pointer;font-size:27px;font-weight:800;color:var(--p800);animation:bob 4s ease-in-out infinite;animation-delay:calc(var(--d) * -0.7s);line-height:1.35}
+.bs-node:hover{border-color:var(--p400)}
+.bn-q{font-size:64px}
+.bn-a{display:none}
+.bs-node.open{background:var(--mint-l);border-color:var(--mint)}
+.bs-node.open .bn-q{display:none}
+.bs-node.open .bn-a{display:block;animation:pop .4s}
+.bn-a b{font-size:44px;display:block}
+.bs-side{display:flex;flex-direction:column;gap:26px}
+.side-t{font-size:30px;font-weight:900;color:var(--p800);margin-bottom:18px}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+.chip{font-size:24px;font-weight:800;padding:10px 20px;border-radius:999px;background:var(--p100);color:var(--p700);direction:ltr;animation:pop .45s backwards}
+
+/* ---------- المؤقت ---------- */
+.timer{display:flex;align-items:center;gap:24px}
+.t-ring{position:relative;width:150px;height:150px;flex:none}
+.t-ring svg{width:150px;height:150px;transform:rotate(-90deg)}
+.t-ring circle{fill:none;stroke-width:11}
+.t-bg{stroke:var(--p100)}
+.t-fg{stroke:var(--p500);stroke-linecap:round;transition:stroke-dashoffset .9s linear, stroke .3s}
+.t-num{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;font-weight:900;color:var(--p800);direction:ltr}
+.timer.warn .t-fg{stroke:var(--rose)}
+.timer.warn .t-num{color:var(--rose)}
+.timer.done .t-ring{animation:shake .5s}
+.t-btns{display:flex;flex-direction:column;gap:10px}
+
+/* =========================================================
+   8-9) المحاكاة (إكسل)
+   ========================================================= */
+.sim{display:grid;grid-template-columns:600px 1fr;gap:40px;flex:1;min-height:0}
+.sim-steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;gap:16px;align-items:center;padding:14px 20px;border-radius:20px;background:#fff;font-size:26px;font-weight:700;
+  color:var(--muted);border:3px solid transparent;cursor:pointer;transition:all .3s;line-height:1.35}
+.sn{width:48px;height:48px;border-radius:50%;background:var(--p100);color:var(--p700);display:grid;place-items:center;flex:none;font-weight:900}
+.step.cur{border-color:var(--p500);color:var(--ink);box-shadow:var(--shadow);transform:scale(1.02)}
+.step.cur .sn{background:var(--p600);color:#fff}
+.step.done{color:var(--ink)}
+.step.done .sn{background:var(--mint);color:#fff;font-size:0}
+.step.done .sn::after{content:"✓";font-size:26px}
+.sim-btns{margin-top:auto}
+.xlwin{background:#fff;border-radius:22px;box-shadow:var(--shadow);overflow:hidden;align-self:start;position:relative}
+.xl-title{background:#1e7145;color:#fff;padding:10px 22px;font-size:20px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.tabs{background:#f3f3f3;display:flex;gap:28px;padding:8px 22px;font-size:19px;color:#555;font-weight:700}
+.tabs .on{color:#1e7145;border-bottom:3px solid #1e7145}
+.tools{display:flex;gap:10px;padding:12px 22px;align-items:center;border-bottom:1px solid #ddd;background:#fafafa}
+.tb{min-width:50px;height:50px;border:1px solid #d7d7d7;border-radius:10px;display:grid;place-items:center;background:#fff;font-size:22px;font-weight:900;color:#333;padding:0 12px;transition:all .3s}
+.tb.wide{font-size:19px;font-weight:700}
+.tb.glow{border-color:var(--sun);background:var(--sun-l);animation:pulse 1.2s infinite}
+.tsep{width:1px;height:40px;background:#ddd;margin:0 6px}
+.grid-wrap{position:relative;padding:22px}
+.sim-t{font-size:21px}
+.sim-t td{min-width:70px;height:52px;padding:8px 12px}
+.sim-t td.hd.bold{font-weight:900}
+.sim-t td.inrange{background:#e3ebfb}
+.sim-t td.act{outline:3px solid #1e7145;outline-offset:-3px}
+.sim-t tr.rsel td{background:#d6e9dd}
+.sim-t tr.rsel .rn{background:#1e7145;color:#fff}
+.sim-t td.typed{animation:typeIn .45s ease backwards;animation-delay:var(--td)}
+@keyframes typeIn{from{opacity:0;background:#fff3bf}to{opacity:1}}
+.fa{display:none;width:24px;height:24px;margin-inline-start:8px;border:1px solid rgba(255,255,255,.8);border-radius:5px;font-size:14px;place-items:center;vertical-align:middle}
+.sim-t.styled td.hd{background:#6aa84f;color:#fff;font-weight:900}
+.sim-t.styled .fa{display:inline-grid}
+.sim-t.styled tr.band td{background:#e2f0d9}
+.palette{position:absolute;top:8px;right:240px;background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);padding:16px;
+  opacity:0;transform:translateY(-12px) scale(.95);transition:all .35s;pointer-events:none;z-index:3}
+.palette.show{opacity:1;transform:none}
+.sw-grid{display:grid;grid-template-columns:repeat(7,46px);gap:8px}
+.sw{height:34px;border-radius:6px;border:1px solid #ddd}
+.sw.pick{outline:4px solid var(--sun);outline-offset:2px;animation:pulse 1.2s infinite}
+.pal-lbl{font-size:18px;font-weight:800;text-align:center;margin-top:10px;color:#1e7145}
+.dlg{position:absolute;top:70px;left:50%;width:470px;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.3);padding:22px 26px;
+  font-size:22px;opacity:0;transform:translate(-50%,-14px) scale(.95);transition:all .35s;pointer-events:none;z-index:4;display:grid;gap:12px}
+.dlg.show{opacity:1;transform:translate(-50%,0)}
+.dlg-t{font-weight:900;font-size:24px;display:flex;justify-content:space-between}
+.dlg-in{border:2px solid #1e7145;border-radius:8px;padding:6px 12px;direction:ltr;text-align:left;font-family:Consolas,monospace}
+.dlg-btns{display:flex;gap:10px;justify-content:flex-start}
+.dlg-btns span{padding:8px 22px;border:1px solid #bbb;border-radius:8px;font-weight:700}
+.dlg-btns .okb{background:#1e7145;color:#fff;border-color:#1e7145;animation:pulse 1.2s infinite}
+.tabhint{position:absolute;bottom:22px;left:26px;background:var(--ink);color:#fff;padding:10px 20px;border-radius:12px;font-size:24px;font-weight:800;
+  opacity:0;transform:translateY(10px);transition:all .35s;direction:ltr}
+.tabhint.show{opacity:1;transform:none;animation:bob 1.4s infinite}
+.sim-tip{font-size:28px;font-weight:800;color:var(--p700);margin-top:22px;min-height:40px}
+
+/* =========================================================
+   10) تحديد السجلات (جربي بنفسك)
+   ========================================================= */
+.sel{display:grid;grid-template-columns:540px 1fr;gap:40px;flex:1;min-height:0}
+.sel-side{display:flex;flex-direction:column;gap:16px}
+.method{background:#fff;border-radius:22px;padding:18px 24px;border:4px solid transparent;box-shadow:var(--shadow);transition:all .3s}
+.method b{display:block;font-size:30px;color:var(--p800)}
+.method span{font-size:24px;color:var(--muted);font-weight:700}
+.method.on{border-color:var(--mint);background:var(--mint-l)}
+.chal{padding:24px 28px}
+.chal-t{font-size:28px;font-weight:900;color:var(--p700)}
+.chal-q{font-size:30px;font-weight:800;margin:10px 0 16px;min-height:44px}
+.sel-main{display:flex;flex-direction:column;gap:22px}
+.keys{display:flex;align-items:center;gap:16px;font-size:24px;font-weight:800;color:var(--muted)}
+.key{padding:12px 28px;border-radius:14px;background:#fff;border:3px solid #cfcbe0;border-bottom-width:8px;font-size:28px;font-weight:900;
+  cursor:pointer;color:var(--ink);direction:ltr;transition:all .15s}
+.key.on{background:var(--sun);border-color:#d6951b;transform:translateY(4px);border-bottom-width:4px}
+.sel-t .rn{cursor:pointer}
+.sel-t .rn:hover{background:var(--p200)}
+.sel-t td.hd{font-weight:900;color:var(--p800)}
+.sel-t tr.rsel td{background:#d9dcf0}
+.sel-t tr.rsel .rn{background:var(--p600);color:#fff}
+.after{font-size:28px;font-weight:800;display:flex;gap:16px;align-items:center}
+.after span{background:#fff;border-radius:14px;padding:8px 18px;box-shadow:var(--shadow)}
+
+/* =========================================================
+   11) فكري – زاوجي – شاركي
+   ========================================================= */
+.tps-q{display:flex;gap:30px;align-items:center;padding:34px 46px}
+.tps-q .q-ico{font-size:90px}
+.tps-q p{font-size:40px;font-weight:800;line-height:1.55}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin:30px 0}
+.phase{background:#fff;border-radius:28px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;
+  box-shadow:var(--shadow);border:4px solid transparent;transition:all .3s}
+.phase:hover{border-color:var(--p200)}
+.ph-ico{font-size:62px}
+.ph-l{font-size:38px;font-weight:900;color:var(--p800)}
+.ph-d{font-size:24px;color:var(--muted);font-weight:700}
+.ph-t{background:var(--p100);padding:4px 18px;border-radius:999px;font-weight:800;color:var(--p700);font-size:22px}
+.phase.on{border-color:var(--p500);transform:translateY(-6px);background:linear-gradient(180deg,#fff,var(--p100))}
+.phase.done .ph-t{background:var(--mint);color:#fff}
+.tps-bottom{display:flex;gap:34px;align-items:center}
+.tps-ans{flex:1;font-size:30px;font-weight:800;background:var(--mint-l);color:#0b6e58;padding:20px 28px;border-radius:22px;
+  opacity:0;transform:translateY(10px);transition:all .4s;line-height:1.5}
+.tps-ans.show{opacity:1;transform:none}
+
+/* =========================================================
+   12) التعلم التعاوني (6 مجموعات)
+   ========================================================= */
+.grp-top{display:flex;justify-content:space-between;align-items:center;gap:30px;margin-bottom:24px}
+.ginst{display:flex;gap:14px;flex-wrap:wrap}
+.ginst span{background:#fff;border-radius:16px;padding:12px 20px;font-size:26px;font-weight:800;box-shadow:var(--shadow)}
+.grp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.gcard{perspective:1200px;height:240px;cursor:pointer}
+.gc-in{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.gcard.on .gc-in{transform:rotateY(180deg)}
+.gcard .front{background:linear-gradient(150deg,var(--gc),color-mix(in srgb,var(--gc) 60%,#fff));color:#fff;box-shadow:var(--shadow);gap:6px}
+.gcard .back{background:#fff;border:5px solid var(--gc);transform:rotateY(180deg);box-shadow:var(--shadow);gap:6px}
+.gc-ico{font-size:64px}
+.gc-name{font-size:36px;font-weight:900}
+.gc-hint{font-size:22px;font-weight:700;opacity:.9}
+.gc-task-ico{font-size:52px}
+.gc-topic{font-size:34px;font-weight:900;color:var(--ink)}
+.gc-ex{font-size:21px;font-weight:700;color:var(--muted);display:none;line-height:1.45}
+.grp-grid.hints .gc-ex{display:block}
+.gc-who{font-size:20px;font-weight:800;color:var(--gc)}
+
+/* =========================================================
+   13) اختيار من متعدد
+   ========================================================= */
+.mcq{display:flex;flex-direction:column;flex:1}
+.mcq-q{font-size:56px;font-weight:900;color:var(--p900);text-align:center;margin:0 0 36px;line-height:1.4}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:26px;width:1500px;margin:0 auto}
+.opt{display:flex;align-items:center;gap:24px;background:#fff;border:4px solid var(--p200);border-radius:28px;padding:20px 30px;
+  font-size:40px;font-weight:800;color:var(--ink);cursor:pointer;box-shadow:var(--shadow);transition:all .25s;text-align:right}
+.opt:hover{border-color:var(--p500);transform:translateY(-5px)}
+.o-ico{font-size:50px;width:86px;height:86px;display:grid;place-items:center;background:var(--p100);border-radius:22px;flex:none;transition:background .3s}
+.opt.correct{background:var(--ok-l);border-color:var(--ok)}
+.opt.correct .o-ico{background:#fff}
+.opt.wrong{background:var(--bad-l);border-color:var(--bad);animation:shake .45s;opacity:.75}
+.opts.solved .opt:not(.correct){opacity:.4;pointer-events:none}
+.mcq-foot{display:flex;justify-content:space-between;align-items:center;width:1500px;margin:26px auto 0;gap:20px}
+.fb{font-size:38px;font-weight:900;text-align:center;flex:1}
+.fb small{display:block;font-size:26px;color:var(--muted);font-weight:700;margin-top:4px}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.award{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:18px;font-size:24px;font-weight:800;
+  opacity:0;transform:translateY(10px);pointer-events:none;transition:all .4s}
+.award.show{opacity:1;transform:none;pointer-events:auto}
+.g-chip{border:none;background:var(--gc);color:#fff;font-weight:800;font-size:22px;padding:10px 20px;border-radius:999px;cursor:pointer;transition:transform .15s}
+.g-chip:hover{transform:translateY(-3px) scale(1.04)}
+
+/* =========================================================
+   14) صح أم خطأ
+   ========================================================= */
+.tf-row{display:grid;grid-template-columns:64px 1fr auto;gap:24px;align-items:center;background:#fff;border-radius:22px;padding:14px 26px;
+  box-shadow:var(--shadow);border:4px solid transparent;margin-bottom:16px;transition:all .3s}
+.tf-n{width:56px;height:56px;border-radius:50%;background:var(--p100);color:var(--p700);display:grid;place-items:center;font-size:28px;font-weight:900}
+.tf-t{font-size:32px;font-weight:800;line-height:1.45}
+.tf-btns{display:flex;gap:12px}
+.tfb{border:3px solid var(--p200);background:#fff;border-radius:16px;padding:10px 24px;font-size:28px;font-weight:900;cursor:pointer;transition:all .2s}
+.tfb.yes{color:var(--ok)} .tfb.no{color:var(--bad)}
+.tfb:hover{transform:translateY(-3px);border-color:var(--p400)}
+.tf-row.ok{border-color:var(--ok);background:var(--ok-l)}
+.tf-row.ok .tfb{pointer-events:none;opacity:.5}
+.tf-row.ok .tfb.picked{opacity:1;background:var(--ok);color:#fff;border-color:var(--ok)}
+.tf-row.bad{animation:shake .45s;border-color:var(--bad)}
+.tf-fix{grid-column:2 / 4;font-size:25px;color:#0b6e58;font-weight:800;display:none}
+.tf-row.ok .tf-fix:not(:empty){display:block}
+.score-line{font-size:28px;font-weight:900;color:var(--p700)}
+
+/* =========================================================
+   15) أي الجداول منظمة؟
+   ========================================================= */
+.org-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.org{padding:20px 24px;display:grid;grid-template-columns:auto 1fr;gap:12px 20px;align-items:center;border:4px solid transparent;transition:all .3s}
+.org-n{width:58px;height:58px;border-radius:50%;background:var(--p600);color:#fff;display:grid;place-items:center;font-size:30px;font-weight:900;align-self:start}
+.mini{width:100%;border-collapse:collapse;font-size:21px;border-radius:12px;overflow:hidden}
+.mini th{color:#fff;padding:8px 12px;font-weight:800}
+.mini td{border:1px solid #d6e3e8;padding:6px 12px;text-align:center;unicode-bidi:plaintext}
+.mini.teal th{background:#0f7a72} .mini.blue th{background:#1667a8}
+.org-foot{grid-column:1 / 3;display:flex;gap:12px;align-items:center}
+.org-fb{font-size:23px;font-weight:800;flex:1}
+.org.ok{border-color:var(--ok);background:#f4fdf9}
+.org.ok .tfb{pointer-events:none;opacity:.5}
+.org.ok .tfb.picked{opacity:1;background:var(--ok);color:#fff;border-color:var(--ok)}
+.org.bad{animation:shake .45s;border-color:var(--bad)}
+.org-fb.ok{color:var(--ok)} .org-fb.bad{color:var(--bad)}
+
+/* =========================================================
+   16) تحدي الدقيقة (التوصيل)
+   ========================================================= */
+.match-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.match{display:grid;grid-template-columns:440px 1fr;gap:60px}
+.m-col{display:flex;flex-direction:column;gap:16px}
+.m-term{border:none;background:linear-gradient(135deg,var(--p600),var(--p500));color:#fff;border-radius:22px;padding:26px;font-size:32px;font-weight:900;
+  cursor:pointer;box-shadow:var(--shadow);transition:all .2s;position:relative}
+.m-desc{border:3px solid var(--p200);background:#fff;border-radius:20px;padding:18px 26px;font-size:28px;font-weight:700;text-align:right;
+  cursor:pointer;box-shadow:var(--shadow);transition:all .2s;color:var(--ink);line-height:1.45;position:relative}
+.m-term:hover,.m-desc:hover{transform:translateY(-3px)}
+.m-term.sel{outline:6px solid var(--sun);outline-offset:3px}
+.m-ok{background:var(--ok)!important;color:#fff!important;border-color:var(--ok)!important;pointer-events:none}
+.m-bad{animation:shake .45s;border-color:var(--bad)!important}
+.m-badge{position:absolute;top:-14px;left:-14px;width:44px;height:44px;border-radius:50%;background:var(--sun);color:#3d2700;display:grid;place-items:center;font-size:24px;font-weight:900}
+.m-status{font-size:34px;font-weight:900;color:var(--ok);text-align:center;margin-top:18px;min-height:44px}
+
+/* =========================================================
+   17) المراجعة
+   ========================================================= */
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.sum{perspective:1200px;height:210px;cursor:pointer}
+.sum-in{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d}
+.sum.on .sum-in{transform:rotateY(180deg)}
+.sum .front{background:linear-gradient(150deg,var(--p700),var(--p500));color:#fff;box-shadow:var(--shadow)}
+.sum .front p{font-size:36px;font-weight:900}
+.s-q{font-size:44px}
+.sum .back{background:#fff;border:4px solid var(--mint);transform:rotateY(180deg);box-shadow:var(--shadow)}
+.sum .back p{font-size:32px;font-weight:800;color:#0b6e58;line-height:1.45}
+.exit{display:flex;align-items:center;gap:26px;margin-top:26px;padding:24px 34px;background:linear-gradient(135deg,var(--sun-l),#fff)}
+.ex-ico{font-size:70px}
+.exit b{font-size:32px;color:#8a5a00}
+.exit p{font-size:32px;font-weight:800}
+.exit .grow{flex:1}
+
+/* =========================================================
+   18) الختام
+   ========================================================= */
+.closing{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:26px;
+  background:linear-gradient(150deg,#fdfbff 0%,var(--p100) 60%,#e6fbf5 100%)}
+.closing h1{font-size:120px;font-weight:900;background:linear-gradient(135deg,var(--p700),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.2}
+.closing .msg{font-size:40px;font-weight:700;max-width:1400px;line-height:1.55}
+.winner{display:flex;align-items:center;gap:26px;padding:22px 40px}
+.w-label{font-size:30px;font-weight:800;color:var(--muted)}
+.w-name{font-size:46px;font-weight:900;color:var(--p700)}
+.hw{font-size:30px;font-weight:800;background:#fff;border-radius:20px;padding:16px 30px;box-shadow:var(--shadow)}
+
+/* =========================================================
+   شريط التحكم + المؤشرات (خارج المسرح)
+   ========================================================= */
+#bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(10px);padding:8px 12px;border-radius:999px;
+  box-shadow:0 12px 40px rgba(20,8,50,.35);z-index:60;transition:opacity .4s, transform .4s;font-size:clamp(15px,1.15vw,22px)}
+.nav{display:flex;align-items:center;gap:8px}
+#bar button{border:none;background:var(--p100);color:var(--p700);font-weight:800;font-size:1em;border-radius:999px;padding:.55em 1.1em;cursor:pointer;transition:all .15s}
+#bar button:hover{background:var(--p200)}
+#bar button:active{transform:scale(.93)}
+#bar button.main{background:var(--p600);color:#fff}
+#bar button.main:hover{background:var(--p700)}
+#bar button.icon{font-size:1.35em;padding:.3em .6em;background:transparent}
+#bar button.icon:hover{background:var(--p100)}
+#count{font-weight:900;color:var(--p800);min-width:4.2em;text-align:center}
+.vsep{width:1px;height:1.8em;background:#ddd}
+#hint{position:fixed;top:14px;left:16px;z-index:60;background:rgba(255,255,255,.9);color:var(--p800);font-weight:800;
+  font-size:clamp(12px,.9vw,17px);padding:.5em 1.1em;border-radius:999px;box-shadow:0 8px 24px rgba(20,8,50,.25);transition:opacity .4s}
+#progress{position:fixed;top:0;left:0;right:0;height:5px;z-index:61;background:rgba(255,255,255,.15)}
+#progress i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--p400));width:0;transition:width .5s;margin-inline-start:auto}
+body.idle #bar{opacity:0;transform:translate(-50%,30px);pointer-events:none}
+body.idle #hint{opacity:0}
+#bClap.pulse{animation:pop .4s}
+
+/* المؤثرات (التصفيق والقصاصات) */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+.fly{position:absolute;bottom:70px;will-change:transform,opacity}
+.cf{position:absolute;width:14px;height:20px;border-radius:3px;will-change:transform,opacity}
+
+/* رسالة كبيرة في المنتصف */
+#pop{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%) scale(.7);z-index:85;pointer-events:none;opacity:0;
+  background:#fff;border-radius:30px;padding:.6em 1.4em;font-size:clamp(26px,3vw,60px);font-weight:900;box-shadow:0 30px 80px rgba(20,8,50,.35);
+  transition:all .35s cubic-bezier(.2,.9,.3,1.3);white-space:nowrap}
+#pop.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#pop.ok{color:var(--ok);border:5px solid var(--ok)}
+#pop.bad{color:var(--p600);border:5px solid var(--p300)}
+
+#toast{position:fixed;top:60px;left:50%;transform:translate(-50%,-20px);z-index:95;background:var(--ink);color:#fff;font-weight:800;
+  font-size:clamp(16px,1.3vw,26px);padding:.6em 1.4em;border-radius:999px;opacity:0;transition:all .35s;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* نافذة القرعة */
+.modal{position:fixed;inset:0;z-index:80;background:rgba(25,12,55,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+.modal.open{display:flex;animation:aFade .3s}
+.m-box{background:#fff;border-radius:30px;width:min(760px,92vw);padding:30px 36px;position:relative;text-align:center;
+  font-size:clamp(15px,1.2vw,22px);animation:pop .4s;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;gap:14px}
+.m-x{position:absolute;top:16px;left:18px;border:none;background:var(--p100);color:var(--p700);width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;font-weight:900}
+.m-title{font-size:1.8em;font-weight:900;color:var(--p800)}
+.m-classes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.m-classes button{border:3px solid var(--p200);background:#fff;color:var(--p700);font-weight:800;font-size:1em;padding:.4em 1.2em;border-radius:999px;cursor:pointer}
+.m-classes button.on{background:var(--p600);border-color:var(--p600);color:#fff}
+.m-name{font-size:3.6em;font-weight:900;color:var(--p600);min-height:1.5em;display:flex;align-items:center;justify-content:center}
+.m-box .btn{font-size:1.2em;padding:.5em 1.2em}
+.m-box .btn.sm{font-size:.95em}
+.m-opts{display:flex;gap:18px;justify-content:center;align-items:center;font-weight:700;color:var(--muted)}
+.m-opts input{width:20px;height:20px;accent-color:var(--p600);vertical-align:middle}
+.m-editor{display:none;flex-direction:column;gap:10px}
+.m-editor.open{display:flex}
+.m-editor textarea{width:100%;height:30vh;border:3px solid var(--p200);border-radius:16px;padding:12px;font-family:inherit;font-size:1em;resize:none;user-select:text;-webkit-user-select:text}
+.m-editor p{font-size:.85em;color:var(--muted)}
+
+/* لوحة نقاط المجموعات */
+#board{position:fixed;top:0;bottom:0;left:0;width:min(440px,90vw);background:#fff;z-index:75;box-shadow:20px 0 60px rgba(20,8,50,.35);
+  transform:translateX(-105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);padding:26px 22px;display:flex;flex-direction:column;gap:14px;
+  font-size:clamp(15px,1.15vw,22px)}
+#board.open{transform:none}
+.b-head{display:flex;justify-content:space-between;align-items:center;font-size:1.35em;font-weight:900;color:var(--p800)}
+.b-head .m-x{position:static}
+.b-list{display:flex;flex-direction:column;gap:12px;flex:1;overflow:auto}
+.b-row{display:flex;align-items:center;gap:10px;background:var(--p50);border-radius:18px;padding:10px 12px;border-inline-start:8px solid var(--gc)}
+.b-ico{font-size:1.8em}
+.b-mid{flex:1}
+.b-name{font-weight:900}
+.b-bar{height:10px;background:#ebe6f6;border-radius:9px;overflow:hidden;margin-top:6px}
+.b-bar i{display:block;height:100%;background:var(--gc);border-radius:9px;transition:width .5s}
+.b-score{font-size:1.6em;font-weight:900;min-width:1.6em;text-align:center;color:var(--ink)}
+.b-btn{width:2em;height:2em;border-radius:50%;border:none;background:#fff;color:var(--p700);font-size:1.1em;font-weight:900;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.b-btn.plus{background:var(--gc);color:#fff}
+.b-row.lead{background:var(--sun-l)}
+.b-row.lead .b-name::after{content:" 👑"}
+</style>
+</head>
+<body>
+
+<div id="viewport"><div id="stage"></div></div>
+
+<!-- شريط التقدّم -->
+<div id="progress"><i></i></div>
+
+<!-- مؤشر الاختصارات -->
+<div id="hint">Space = التالي | ← → للتنقل | ت = تصفيق | ق = القرعة | ن = النقاط</div>
+
+<!-- شريط التحكم السفلي -->
+<div id="bar">
+  <div class="nav" dir="ltr">
+    <button id="bPrev" title="السابق (←)">← السابق</button>
+    <div id="count"><span id="cur">1</span> / <span id="tot">1</span></div>
+    <button id="bNext" class="main" title="التالي (→ أو Space)">التالي →</button>
+  </div>
+  <span class="vsep"></span>
+  <button id="bClap" class="icon" title="تصفيق (ت)">👏</button>
+  <button id="bLotto" class="icon" title="قرعة الأسماء (ق)">🎲</button>
+  <button id="bBoard" class="icon" title="نقاط المجموعات (ن)">🏆</button>
+  <button id="bFull" class="icon" title="ملء الشاشة">⛶</button>
+</div>
+
+<!-- نافذة القرعة -->
+<div id="lotto" class="modal">
+  <div class="m-box">
+    <button class="m-x" data-close="lotto">✕</button>
+    <div class="m-title">🎲 قرعة الأسماء</div>
+    <div class="m-classes"></div>
+    <div class="m-name">؟</div>
+    <div class="row center">
+      <button class="btn primary js-mpick">🎲 اسحبي اسمًا</button>
+      <button class="btn ghost js-mgroup">🎯 مجموعة عشوائية</button>
+    </div>
+    <div class="m-opts">
+      <label><input type="checkbox" id="noRep" checked> بدون تكرار</label>
+      <span class="m-left"></span>
+    </div>
+    <div class="row center">
+      <button class="btn ghost sm js-mreset">↺ إعادة القرعة</button>
+    </div>
+  </div>
+</div>
+
+<!-- لوحة نقاط المجموعات -->
+<aside id="board">
+  <div class="b-head"><span>🏆 نقاط المجموعات</span><button class="m-x" data-close="board">✕</button></div>
+  <div class="b-list"></div>
+  <button class="btn ghost sm js-breset">↺ تصفير النقاط</button>
+</aside>
+
+<div id="fx"></div>
+<div id="pop"></div>
+<div id="toast"></div>
+
+<script src="../shared/roster.js"></script>
+<script>
+/* =====================================================================
+   ✏️✏️✏️  إعدادات المحتوى — عدّلي من هنا فقط  ✏️✏️✏️
+   - غيّري النصوص بين علامات التنصيص ' ' فقط.
+   - لإضافة شريحة: انسخي أي كتلة { ... } داخل slides والصقيها في المكان الذي تريدينه.
+   - لحذف شريحة: احذفي الكتلة { ... } كاملة مع الفاصلة بعدها.
+   - أنواع الشرائح (type): welcome, review, goals, predict, discover, cards,
+     brainstorm, sim, select, tps, groups, mcq, tf, organized, match, summary, closing
+   - التأثير (anim): 'fade' أو 'slide' أو 'zoom'
+   ===================================================================== */
+/* صف هذا الدرس في لوحة الإدارة (للتحضير والقرعة) */
+const LESSON_GRADE = 'الصف السادس';
+Roster.use(LESSON_GRADE);
+
+const CONFIG = {
+
+  /* 📘 بيانات الدرس */
+  lesson: {
+    subject: 'المهارات الرقمية',
+    grade:   'الصف السادس',
+    title:   'إنشاء قاعدة بيانات',
+    lessonNo:'الدرس الثاني',
+    teacher: 'أ. أثيل القرني',
+    school:  'مدارس دينا العالمية'
+  },
+
+  /* 👩‍🎓 الشعب وأسماء الطالبات تُقرأ من لوحة الإدارة (admin/index.html) — للتحضير والقرعة */
+
+  /* 👭 المجموعات الست (الاسم + الأيقونة + اللون) */
+  groups: [
+    { name:'الياسمين', icon:'🌸', color:'#e0609b' },
+    { name:'النجوم',   icon:'⭐', color:'#ee9a12' },
+    { name:'اللؤلؤ',   icon:'💎', color:'#3a8fd8' },
+    { name:'الفراشات', icon:'🦋', color:'#8a5ae0' },
+    { name:'المبدعات', icon:'🚀', color:'#18a888' },
+    { name:'القمر',    icon:'🌙', color:'#5463d1' }
+  ],
+
+  /* 📊 جدول البيانات النموذجي (يُستخدم في شرائح الاكتشاف والمحاكاة والتحديد) */
+  sampleTable: {
+    fields: ['الاسم','اسم العائلة','الصف','رقم الفصل','العنوان الوطني','تاريخ الميلاد هـ','تاريخ الميلاد م'],
+    records: [
+      ['نورة','العتيبي','6','1','RBBD**21','13 صفر 1433','7 يناير 2012'],
+      ['سارة','الحربي','6','2','RBBD**32','1 ربيع الأول 1433','24 يناير 2012'],
+      ['ريم','المطيري','6','3','RBBD**23','11 رجب 1433','1 يونيو 2012'],
+      ['لمى','الرشيدي','6','2','RBBD**24','21 شوال 1433','8 سبتمبر 2012'],
+      ['جود','السهلي','6','1','RBBD**18','14 رمضان 1433','2 أغسطس 2012'],
+      ['شهد','الشمري','6','3','RBBD**26','13 شعبان 1433','3 يوليو 2012'],
+      ['رغد','العنزي','6','1','RBBD**52','24 محرم 1433','19 ديسمبر 2011']
+    ]
+  },
+
+  /* 🎞️ الشرائح بالترتيب */
+  slides: [
+
+    /* 1) ترحيب */
+    { type:'welcome', anim:'zoom', greeting:'صباح البيانات المنظّمة يا مبدعات ✨' },
+
+    /* التحضير — الأسماء من لوحة الإدارة (admin/index.html) */
+    { type:'attendance', anim:'slide', strategy:'📋 التحضير', title:'صباح البيانات يا مبدعات! من حاضرة اليوم؟' },
+
+    /* 2) تحضير + قرعة + مراجعة الدروس السابقة (إكسل) */
+    { type:'review', anim:'slide', strategy:'🎲 القرعة + ❓ استراتيجية الأسئلة', title:'تحضير ومراجعة: ماذا تذكرين عن إكسل؟',
+      questions:[
+        { q:'ما اسم الخلية التي تقع في العمود B والصف 3؟ 🤔', a:'B3 — نكتب حرف العمود ثم رقم الصف' },
+        { q:'ماذا نسمّي نقطة التقاء الصف مع العمود؟', a:'الخلية ✅' },
+        { q:'الأعمدة في إكسل تُرمَز بـ ...... والصفوف تُرمَز بـ ......', a:'الأعمدة بالحروف (A, B, C) والصفوف بالأرقام (1, 2, 3)' },
+        { q:'ماذا نسمّي ملف إكسل الذي يحتوي على أوراق العمل؟', a:'المُصنَّف (Workbook) 📗' },
+        { q:'كيف نجعل النص غامقًا وبارزًا؟', a:'نحدّد النص ثم نضغط زر غامق B أو Ctrl + B' }
+      ]
+    },
+
+    /* 3) الأهداف */
+    { type:'goals', anim:'slide', strategy:'🎯 أهداف التعلم', title:'في نهاية الدرس ستكونين قادرة على:',
+      goals:[
+        { icon:'🗂️', text:'تعريف قاعدة البيانات والحقل والسجل' },
+        { icon:'✍️', text:'إنشاء حقول قاعدة بيانات في إكسل' },
+        { icon:'➕', text:'إضافة سجلات إلى قاعدة البيانات' },
+        { icon:'🎨', text:'تنسيق البيانات كجدول' },
+        { icon:'🖱️', text:'تحديد سجل واحد أو سجلات متجاورة وغير متجاورة' }
+      ]
+    },
+
+    /* 4) تمهيد: ماذا تتوقعين؟ */
+    { type:'predict', anim:'zoom', strategy:'🔮 ماذا تتوقعين؟', title:'مشكلة في مكتب المديرة!',
+      scenario:'المديرة تحتاج رقم هاتف ولية أمر طالبة بسرعة… لكن معلومات الطالبات مكتوبة على أوراق متفرقة! 📄📄📄',
+      question:'ماذا تتوقعين؟ كيف نصل إلى المعلومة في ثوانٍ؟ ⏱️',
+      guesses:['نبحث في الأوراق ورقةً ورقة 😩','نرتّب الأوراق حسب الاسم 🔤','نضع المعلومات في جدول منظّم 📊'],
+      fields:['الاسم','الفصل','الهاتف','الهواية'],
+      papers:[
+        ['نورة','6/1','05•••• 21','الرسم'],
+        ['سارة','6/2','05•••• 32','القراءة'],
+        ['ريم','6/3','05•••• 23','التصوير'],
+        ['لمى','6/2','05•••• 24','الطبخ'],
+        ['جود','6/1','05•••• 18','الخط العربي'],
+        ['شهد','6/3','05•••• 26','البرمجة']
+      ],
+      result:'هذه قاعدة بيانات! 🗂️ وهي موضوع درسنا اليوم'
+    },
+
+    /* 5) لاحظي واكتشفي: السجل والحقل */
+    { type:'discover', anim:'slide', strategy:'🔍 لاحظي واكتشفي', title:'دفتر عناوين طالبات الصف السادس',
+      prompt:'اضغطي على رقم صفّ 🟣 ثم على حرف عمود 🟢… ماذا تلاحظين؟',
+      conclusion:'الصف = سجل 📄 (معلومات طالبة واحدة) • العمود = حقل 📏 (صفة واحدة لكل الطالبات)'
+    },
+
+    /* 6) بطاقات المفاهيم */
+    { type:'cards', anim:'fade', strategy:'🃏 بطاقات المفاهيم', title:'اقلبي البطاقة… واكتشفي المفهوم',
+      cards:[
+        { icon:'🗂️', front:'قاعدة البيانات', back:'مجموعة بيانات منظّمة حول موضوع واحد، تُرتَّب في جدول.' },
+        { icon:'📏', front:'الحقل', back:'عمود في الجدول يمثّل صفة واحدة، مثل: الاسم أو تاريخ الميلاد.' },
+        { icon:'📄', front:'السجل', back:'صفّ واحد يحتوي كل معلومات عنصر واحد، مثل: طالبة واحدة.' },
+        { icon:'🏷️', front:'أسماء الحقول', back:'عناوين الأعمدة في الصف الأول، وتصف كل عمود.' },
+        { icon:'⚠️', front:'قاعدة ذهبية', back:'كل المعلومات تتعلق بموضوع واحد! لا نضع الرياضة في قاعدة بيانات الحيوانات.' }
+      ]
+    },
+
+    /* 7) العصف الذهني */
+    { type:'brainstorm', anim:'zoom', strategy:'🧠 العصف الذهني', title:'قواعد البيانات من حولنا',
+      center:'أين نجد قواعد البيانات في حياتنا؟',
+      ideas:[
+        { icon:'🏫', text:'نظام نور: بيانات الطالبات' },
+        { icon:'🏥', text:'المستشفى: ملفات المرضى' },
+        { icon:'📚', text:'المكتبة: الكتب والمستعيرات' },
+        { icon:'🛒', text:'السوبرماركت: المنتجات والأسعار' },
+        { icon:'📱', text:'الجوال: جهات الاتصال' },
+        { icon:'✈️', text:'الطيران: حجوزات المسافرين' }
+      ],
+      programs:['Microsoft Excel','Microsoft Access','FileMaker','LibreOffice Base','Alpha Anywhere','Airtable'],
+      timer:60
+    },
+
+    /* 8) محاكاة: إنشاء الحقول وإضافة السجلات */
+    { type:'sim', anim:'slide', strategy:'👀 شاهدي وطبّقي', title:'إنشاء الحقول وإضافة السجلات',
+      steps:[
+        { text:'افتحي برنامج مايكروسوفت إكسل 🟩', tip:'💡 يظهر جدول بيانات فارغ', state:{} },
+        { text:'اكتبي أسماء الحقول أفقيًا من A1 إلى G1', tip:'💡 كل عنوان = اسم حقل', state:{ headers:7, active:'G1' } },
+        { text:'حدّدي الصف كاملًا بالضغط على رقم الصف 1', tip:'💡 الضغط على رقم الصف يحدده كله', state:{ headers:7, rowSel:1 } },
+        { text:'اضغطي زر غامق B لجعل العناوين بارزة', tip:'💡 العناوين البارزة تميّز أسماء الحقول', state:{ headers:7, rowSel:1, bold:true, ribbon:'bold' } },
+        { text:'اضغطي الخلية A2 واكتبي الاسم ثم اضغطي Tab', tip:'💡 مفتاح Tab ينقلكِ إلى الخلية المجاورة', state:{ headers:7, bold:true, partial:1, active:'B2', tabHint:true } },
+        { text:'أكملي بيانات السجل الأول في الصف 2', tip:'💡 الصف 2 = السجل الأول', state:{ headers:7, bold:true, records:1, active:'G2' } },
+        { text:'تابعي كتابة كل سجل في صف منفصل ✔', tip:'💡 كل طالبة في صفّ = سجل جديد', state:{ headers:7, bold:true, records:5 } }
+      ]
+    },
+
+    /* 9) محاكاة: التنسيق كجدول */
+    { type:'sim', anim:'slide', strategy:'👀 شاهدي وطبّقي', title:'التنسيق كجدول',
+      steps:[
+        { text:'معلومات قاعدة البيانات جاهزة ✔', tip:'💡 الآن نجعل إكسل يعرف أنها جدول بيانات', state:{ headers:7, bold:true, records:5 } },
+        { text:'حدّدي خلايا الجدول من A1 إلى G6', tip:'💡 نحدد العناوين والسجلات معًا', state:{ headers:7, bold:true, records:5, range:true } },
+        { text:'الشريط الرئيسي ← أنماط ← التنسيق كجدول', tip:'💡 Home ← Styles ← Format as Table', state:{ headers:7, bold:true, records:5, range:true, ribbon:'format' } },
+        { text:'اختاري نمطًا، مثل: أخضر، نمط جدول فاتح 14', tip:'💡 اختاري اللون الذي تحبينه 🎨', state:{ headers:7, bold:true, records:5, range:true, ribbon:'format', palette:true } },
+        { text:'اختاري «يحتوي الجدول على رؤوس» ثم موافق', tip:'💡 حتى يعرف البرنامج أن الصف الأول عناوين', state:{ headers:7, bold:true, records:5, range:true, dialog:true } },
+        { text:'تم! جدول منسّق مع أسهم الفرز والتصفية 🔽', tip:'💡 سنستخدم الأسهم في الدرس القادم', state:{ headers:7, bold:true, records:5, styled:true } }
+      ]
+    },
+
+    /* 10) جربي بنفسك: تحديد السجلات */
+    { type:'select', anim:'slide', strategy:'🎮 جربي بنفسك', title:'تحديد السجلات في قاعدة البيانات' },
+
+    /* 11) فكري – زاوجي – شاركي */
+    { type:'tps', anim:'zoom', strategy:'🤔 فكّري – زاوجي – شاركي', title:'ما رأيكِ؟',
+      question:'سارة أنشأت قاعدة بيانات عن الحيوانات 🐪🦁، ثم أضافت إليها نتائج مباريات كرة القدم ⚽… هل تصرّفها صحيح؟ ولماذا؟',
+      phases:[
+        { icon:'🤔', label:'فكّري', desc:'وحدكِ بصمت', seconds:30 },
+        { icon:'👭', label:'زاوجي', desc:'ناقشي زميلتكِ', seconds:60 },
+        { icon:'📢', label:'شاركي', desc:'أخبري الفصل', seconds:60 }
+      ],
+      answer:'تصرّفها غير صحيح ❌ — يجب أن تتعلق جميع معلومات قاعدة البيانات بموضوع واحد، فالرياضة تحتاج قاعدة بيانات خاصة بها.'
+    },
+
+    /* 12) التعلم التعاوني — 6 مجموعات */
+    { type:'groups', anim:'zoom', strategy:'👭 التعلم التعاوني', title:'صمّمن قاعدة بيانات مجموعتكن',
+      instructions:['1️⃣ اسحبن بطاقة المهمة','2️⃣ صمّمن 5 حقول على الأقل','3️⃣ أضفن سجلين','4️⃣ القائدة تعرض'],
+      timer:180,
+      tasks:[
+        { icon:'📚', topic:'مكتبة المدرسة', example:'اسم الكتاب، المؤلفة، التصنيف، عدد الصفحات، الحالة' },
+        { icon:'🍎', topic:'مقصف المدرسة', example:'اسم المنتج، النوع، السعر، الكمية، تاريخ الانتهاء' },
+        { icon:'🐾', topic:'حديقة الحيوان', example:'اسم الحيوان، النوع، العمر، الغذاء، الموطن' },
+        { icon:'⚽', topic:'النادي الرياضي', example:'اسم اللاعبة، العمر، الرياضة، الفريق، رقم القميص' },
+        { icon:'🩺', topic:'العيادة المدرسية', example:'اسم الطالبة، الفصل، تاريخ الزيارة، السبب، الإجراء' },
+        { icon:'🚌', topic:'الرحلة المدرسية', example:'اسم الطالبة، الفصل، هاتف ولية الأمر، الموافقة، رقم الحافلة' }
+      ]
+    },
+
+    /* 13-17) أسئلة اختيار من متعدد (correct = رقم الإجابة الصحيحة بدءًا من 0) */
+    { type:'mcq', anim:'slide', strategy:'❓ اختاري الإجابة الصحيحة', title:'السؤال الأول',
+      q:'كل صفّ في جدول قاعدة البيانات يمثّل…',
+      options:[ {icon:'📏',text:'حقلًا'}, {icon:'📄',text:'سجلًا'}, {icon:'📁',text:'ملفًا'}, {icon:'🎨',text:'نمطًا'} ],
+      correct:1, explain:'السجل صفّ واحد يحتوي معلومات عنصر واحد' },
+
+    { type:'mcq', anim:'slide', strategy:'❓ اختاري الإجابة الصحيحة', title:'السؤال الثاني',
+      q:'أين نكتب أسماء حقول قاعدة البيانات؟',
+      options:[ {icon:'⬆️',text:'في الصف الأول'}, {icon:'⬅️',text:'في العمود الأخير'}, {icon:'⬇️',text:'في آخر صف'}, {icon:'🎲',text:'في أي مكان'} ],
+      correct:0, explain:'نكتبها أفقيًا في الصف الأول من A1 إلى G1' },
+
+    { type:'mcq', anim:'slide', strategy:'❓ اختاري الإجابة الصحيحة', title:'السؤال الثالث',
+      q:'لتحديد سجلات غير متجاورة نضغط باستمرار على مفتاح…',
+      options:[ {icon:'⇧',text:'Shift'}, {icon:'⇥',text:'Tab'}, {icon:'⌨️',text:'Ctrl'}, {icon:'␣',text:'Space'} ],
+      correct:2, explain:'Ctrl لغير المتجاورة — Shift للمتجاورة' },
+
+    { type:'mcq', anim:'slide', strategy:'❓ اختاري الإجابة الصحيحة', title:'السؤال الرابع',
+      q:'ماذا تضيف ميزة «التنسيق كجدول» تلقائيًا؟',
+      options:[ {icon:'🖼️',text:'صورًا'}, {icon:'📊',text:'رسمًا بيانيًا'}, {icon:'📄',text:'ورقة جديدة'}, {icon:'🔽',text:'أدوات الفرز والتصفية'} ],
+      correct:3, explain:'الأسهم بجانب العناوين تعني إمكانية الفرز والتصفية' },
+
+    { type:'mcq', anim:'slide', strategy:'❓ اختاري الإجابة الصحيحة', title:'السؤال الخامس',
+      q:'أيّ مما يلي برنامج لإنشاء قواعد البيانات؟',
+      options:[ {icon:'🎨',text:'الرسّام'}, {icon:'🗃️',text:'Microsoft Access'}, {icon:'🧮',text:'الآلة الحاسبة'}, {icon:'🎵',text:'مشغّل الصوت'} ],
+      correct:1, explain:'ومن البرامج أيضًا: FileMaker و Airtable و LibreOffice Base' },
+
+    /* 18) صح أم خطأ (answer: true = صح، false = خطأ) */
+    { type:'tf', anim:'slide', strategy:'✔✘ صح أم خطأ', title:'صح أم خطأ؟',
+      statements:[
+        { text:'يمكن وضع معلومات عن الرياضة في قاعدة بيانات خاصة بالحيوانات.', answer:false, fix:'✏️ كل معلومات قاعدة البيانات تتعلق بموضوع واحد.' },
+        { text:'كل عمود في جدول قاعدة البيانات يمثّل حقلًا.', answer:true },
+        { text:'لتحديد سجلات متجاورة نستخدم مفتاح Shift.', answer:true },
+        { text:'قاعدة البيانات ثابتة ولا يمكن إضافة سجلات جديدة إليها.', answer:false, fix:'✏️ قاعدة البيانات ليست ثابتة؛ نضيف سجلات وحقولًا في أي وقت.' },
+        { text:'لإضافة طالبة جديدة نكتب بياناتها في أول صف فارغ أسفل الجدول.', answer:true }
+      ]
+    },
+
+    /* 19) التقييم الفوري: أي الجداول منظمة؟ */
+    { type:'organized', anim:'zoom', strategy:'⚡ التقييم الفوري', title:'أيّ الجداول منظّمة؟',
+      prompt:'اختاري لكل جدول: ✔ منظّم أو ✘ غير منظّم',
+      tables:[
+        { color:'teal', headers:['الاسم','العمر','الهواية'], rows:[['نورة','8','الرسم'],['سارة','10','القراءة'],['ريم','11','التصوير']], answer:true,
+          why:'كل عمود يحتوي نوعًا واحدًا من البيانات ✔' },
+        { color:'blue', headers:['الاسم','العنوان','الهاتف'], rows:[['نورة','RBBD**21','05*******'],['11','13 صفر 1433','التصوير'],['ريم','سارة','10']], answer:false,
+          why:'بيانات في غير مكانها: رقم في عمود الاسم، وهواية في عمود الهاتف' },
+        { color:'teal', headers:['الاسم','العنوان','الهواية'], rows:[['نورة','8','الرسم'],['سارة','05*******','الشتاء'],['ريم','11','التصوير']], answer:false,
+          why:'عمود العنوان فيه أرقام، و«الشتاء» ليست هواية' },
+        { color:'blue', headers:['الاسم','البريد الإلكتروني','الهاتف'], rows:[['نورة','noura.**@outlook.com','05*******'],['سارة','sara.**@outlook.com','05*******'],['ريم','reem.**@outlook.com','05*******']], answer:true,
+          why:'كل حقل في مكانه الصحيح ✔' }
+      ]
+    },
+
+    /* 20) تحدي الدقيقة: التوصيل */
+    { type:'match', anim:'zoom', strategy:'⏱️ تحدي الدقيقة', title:'صِلي الإجراء بوصفه',
+      prompt:'اضغطي على الإجراء 🟣 ثم على وصفه الصحيح',
+      seconds:60,
+      pairs:[
+        { term:'إدراج أسماء الحقول', desc:'كتابة أسماء حقول البيانات في خلايا الصف الأول للجدول.' },
+        { term:'إضافة سجل', desc:'إنشاء إدخال صف جديد في قاعدة بيانات أو جدول بيانات.' },
+        { term:'تنسيق كجدول', desc:'تنظيم البيانات في صورة تنسيق سهل القراءة.' },
+        { term:'تحديد سجل أو أكثر', desc:'تمييز صف واحد أو أكثر في قاعدة بيانات أو جدول بيانات.' }
+      ],
+      distractors:['تطبيق قواعد التنسيق على الخلايا بناءً على شروط محددة.']
+    },
+
+    /* 21) المراجعة */
+    { type:'summary', anim:'fade', strategy:'📌 مراجعة', title:'ماذا تعلّمنا اليوم؟',
+      items:[
+        { q:'ما قاعدة البيانات؟', a:'مجموعة بيانات منظّمة حول موضوع واحد 🗂️' },
+        { q:'السجل = ؟', a:'صفّ واحد = معلومات عنصر واحد 📄' },
+        { q:'الحقل = ؟', a:'عمود واحد = صفة واحدة 📏' },
+        { q:'كيف أجعل العناوين بارزة؟', a:'أحدّد الصف ← زر غامق B' },
+        { q:'كيف أنسّق كجدول؟', a:'الشريط الرئيسي ← أنماط ← التنسيق كجدول' },
+        { q:'Shift أم Ctrl؟', a:'Shift للمتجاورة ⇧ — Ctrl لغير المتجاورة' }
+      ],
+      exitTicket:'اذكري 3 حقول تصلح لقاعدة بيانات «مكتبتي المنزلية» 📚'
+    },
+
+    /* 22) الختام */
+    { type:'closing', anim:'zoom', title:'أبدعتنّ اليوم! 🌟',
+      message:'أصبحتِ قادرة على إنشاء قاعدة بيانات منظّمة… والبيانات المنظّمة توفّر الوقت وتصنع الإنجاز 🚀',
+      homework:'تدريب 4 صفحة 116: أنشئي جدول بيانات عن 4 من صديقاتكِ واحفظيه باسم Friends' }
+  ]
+};
+/* ===================== نهاية الإعدادات ===================== */
+
+
+
+/* =====================================================================
+   ⚙️ المحرّك — لا حاجة لتعديل ما بعد هذا السطر
+   ===================================================================== */
+
+/* ---------- أدوات مساعدة ---------- */
+const $  = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const rand = n => Math.floor(Math.random()*n);
+const shuffle = a => { const b=a.slice(); for(let i=b.length-1;i>0;i--){ const j=rand(i+1); [b[i],b[j]]=[b[j],b[i]]; } return b; };
+
+/* ---------- الحفظ في المتصفح (آمن) ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('dbLesson.'+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('dbLesson.'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- الحالة العامة ---------- */
+const state = {
+  cur: 0,
+  scores: (() => { const s = store.get('scores', null); return (Array.isArray(s) && s.length===CONFIG.groups.length) ? s : CONFIG.groups.map(()=>0); })(),
+  cls: null,
+  used: {},
+  noRepeat: true
+};
+state.cls = Roster.current();
+
+/* =====================================================================
+   🔊 الأصوات (Web Audio API — بدون ملفات خارجية)
+   ===================================================================== */
+const Sound = (() => {
+  let ctx = null, master = null, noise = null;
+  function ac(){
+    if(!ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.85; master.connect(ctx.destination);
+    }
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  function getNoise(c){
+    if(noise) return noise;
+    const len = Math.floor(c.sampleRate * 0.3);
+    noise = c.createBuffer(1, len, c.sampleRate);
+    const d = noise.getChannelData(0);
+    for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+    return noise;
+  }
+  // تصفيقة واحدة: ضوضاء قصيرة عبر فلتر
+  function oneClap(c, t, vol){
+    const src = c.createBufferSource(); src.buffer = getNoise(c);
+    const hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 500;
+    const bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 900 + Math.random()*1600; bp.Q.value = 0.6 + Math.random();
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(vol,0.001), t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09 + Math.random()*0.07);
+    src.connect(hp); hp.connect(bp); bp.connect(g); g.connect(master);
+    src.start(t, Math.random()*0.08); src.stop(t + 0.25);
+  }
+  function tone(freq, t, dur, type='sine', vol=0.22){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  return {
+    // تصفيق جماعي قصير (~2 ثانية)
+    clap(){
+      const c = ac(); if(!c) return;
+      const now = c.currentTime + 0.03, dur = 2.0;
+      for(let i=0;i<80;i++){
+        const t = now + Math.random()*dur;
+        const fade = Math.max(0.06, 1 - Math.max(0, t-now-1.2)/0.9);
+        oneClap(c, t, (0.22 + Math.random()*0.45) * fade);
+      }
+    },
+    success(){ const c=ac(); if(!c) return; const t=c.currentTime;
+      [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f, t+i*0.085, 0.35, 'triangle', 0.2));
+      tone(1318.5, t+0.34, 0.55, 'sine', 0.1); },
+    wrong(){ const c=ac(); if(!c) return; const t=c.currentTime;
+      tone(392, t, 0.2, 'sine', 0.16); tone(311, t+0.16, 0.35, 'sine', 0.16); },
+    tick(){ const c=ac(); if(!c) return; tone(1250, c.currentTime, 0.05, 'square', 0.03); },
+    pop(){ const c=ac(); if(!c) return; const t=c.currentTime; tone(660,t,0.09,'sine',0.12); tone(990,t+0.05,0.12,'sine',0.08); },
+    bell(){ const c=ac(); if(!c) return; const t=c.currentTime; [880,1320,1760].forEach((f,i)=>tone(f, t+i*0.02, 1.3, 'sine', 0.14/(i+1))); }
+  };
+})();
+
+/* =====================================================================
+   ✨ المؤثرات البصرية
+   ===================================================================== */
+const fx = $('#fx');
+
+// تصفيق: صوت + أيقونات 👏 تطير للأعلى
+function clap(){
+  Sound.clap();
+  const b = $('#bClap'); b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse');
+  for(let i=0;i<18;i++){
+    const s = document.createElement('div');
+    s.className = 'fly'; s.textContent = '👏';
+    s.style.left = (50 + (Math.random()-0.5)*70) + 'vw';
+    s.style.fontSize = (30 + Math.random()*34) + 'px';
+    fx.appendChild(s);
+    const rise = 45 + Math.random()*35, rot = (Math.random()-0.5)*70;
+    s.animate([
+      { transform:'translateY(0) scale(.5)', opacity:0 },
+      { opacity:1, offset:.15 },
+      { transform:`translateY(-${rise}vh) scale(1.15) rotate(${rot}deg)`, opacity:0 }
+    ], { duration:1700+Math.random()*900, delay:Math.random()*600, easing:'cubic-bezier(.2,.7,.3,1)', fill:'both' }).onfinish = () => s.remove();
+  }
+}
+
+// قصاصات احتفالية من نقطة معيّنة
+function confetti(x, y, n=36){
+  const colors = ['#7f55e0','#1fbf9f','#ffb93f','#ec5f93','#3a8fd8','#c6b3f7'];
+  for(let i=0;i<n;i++){
+    const p = document.createElement('div');
+    p.className = 'cf';
+    p.style.left = x+'px'; p.style.top = y+'px';
+    p.style.background = colors[rand(colors.length)];
+    fx.appendChild(p);
+    const ang = Math.random()*Math.PI*2, v = 120 + Math.random()*260;
+    const dx = Math.cos(ang)*v, dy = Math.sin(ang)*v - 160;
+    p.animate([
+      { transform:'translate(0,0) rotate(0)', opacity:1 },
+      { transform:`translate(${dx}px,${dy}px) rotate(${rand(360)}deg)`, opacity:1, offset:.55 },
+      { transform:`translate(${dx*1.2}px,${dy+320}px) rotate(${rand(720)}deg)`, opacity:0 }
+    ], { duration:1300+Math.random()*700, easing:'cubic-bezier(.15,.6,.4,1)', fill:'both' }).onfinish = () => p.remove();
+  }
+}
+function burstFrom(el, n){ const r = el.getBoundingClientRect(); confetti(r.left + r.width/2, r.top + r.height/2, n); }
+
+// رسالة كبيرة في المنتصف
+let popT;
+function showPop(text, kind='ok'){
+  const p = $('#pop'); p.textContent = text; p.className = kind + ' show';
+  clearTimeout(popT); popT = setTimeout(() => p.classList.remove('show'), 1500);
+}
+// تنبيه صغير بالأعلى
+let toastT;
+function toast(text){
+  const t = $('#toast'); t.textContent = text; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2300);
+}
+// عند الإجابة الصحيحة
+function celebrate(el, msg='أحسنتِ! 👏 إجابة صحيحة'){
+  Sound.success(); if(el) burstFrom(el, 40); showPop(msg, 'ok');
+}
+function oops(msg='حاولي مرة أخرى 💜'){ Sound.wrong(); showPop(msg, 'bad'); }
+
+/* =====================================================================
+   ⏱️ مؤقت قابل لإعادة الاستخدام
+   ===================================================================== */
+function makeTimer(seconds, opts={}){
+  const wrap = document.createElement('div');
+  wrap.className = 'timer';
+  wrap.innerHTML = `
+    <div class="t-ring"><svg viewBox="0 0 120 120"><circle class="t-bg" cx="60" cy="60" r="52"/><circle class="t-fg" cx="60" cy="60" r="52"/></svg>
+    <div class="t-num"></div></div>
+    <div class="t-btns"><button class="btn sm primary t-start">▶ ابدئي</button><button class="btn sm ghost t-reset">↺ إعادة</button></div>`;
+  const fg = $('.t-fg', wrap), num = $('.t-num', wrap), btn = $('.t-start', wrap);
+  const C = 2*Math.PI*52; fg.style.strokeDasharray = C;
+  let total = seconds, left = seconds, iv = null;
+  const fmt = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  function draw(){ num.textContent = fmt(left); fg.style.strokeDashoffset = C*(1-left/total); wrap.classList.toggle('warn', left<=10 && left>0); }
+  function start(){
+    if(iv){ pause(); return; }
+    if(left<=0) left = total;
+    wrap.classList.remove('done');
+    iv = setInterval(() => {
+      left--; if(left<=5 && left>0) Sound.tick(); draw();
+      if(left<=0){ stop(); Sound.bell(); wrap.classList.add('done'); toast('⏰ انتهى الوقت!'); opts.onEnd && opts.onEnd(); }
+    }, 1000);
+    btn.textContent = '⏸ إيقاف';
+  }
+  function pause(){ clearInterval(iv); iv=null; btn.textContent = '▶ تابعي'; }
+  function stop(){ clearInterval(iv); iv=null; btn.textContent = '▶ ابدئي'; }
+  function reset(){ stop(); left = total; wrap.classList.remove('done','warn'); draw(); }
+  btn.onclick = start;
+  $('.t-reset', wrap).onclick = reset;
+  draw();
+  wrap.api = { start, pause, stop, reset, set(s){ total=s; reset(); }, running:()=>!!iv, elapsed:()=>total-left };
+  return wrap;
+}
+
+/* =====================================================================
+   🎲 قرعة الأسماء
+   ===================================================================== */
+/* الحاضرات فقط من الشعبة المختارة (الأسماء من لوحة الإدارة، والغائبات من شريحة التحضير) */
+function namesOf(){ return Roster.present(); }
+function choose(list){
+  const used = state.used[state.cls] || (state.used[state.cls] = new Set());
+  let pool = list.filter(n => !used.has(n));
+  if(!pool.length){ used.clear(); pool = list.slice(); toast('🔁 سُحبت جميع الأسماء — بدأت القرعة من جديد'); }
+  const p = pool[rand(pool.length)];
+  if(state.noRepeat) used.add(p);
+  return p;
+}
+function spin(el, list, finalPick){
+  if(el._spinning) return;
+  el._spinning = true; el.classList.remove('landed');
+  let i = 0, delay = 45; const total = 20 + rand(6);
+  (function step(){
+    el.textContent = list[rand(list.length)];
+    i++; Sound.tick();
+    if(i < total){ delay *= 1.11; setTimeout(step, delay); }
+    else { el.textContent = finalPick; el.classList.add('landed'); el._spinning = false; Sound.success(); burstFrom(el, 26); updateLeft(); }
+  })();
+}
+function spinName(el){
+  const list = namesOf();
+  if(!list.length){ toast(Roster.current() ? '📋 لا توجد حاضرات — راجعي شريحة التحضير' : '✏️ أضيفي أسماء الطالبات من لوحة الإدارة'); return; }
+  spin(el, list, choose(list));
+}
+function spinGroup(el){
+  const list = CONFIG.groups.map(g => g.icon + ' ' + g.name);
+  spin(el, list, list[rand(list.length)]);
+}
+function updateLeft(){
+  const list = namesOf(), used = state.used[state.cls];
+  const left = list.filter(n => !(used && used.has(n))).length;
+  const el = $('.m-left'); if(el) el.textContent = `المتبقي: ${left} من ${list.length}`;
+}
+function setClass(c){
+  Roster.select(c); state.cls = Roster.current();
+  $$('.js-class').forEach(b => b.textContent = '🏫 ' + (state.cls || 'لا توجد شعب'));
+  renderClassTabs(); updateLeft();
+}
+function renderClassTabs(){
+  $('.m-classes').innerHTML = Roster.sections().map(c => `<button class="${c===state.cls?'on':''}" data-cls="${c}">${c}</button>`).join('');
+}
+function openModal(id){ $('#'+id).classList.add('open'); document.body.classList.add('modal-open'); }
+function closeModal(id){ $('#'+id).classList.remove('open'); document.body.classList.remove('modal-open'); }
+function toggleLotto(){ $('#lotto').classList.contains('open') ? closeModal('lotto') : (openModal('lotto'), updateLeft()); }
+
+/* =====================================================================
+   🏆 نقاط المجموعات
+   ===================================================================== */
+function renderBoard(){
+  const max = Math.max(1, ...state.scores), top = Math.max(...state.scores);
+  $('#board .b-list').innerHTML = CONFIG.groups.map((g,i) => `
+    <div class="b-row ${state.scores[i]===top && top>0 ? 'lead':''}" style="--gc:${g.color}">
+      <span class="b-ico">${g.icon}</span>
+      <div class="b-mid"><div class="b-name">${g.name}</div><div class="b-bar"><i style="width:${state.scores[i]/max*100}%"></i></div></div>
+      <button class="b-btn" data-g="${i}" data-d="-1">−</button>
+      <b class="b-score">${state.scores[i]}</b>
+      <button class="b-btn plus" data-g="${i}" data-d="1">+</button>
+    </div>`).join('');
+}
+function addPoint(i, d=1, srcEl){
+  state.scores[i] = Math.max(0, state.scores[i] + d);
+  store.set('scores', state.scores);
+  renderBoard(); refreshWinner();
+  if(d > 0){ const g = CONFIG.groups[i]; Sound.pop(); toast(`+1 لمجموعة ${g.icon} ${g.name}`); if(srcEl) burstFrom(srcEl, 16); }
+}
+function toggleBoard(){ $('#board').classList.toggle('open'); }
+function awardRow(){
+  return `<div class="award"><span>🏆 نقطة لمجموعة:</span>${CONFIG.groups.map((g,i)=>`<button class="g-chip" data-g="${i}" style="--gc:${g.color}">${g.icon} ${g.name}</button>`).join('')}</div>`;
+}
+function refreshWinner(){
+  $$('.js-win').forEach(el => {
+    const top = Math.max(...state.scores);
+    if(top <= 0){ el.textContent = 'جميع المجموعات رائعة 💜'; return; }
+    el.textContent = CONFIG.groups.filter((g,i)=>state.scores[i]===top).map(g=>g.icon+' '+g.name).join(' و ') + ` (${top} نقاط)`;
+  });
+}
+
+/* =====================================================================
+   🧩 قوالب الشرائح (Renderers)
+   ===================================================================== */
+const L = CONFIG.lesson, T = CONFIG.sampleTable, COLS = 'ABCDEFG';
+const head = s => `<header class="s-head rv">${s.strategy ? `<span class="badge">${s.strategy}</span>` : ''}<h2>${s.title||''}</h2></header>`;
+const whoChip = () => `<button class="btn ghost sm who">🎲 من تجيب؟ <b class="who-name"></b></button>`;
+
+const R = {
+
+  /* ---------- 1) ترحيب ---------- */
+  welcome(s, el){
+    el.innerHTML = `<div class="welcome">
+      <span class="deco float" style="top:120px;right:180px">📊</span>
+      <span class="deco float" style="top:200px;left:200px;animation-delay:-1s">💾</span>
+      <span class="deco float" style="bottom:170px;right:260px;animation-delay:-2s">🔍</span>
+      <span class="deco float" style="bottom:140px;left:280px;animation-delay:-1.5s">✨</span>
+      <div class="rv"><span class="w-icon float">🗂️</span></div>
+      <div class="w-meta rv">${L.subject} • ${L.grade}</div>
+      <h1 class="rv">${L.title}</h1>
+      <div class="w-lesson rv">${L.lessonNo}</div>
+      <p class="w-greet rv">${s.greeting}</p>
+      <div class="w-teacher rv">👩‍🏫 ${L.teacher} — ${L.school}</div>
+    </div>`;
+  },
+
+  /* ---------- 2) تحضير + قرعة + مراجعة ---------- */
+  attendance(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}<div class="rs-host" style="flex:1;min-height:0;margin-top:14px"></div></div>`;
+    Roster.attendance($('.rs-host',el), LESSON_GRADE);
+  },
+
+  review(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="review-grid">
+        <div class="card lotto-card rv">
+          <div class="lc-top"><span class="lc-ico float">🎲</span><div><div class="lc-title">قرعة الأسماء</div><div class="lc-sub">من ستجيب على السؤال؟</div></div></div>
+          <div class="lc-name">؟</div>
+          <div class="row center"><button class="btn primary big js-pick">🎲 اسحبي اسمًا</button></div>
+          <div class="row center"><button class="btn ghost sm js-class"></button><button class="btn ghost sm js-group">🎯 مجموعة</button></div>
+        </div>
+        <div class="card rq-card rv">
+          <div class="rq-top"><span class="pill">سؤال <b class="js-n">1</b> من ${s.questions.length}</span><span class="rq-dots">${s.questions.map(()=>'<i></i>').join('')}</span></div>
+          <div class="rq-q"></div>
+          <div class="rq-a"></div>
+          <div class="row"><button class="btn sun js-reveal">💡 إظهار الإجابة</button><button class="btn ghost js-nextq">السؤال التالي ✨</button></div>
+        </div>
+      </div></div>`;
+    let qi = 0;
+    const qEl=$('.rq-q',el), aEl=$('.rq-a',el), nameEl=$('.lc-name',el);
+    function showQ(){
+      qEl.textContent = s.questions[qi].q; aEl.textContent = s.questions[qi].a; aEl.classList.remove('show');
+      $('.js-n',el).textContent = qi+1;
+      $$('.rq-dots i',el).forEach((d,i)=>d.classList.toggle('on', i<=qi));
+      qEl.classList.remove('pop'); void qEl.offsetWidth; qEl.classList.add('pop');
+    }
+    $('.js-reveal',el).onclick = e => { aEl.classList.add('show'); Sound.pop(); };
+    $('.js-nextq',el).onclick = () => { qi = (qi+1) % s.questions.length; showQ(); };
+    $('.js-pick',el).onclick = () => spinName(nameEl);
+    $('.js-group',el).onclick = () => spinGroup(nameEl);
+    $('.js-class',el).onclick = () => { const k = Roster.sections(); if(!k.length) return; setClass(k[(k.indexOf(state.cls)+1) % k.length]); toast('🏫 الفصل الحالي: ' + state.cls); };
+    showQ();
+  },
+
+  /* ---------- 3) الأهداف ---------- */
+  goals(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="goals">${s.goals.map(g=>`<div class="goal rv"><span class="g-ico">${g.icon}</span><span class="g-txt">${g.text}</span><span class="g-check">✔</span></div>`).join('')}</div>
+      <p class="note rv">💡 اضغطي على الهدف عند تحقّقه في نهاية الدرس</p></div>`;
+    $$('.goal',el).forEach(g => g.onclick = () => { g.classList.toggle('done'); if(g.classList.contains('done')){ Sound.pop(); burstFrom($('.g-check',g), 14); } });
+  },
+
+  /* ---------- 4) ماذا تتوقعين؟ ---------- */
+  predict(s, el){
+    const spots = [ {x:40,y:30,r:-8},{x:360,y:70,r:6},{x:680,y:20,r:-4},{x:90,y:330,r:7},{x:420,y:380,r:-10},{x:700,y:320,r:5} ];
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="predict">
+        <div class="pr-side">
+          <div class="card scenario rv"><div class="sc-ico">👩‍💼</div><p>${s.scenario}</p></div>
+          <div class="card ask rv"><p class="ask-q">${s.question}</p></div>
+          <div class="row rv"><button class="btn ghost js-think">💭 توقّعاتكن</button><button class="btn primary js-org">✨ لنرتّبها!</button><button class="btn ghost sm js-mess">↺</button></div>
+          <div class="thoughts"></div>
+          <div class="pr-result">${s.result}</div>
+        </div>
+        <div class="pr-area rv">
+          <div class="pr-header">${s.fields.map(f=>`<span>${f}</span>`).join('')}</div>
+          ${s.papers.map((p,k)=>{ const sp=spots[k%spots.length]; return `<div class="paper" style="--x:${sp.x}px;--y:${sp.y}px;--r:${sp.r}deg;--k:${k}">${p.map(v=>`<span>${v}</span>`).join('')}</div>`; }).join('')}
+        </div>
+      </div></div>`;
+    let gi = 0;
+    const area = $('.pr-area',el), th = $('.thoughts',el), res = $('.pr-result',el);
+    $('.js-think',el).onclick = () => {
+      if(gi >= s.guesses.length){ toast('💜 أحسنتن التوقّع! الآن لنرتّبها'); return; }
+      th.insertAdjacentHTML('beforeend', `<div class="thought">${s.guesses[gi++]}</div>`); Sound.pop();
+    };
+    $('.js-org',el).onclick = () => { area.classList.add('org'); th.innerHTML=''; gi=0; res.classList.add('show'); Sound.success(); setTimeout(()=>burstFrom(res, 40), 1000); };
+    $('.js-mess',el).onclick = () => { area.classList.remove('org'); res.classList.remove('show'); };
+  },
+
+  /* ---------- 5) لاحظي واكتشفي ---------- */
+  discover(s, el){
+    const recs = T.records.slice(0,5);
+    let rows = `<thead><tr><th class="corner"></th>${T.fields.map((f,c)=>`<th class="colh" data-c="${c}">${COLS[c]}</th>`).join('')}</tr></thead><tbody>`;
+    rows += `<tr><th class="rn" data-r="1">1</th>${T.fields.map((f,c)=>`<td class="hd" data-r="1" data-c="${c}">${f}</td>`).join('')}</tr>`;
+    recs.forEach((rec,i)=>{ const r=i+2; rows += `<tr><th class="rn" data-r="${r}">${r}</th>${rec.map((v,c)=>`<td data-r="${r}" data-c="${c}">${v}</td>`).join('')}</tr>`; });
+    rows += '</tbody>';
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <p class="lead rv">${s.prompt}</p>
+      <div class="disc">
+        <div class="xl-wrap rv"><table class="xl disc-t">${rows}</table></div>
+        <div class="card disc-info rv"><div class="di-ico">👆</div><div class="di-title">جرّبي بنفسك</div><div class="di-txt">اضغطي على رقم صف أو حرف عمود أو أي خلية</div></div>
+      </div>
+      <div class="row rv" style="margin-top:30px"><button class="btn sun js-concl">📝 ماذا اكتشفنا؟</button><div class="concl">${s.conclusion}</div></div>
+    </div>`;
+    const t = $('.disc-t',el), info = $('.disc-info',el);
+    function say(ico, title, txt){
+      info.innerHTML = `<div class="di-ico">${ico}</div><div class="di-title">${title}</div><div class="di-txt">${txt}</div>`;
+      info.classList.remove('pop'); void info.offsetWidth; info.classList.add('pop'); Sound.pop();
+    }
+    function clear(){ $$('.c-on,.r-on,.x-on', t).forEach(n=>n.classList.remove('c-on','r-on','x-on')); }
+    t.onclick = e => {
+      const cell = e.target.closest('th,td'); if(!cell || cell.classList.contains('corner')) return;
+      clear();
+      const r = +cell.dataset.r, c = cell.dataset.c !== undefined ? +cell.dataset.c : null;
+      if(cell.classList.contains('colh')){
+        $$(`[data-c="${c}"]`, t).forEach(n=>n.classList.add('c-on'));
+        say('📏','هذا حقل (Field)', `العمود «${T.fields[c]}» يحتوي صفة واحدة لجميع الطالبات`);
+      } else if(cell.classList.contains('rn')){
+        $$(`[data-r="${r}"]`, t).forEach(n=>n.classList.add('r-on'));
+        if(r===1) say('🏷️','أسماء الحقول','الصف الأول يحتوي عناوين الأعمدة، وتُسمّى أسماء الحقول');
+        else say('📄','هذا سجل (Record)', `الصف ${r} يحتوي جميع معلومات الطالبة «${recs[r-2][0]}»`);
+      } else {
+        cell.classList.add('x-on');
+        if(r===1) say('🏷️','اسم حقل', `«${T.fields[c]}» عنوان يصف ما في هذا العمود`);
+        else say('🔲','خلية', `القيمة «${cell.textContent}» في سجل ${recs[r-2][0]} ضمن حقل «${T.fields[c]}»`);
+      }
+    };
+    $('.js-concl',el).onclick = () => { $('.concl',el).classList.add('show'); Sound.success(); };
+  },
+
+  /* ---------- 6) بطاقات المفاهيم ---------- */
+  cards(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="flips">${s.cards.map(c=>`<div class="flip rv"><div class="flip-in">
+        <div class="face front"><div class="f-ico">${c.icon}</div><div class="f-title">${c.front}</div><div class="f-hint">اضغطي للقلب 🔄</div></div>
+        <div class="face back"><div class="f-title">${c.icon} ${c.front}</div><p>${c.back}</p></div>
+      </div></div>`).join('')}</div></div>`;
+    $$('.flip',el).forEach(f => f.onclick = () => { f.classList.toggle('on'); Sound.pop(); });
+  },
+
+  /* ---------- 7) العصف الذهني ---------- */
+  brainstorm(s, el){
+    const cx=550, cy=380, rx=410, ry=290, n=s.ideas.length;
+    const pos = s.ideas.map((d,i)=>{ const a = -Math.PI/2 + i*2*Math.PI/n; return { x: cx + rx*Math.cos(a), y: cy + ry*Math.sin(a) }; });
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="bs">
+        <div class="bs-map rv">
+          <svg>${pos.map(p=>`<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}"/>`).join('')}</svg>
+          <div class="bs-center"><div class="bs-c-ico">🗂️</div>${s.center}</div>
+          ${s.ideas.map((d,i)=>`<button class="bs-node" style="left:${pos[i].x-125}px;top:${pos[i].y-75}px;--d:${i}"><span class="bn-q">💡</span><span class="bn-a"><b>${d.icon}</b>${d.text}</span></button>`).join('')}
+        </div>
+        <div class="bs-side">
+          <div class="card rv"><div class="side-t">⏱️ وقت التفكير الجماعي</div><div class="tslot"></div></div>
+          <div class="card rv"><div class="side-t">💻 برامج إنشاء قواعد البيانات</div>
+            <div class="row"><button class="btn primary sm js-progs">اكشفي البرامج</button><button class="btn ghost sm js-all">💡 كل الأفكار</button></div>
+            <div class="chips"></div></div>
+        </div>
+      </div></div>`;
+    const tm = makeTimer(s.timer || 60); $('.tslot',el).appendChild(tm); el._timers = [tm];
+    $$('.bs-node',el).forEach(b => b.onclick = () => { b.classList.toggle('open'); if(b.classList.contains('open')) Sound.pop(); });
+    $('.js-all',el).onclick = () => { $$('.bs-node',el).forEach(b=>b.classList.add('open')); Sound.success(); };
+    $('.js-progs',el).onclick = () => {
+      $('.chips',el).innerHTML = s.programs.map((p,i)=>`<span class="chip" style="animation-delay:${i*120}ms">${p}</span>`).join(''); Sound.success();
+    };
+  },
+
+  /* ---------- 8-9) المحاكاة ---------- */
+  sim(s, el){
+    const swatchColors = ['#9bc2e6','#f4b183','#c9c9c9','#ffd966','#8ea9db','#a9d08e','#d9d9d9',
+                          '#5b9bd5','#ed7d31','#a5a5a5','#ffc000','#4472c4','#70ad47','#7f7f7f'];
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="sim">
+        <div class="sim-steps rv">
+          ${s.steps.map((st,i)=>`<div class="step" data-i="${i}"><span class="sn">${i+1}</span><span>${st.text}</span></div>`).join('')}
+          <div class="row sim-btns"><button class="btn primary js-snext">الخطوة التالية ✨</button><button class="btn ghost sm js-sprev">السابقة</button><button class="btn ghost sm js-sreset">↺</button></div>
+        </div>
+        <div>
+          <div class="xlwin rv">
+            <div class="xl-title"><span>Book1 - Excel</span><span>● ● ●</span></div>
+            <div class="tabs"><span>ملف</span><span class="on">الشريط الرئيسي</span><span>إدراج</span><span>تخطيط الصفحة</span><span>بيانات</span></div>
+            <div class="tools">
+              <span class="tb js-b">B</span><span class="tb"><i>I</i></span><span class="tb"><u>U</u></span><span class="tsep"></span>
+              <span class="tb wide">تنسيق شرطي</span><span class="tb wide js-fmt">🎨 التنسيق كجدول ▾</span><span class="tb wide">أنماط الخلايا</span>
+            </div>
+            <div class="grid-wrap">
+              <table class="xl sim-t"></table>
+              <div class="palette"><div class="sw-grid">${swatchColors.map((c,i)=>`<div class="sw ${i===12?'pick':''}" style="background:linear-gradient(${c} 0 30%, #fff 30% 50%, ${c}55 50% 70%, #fff 70%)"></div>`).join('')}</div><div class="pal-lbl">أخضر، نمط جدول فاتح 14</div></div>
+              <div class="dlg"><div class="dlg-t"><span>إنشاء جدول</span><span>✕</span></div><div>أين هي بيانات جدولك؟</div><div class="dlg-in">$A$1:$G$6</div><div>☑ يحتوي الجدول على رؤوس</div><div class="dlg-btns"><span class="okb">موافق</span><span>إلغاء الأمر</span></div></div>
+              <div class="tabhint">Tab ⇥</div>
+            </div>
+          </div>
+          <div class="sim-tip rv"></div>
+        </div>
+      </div></div>`;
+    let idx = 0, prev = new Set();
+    const tbl = $('.sim-t',el);
+    function render(){
+      const st = s.steps[idx].state || {};
+      $$('.step',el).forEach((n,i)=>{ n.classList.toggle('cur', i===idx); n.classList.toggle('done', i<idx); });
+      $('.js-b',el).classList.toggle('glow', st.ribbon==='bold');
+      $('.js-fmt',el).classList.toggle('glow', st.ribbon==='format');
+      $('.palette',el).classList.toggle('show', !!st.palette);
+      $('.dlg',el).classList.toggle('show', !!st.dialog);
+      $('.tabhint',el).classList.toggle('show', !!st.tabHint);
+      $('.sim-tip',el).textContent = s.steps[idx].tip || '';
+      tbl.classList.toggle('styled', !!st.styled);
+      let html = `<thead><tr><th class="corner"></th>${COLS.split('').map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+      const now = new Set(); let k = 0;
+      for(let r=1; r<=7; r++){
+        const band = st.styled && r>1 && r<=6 && r%2===1;
+        html += `<tr class="${st.rowSel===r?'rsel':''} ${band?'band':''}"><th class="rn">${r}</th>`;
+        for(let c=0; c<7; c++){
+          let val = '', cls = [];
+          if(r===1){
+            if(c < (st.headers||0)){ val = T.fields[c] + '<span class="fa">▾</span>'; cls.push('hd'); if(st.bold) cls.push('bold'); }
+          } else {
+            const ri = r-2, recs = st.records||0;
+            if(ri < recs || (ri===recs && c < (st.partial||0))) val = (T.records[ri]||[])[c] || '';
+          }
+          if(st.range && r<=6) cls.push('inrange');
+          if(st.active === COLS[c]+r) cls.push('act');
+          let style = '';
+          const key = r+'-'+c;
+          if(val){ now.add(key); if(!prev.has(key)){ cls.push('typed'); style = `style="--td:${(k++)*70}ms"`; } }
+          html += `<td class="${cls.join(' ')}" ${style}>${val}</td>`;
+        }
+        html += '</tr>';
+      }
+      tbl.innerHTML = html + '</tbody>';
+      prev = now;
+      if(st.styled) { Sound.success(); burstFrom(tbl, 30); }
+    }
+    $('.js-snext',el).onclick = () => { if(idx < s.steps.length-1){ idx++; render(); Sound.pop(); } else toast('✅ اكتملت الخطوات! أحسنتِ'); };
+    $('.js-sprev',el).onclick = () => { if(idx>0){ idx--; render(); } };
+    $('.js-sreset',el).onclick = () => { idx=0; prev=new Set(); render(); };
+    $$('.step',el).forEach(n => n.onclick = () => { idx = +n.dataset.i; render(); Sound.pop(); });
+    render();
+  },
+
+  /* ---------- 10) جربي بنفسك: تحديد السجلات ---------- */
+  select(s, el){
+    const recs = T.records, last = recs.length + 1;
+    let rows = `<thead><tr><th class="corner"></th>${COLS.split('').map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+    rows += `<tr><th class="rn" data-r="1">1</th>${T.fields.map(f=>`<td class="hd">${f} ▾</td>`).join('')}</tr>`;
+    recs.forEach((rec,i)=>{ const r=i+2; rows += `<tr data-r="${r}"><th class="rn" data-r="${r}">${r}</th>${rec.map(v=>`<td>${v}</td>`).join('')}</tr>`; });
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="sel">
+        <div class="sel-side">
+          <div class="method rv" data-m="one"><b>🖱️ سجل واحد</b><span>اضغطي على رقم الصف</span></div>
+          <div class="method rv" data-m="range"><b>⇧ سجلات متجاورة</b><span>اضغطي أول صف، ثم Shift + آخر صف</span></div>
+          <div class="method rv" data-m="multi"><b>⌨️ سجلات غير متجاورة</b><span>اضغطي صفًا، ثم Ctrl + صف آخر</span></div>
+          <div class="card chal rv"><div class="chal-t">🎯 التحدي</div><div class="chal-q">اضغطي «تحدٍّ جديد» 👇</div>
+            <div class="row"><button class="btn primary sm js-new">تحدٍّ جديد</button><button class="btn mint sm js-check">✔ تحقّقي</button>${whoChip()}</div></div>
+        </div>
+        <div class="sel-main">
+          <div class="keys rv"><span>مفاتيح للسبورة:</span><button class="key js-shift">⇧ Shift</button><button class="key js-ctrl">Ctrl</button><button class="btn ghost sm js-clear">مسح التحديد</button></div>
+          <div class="xl-wrap rv"><table class="xl sel-t">${rows}</tbody></table></div>
+          <div class="after rv">بعد التحديد يمكنكِ: <span>📋 نسخ</span><span>✂️ قص</span><span>🗑️ حذف</span></div>
+        </div>
+      </div></div>`;
+    let sel = new Set(), anchor = null, vShift = false, vCtrl = false, target = null;
+    const t = $('.sel-t',el);
+    const paint = () => $$('tbody tr[data-r]', t).forEach(tr => tr.classList.toggle('rsel', sel.has(+tr.dataset.r)));
+    const method = m => $$('.method',el).forEach(n => n.classList.toggle('on', n.dataset.m===m));
+    t.onclick = e => {
+      const rn = e.target.closest('.rn'); if(!rn) return;
+      const r = +rn.dataset.r; if(r===1){ toast('🏷️ هذا صف أسماء الحقول وليس سجلًا'); return; }
+      const shift = e.shiftKey || vShift, ctrl = e.ctrlKey || e.metaKey || vCtrl;
+      if(shift && anchor){ sel = new Set(); const a=Math.min(anchor,r), b=Math.max(anchor,r); for(let i=a;i<=b;i++) sel.add(i); method('range'); }
+      else if(ctrl){ sel.has(r) ? sel.delete(r) : sel.add(r); anchor = r; method('multi'); }
+      else { sel = new Set([r]); anchor = r; method('one'); }
+      paint(); Sound.pop();
+    };
+    $('.js-shift',el).onclick = e => { vShift = !vShift; vCtrl = false; e.currentTarget.classList.toggle('on', vShift); $('.js-ctrl',el).classList.remove('on'); };
+    $('.js-ctrl',el).onclick = e => { vCtrl = !vCtrl; vShift = false; e.currentTarget.classList.toggle('on', vCtrl); $('.js-shift',el).classList.remove('on'); };
+    $('.js-clear',el).onclick = () => { sel = new Set(); anchor = null; paint(); method(''); };
+    $('.js-new',el).onclick = () => {
+      const type = rand(3); let txt, set = new Set();
+      if(type===0){ const r = 2 + rand(last-1); set.add(r); txt = `حدّدي سجل الصف ${r}`; }
+      else if(type===1){ const a = 2 + rand(last-3); const b = Math.min(last, a + 2 + rand(2)); for(let i=a;i<=b;i++) set.add(i); txt = `حدّدي السجلات من الصف ${a} إلى الصف ${b}`; }
+      else { let a = 2 + rand(last-1), b; do { b = 2 + rand(last-1); } while(Math.abs(a-b) < 2); set.add(a); set.add(b); txt = `حدّدي سجل الصف ${Math.min(a,b)} وسجل الصف ${Math.max(a,b)} فقط`; }
+      target = set; $('.chal-q',el).textContent = txt; Sound.pop();
+    };
+    $('.js-check',el).onclick = e => {
+      if(!target){ toast('اضغطي «تحدٍّ جديد» أولًا 🎯'); return; }
+      const ok = target.size === sel.size && [...target].every(r => sel.has(r));
+      ok ? celebrate(e.currentTarget) : oops();
+    };
+  },
+
+  /* ---------- 11) فكري – زاوجي – شاركي ---------- */
+  tps(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="card tps-q rv"><span class="q-ico">💭</span><p>${s.question}</p></div>
+      <div class="phases">${s.phases.map((p,i)=>`<div class="phase rv" data-i="${i}"><span class="ph-ico">${p.icon}</span><span class="ph-l">${p.label}</span><span class="ph-d">${p.desc}</span><span class="ph-t">${p.seconds} ثانية</span></div>`).join('')}</div>
+      <div class="tps-bottom rv"><div class="tslot"></div><button class="btn sun js-ans">💡 الإجابة النموذجية</button><div class="tps-ans">${s.answer}</div></div>
+    </div>`;
+    const tm = makeTimer(s.phases[0].seconds); $('.tslot',el).appendChild(tm); el._timers = [tm];
+    $$('.phase',el).forEach(p => p.onclick = () => {
+      const i = +p.dataset.i;
+      $$('.phase',el).forEach((q,j)=>{ q.classList.toggle('on', j===i); q.classList.toggle('done', j<i); });
+      tm.api.set(s.phases[i].seconds); tm.api.start(); Sound.pop();
+    });
+    $('.js-ans',el).onclick = () => { $('.tps-ans',el).classList.add('show'); Sound.success(); };
+  },
+
+  /* ---------- 12) التعلم التعاوني ---------- */
+  groups(s, el){
+    const tasks = shuffle(s.tasks);
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="grp-top rv"><div class="ginst">${s.instructions.map(x=>`<span>${x}</span>`).join('')}</div><div class="tslot"></div></div>
+      <div class="grp-grid">${CONFIG.groups.map((g,i)=>{ const t = tasks[i % tasks.length]; return `
+        <div class="gcard rv" style="--gc:${g.color}"><div class="gc-in">
+          <div class="face front"><div class="gc-ico">${g.icon}</div><div class="gc-name">مجموعة ${g.name}</div><div class="gc-hint">اضغطي لسحب مهمتكن 🃏</div></div>
+          <div class="face back"><div class="gc-who">${g.icon} ${g.name}</div><div class="gc-task-ico">${t.icon}</div><div class="gc-topic">${t.topic}</div><div class="gc-ex">مثال: ${t.example}</div></div>
+        </div></div>`; }).join('')}</div>
+      <div class="row center rv" style="margin-top:24px"><button class="btn ghost sm js-hints">💡 إظهار الأمثلة</button><button class="btn ghost sm js-board">🏆 لوحة النقاط</button><button class="btn ghost sm js-flipall">🔄 قلب الكل</button></div>
+    </div>`;
+    const tm = makeTimer(s.timer || 180); $('.tslot',el).appendChild(tm); el._timers = [tm];
+    $$('.gcard',el).forEach(c => c.onclick = () => { c.classList.toggle('on'); if(c.classList.contains('on')){ Sound.pop(); burstFrom(c, 18); } });
+    $('.js-hints',el).onclick = () => $('.grp-grid',el).classList.toggle('hints');
+    $('.js-board',el).onclick = toggleBoard;
+    $('.js-flipall',el).onclick = () => { const all = $$('.gcard',el); const on = all.every(c=>c.classList.contains('on')); all.forEach(c=>c.classList.toggle('on', !on)); };
+  },
+
+  /* ---------- 13) اختيار من متعدد ---------- */
+  mcq(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="mcq">
+        <div class="mcq-q rv">${s.q}</div>
+        <div class="opts">${s.options.map((o,i)=>`<button class="opt rv" data-i="${i}"><span class="o-ico">${o.icon}</span><span>${o.text}</span></button>`).join('')}</div>
+        <div class="mcq-foot rv">${whoChip()}<div class="fb"></div><button class="btn ghost sm js-reset">↺ إعادة</button></div>
+        ${awardRow()}
+      </div></div>`;
+    const fb = $('.fb',el), opts = $('.opts',el), award = $('.award',el);
+    $$('.opt',el).forEach(b => b.onclick = () => {
+      const i = +b.dataset.i;
+      if(i === s.correct){
+        b.classList.add('correct'); opts.classList.add('solved');
+        fb.className = 'fb ok'; fb.innerHTML = `أحسنتِ! 👏 إجابة صحيحة${s.explain ? `<small>${s.explain}</small>` : ''}`;
+        celebrate(b); award.classList.add('show');
+      } else {
+        b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');
+        fb.className = 'fb bad'; fb.textContent = 'حاولي مرة أخرى 💜'; oops();
+      }
+    });
+    $('.js-reset',el).onclick = () => { $$('.opt',el).forEach(b=>b.classList.remove('correct','wrong')); opts.classList.remove('solved'); fb.textContent=''; award.classList.remove('show'); };
+  },
+
+  /* ---------- 14) صح أم خطأ ---------- */
+  tf(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="tf">${s.statements.map((x,i)=>`<div class="tf-row rv" data-i="${i}"><span class="tf-n">${i+1}</span><p class="tf-t">${x.text}</p>
+        <div class="tf-btns"><button class="tfb yes" data-v="1">✔ صح</button><button class="tfb no" data-v="0">✘ خطأ</button></div>
+        <div class="tf-fix">${x.fix||''}</div></div>`).join('')}</div>
+      <div class="row rv" style="justify-content:space-between">${whoChip()}<span class="score-line">✔ <b class="js-sc">0</b> / ${s.statements.length}</span></div>
+    </div>`;
+    let score = 0;
+    $$('.tf-row',el).forEach(row => $$('.tfb',row).forEach(b => b.onclick = () => {
+      const st = s.statements[+row.dataset.i], v = b.dataset.v === '1';
+      if(v === st.answer){
+        row.classList.remove('bad'); row.classList.add('ok'); b.classList.add('picked');
+        score++; $('.js-sc',el).textContent = score; celebrate(b);
+        if(score === s.statements.length) setTimeout(()=>{ showPop('🌟 ممتاز! أجبتِ عن الجميع'); clap(); }, 900);
+      } else { row.classList.remove('bad'); void row.offsetWidth; row.classList.add('bad'); oops(); }
+    }));
+  },
+
+  /* ---------- 15) أي الجداول منظمة؟ ---------- */
+  organized(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <p class="lead rv" style="margin-bottom:18px">${s.prompt}</p>
+      <div class="org-grid">${s.tables.map((t,i)=>`<div class="card org rv" data-i="${i}"><div class="org-n">${i+1}</div>
+        <table class="mini ${t.color}"><thead><tr>${t.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${t.rows.map(r=>`<tr>${r.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table>
+        <div class="org-foot"><button class="tfb yes" data-v="1">✔ منظّم</button><button class="tfb no" data-v="0">✘ غير منظّم</button><span class="org-fb"></span></div>
+      </div>`).join('')}</div></div>`;
+    $$('.org',el).forEach(card => $$('.tfb',card).forEach(b => b.onclick = () => {
+      const t = s.tables[+card.dataset.i], v = b.dataset.v === '1', fb = $('.org-fb',card);
+      if(v === t.answer){ card.classList.remove('bad'); card.classList.add('ok'); b.classList.add('picked'); fb.className='org-fb ok'; fb.textContent = t.why; celebrate(b); }
+      else { card.classList.remove('bad'); void card.offsetWidth; card.classList.add('bad'); fb.className='org-fb bad'; fb.textContent='حاولي مرة أخرى 💜 انظري لكل عمود'; oops(); }
+    }));
+  },
+
+  /* ---------- 16) تحدي الدقيقة ---------- */
+  match(s, el){
+    const descs = shuffle([ ...s.pairs.map((p,i)=>({ text:p.desc, t:i })), ...(s.distractors||[]).map(d=>({ text:d, t:-1 })) ]);
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="match-top rv"><p class="lead" style="margin:0">${s.prompt}</p><div class="tslot"></div></div>
+      <div class="match">
+        <div class="m-col">${s.pairs.map((p,i)=>`<button class="m-term rv" data-t="${i}">${p.term}</button>`).join('')}</div>
+        <div class="m-col">${descs.map(d=>`<button class="m-desc rv" data-t="${d.t}">${d.text}</button>`).join('')}</div>
+      </div>
+      <div class="m-status"></div></div>`;
+    const tm = makeTimer(s.seconds || 60, { onEnd(){ if(done < s.pairs.length) $('.m-status',el).textContent = `⏰ انتهى الوقت! وصلتِ ${done} من ${s.pairs.length}`; } });
+    $('.tslot',el).appendChild(tm); el._timers = [tm];
+    let picked = null, done = 0;
+    $$('.m-term',el).forEach(b => b.onclick = () => {
+      if(!tm.api.running() && done===0 && tm.api.elapsed()===0) tm.api.start();
+      $$('.m-term',el).forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); picked = b; Sound.pop();
+    });
+    $$('.m-desc',el).forEach(d => d.onclick = () => {
+      if(!picked){ toast('اختاري الإجراء أولًا 🟣'); return; }
+      if(d.dataset.t === picked.dataset.t){
+        done++;
+        [picked, d].forEach(x => { x.classList.remove('sel'); x.classList.add('m-ok'); x.insertAdjacentHTML('beforeend', `<span class="m-badge">${done}</span>`); });
+        celebrate(d, 'أحسنتِ! 👏'); picked = null;
+        if(done === s.pairs.length){
+          const sec = tm.api.elapsed(); tm.api.stop();
+          $('.m-status',el).textContent = `🎉 أنجزتِ التحدي في ${sec} ثانية!`; setTimeout(clap, 700);
+        }
+      } else {
+        [picked, d].forEach(x => { x.classList.remove('m-bad'); void x.offsetWidth; x.classList.add('m-bad'); }); oops();
+      }
+    });
+  },
+
+  /* ---------- 17) المراجعة ---------- */
+  summary(s, el){
+    el.innerHTML = `<div class="slide-inner">${head(s)}
+      <div class="sum-grid">${s.items.map(it=>`<div class="sum rv"><div class="sum-in">
+        <div class="face front"><span class="s-q">❓</span><p>${it.q}</p></div>
+        <div class="face back"><p>${it.a}</p></div></div></div>`).join('')}</div>
+      <div class="card exit rv"><span class="ex-ico">🎟️</span><div class="grow"><b>بطاقة الخروج</b><p>${s.exitTicket}</p></div>${whoChip()}</div>
+    </div>`;
+    $$('.sum',el).forEach(c => c.onclick = () => { c.classList.toggle('on'); Sound.pop(); });
+  },
+
+  /* ---------- 18) الختام ---------- */
+  closing(s, el){
+    el.innerHTML = `<div class="closing">
+      <div class="rv"><span class="float" style="font-size:90px">🏆</span></div>
+      <h1 class="rv">${s.title}</h1>
+      <p class="msg rv">${s.message}</p>
+      <div class="card winner rv"><span class="w-label">👑 المجموعة المتصدّرة:</span><span class="w-name js-win"></span></div>
+      <div class="row center rv"><button class="btn primary big js-clapbig">👏 صفّقن لأنفسكن!</button><button class="btn ghost js-board2">🏆 النقاط</button></div>
+      <div class="hw rv">📝 الواجب: ${s.homework}</div>
+    </div>`;
+    $('.js-clapbig',el).onclick = e => { clap(); burstFrom(e.currentTarget, 50); };
+    $('.js-board2',el).onclick = toggleBoard;
+    el._enter = () => { refreshWinner(); };
+  }
+};
+
+/* =====================================================================
+   🎞️ بناء الشرائح والتنقل
+   ===================================================================== */
+const stage = $('#stage');
+const slides = CONFIG.slides.map((s, i) => {
+  const el = document.createElement('section');
+  el.className = 'slide a-' + (s.anim || 'fade');
+  try { (R[s.type] || R.goals)(s, el, i); }
+  catch(err){ console.error(err); el.innerHTML = `<div class="slide-inner"><h2>⚠️ خطأ في الشريحة ${i+1}</h2></div>`; }
+  $$('.rv', el).forEach((n, k) => n.style.setProperty('--i', k));
+  stage.appendChild(el);
+  return el;
+});
+$('#tot').textContent = slides.length;
+
+function enter(el){ el._enter && el._enter(); }
+function leave(el){ (el._timers||[]).forEach(t => t.api.running() && t.api.pause()); }
+
+function go(i){
+  if(i < 0 || i >= slides.length || i === state.cur) return;
+  const old = slides[state.cur], nw = slides[i];
+  old.classList.remove('active','back'); old.classList.add('out');
+  setTimeout(() => old.classList.remove('out'), 450);
+  leave(old);
+  nw.classList.toggle('back', i < state.cur);
+  state.cur = i;
+  nw.classList.add('active');
+  enter(nw);
+  updateUI();
+}
+const next = () => go(state.cur + 1);
+const prev = () => go(state.cur - 1);
+function updateUI(){
+  $('#cur').textContent = state.cur + 1;
+  $('#progress i').style.width = ((state.cur+1) / slides.length * 100) + '%';
+  $('#bPrev').style.opacity = state.cur === 0 ? .4 : 1;
+  $('#bNext').style.opacity = state.cur === slides.length-1 ? .4 : 1;
+}
+
+/* ملاءمة المسرح للشاشة بنسبة 16:9 دون تمرير */
+function fit(){
+  const k = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  stage.style.transform = `translate(-50%,-50%) scale(${k})`;
+}
+window.addEventListener('resize', fit);
+fit();
+
+/* =====================================================================
+   ⌨️ لوحة المفاتيح والماوس
+   ===================================================================== */
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if(tag === 'textarea' || tag === 'input'){ if(e.key === 'Escape') e.target.blur(); return; }
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  // ت = حرف ت (في الكيبورد العربي يقع على زر J)
+  if(e.key === 'ت' || e.code === 'KeyJ'){ e.preventDefault(); clap(); return; }
+  if(e.key === 'ق' || e.code === 'KeyR'){ e.preventDefault(); toggleLotto(); return; }
+  if(e.key === 'ن' || e.code === 'KeyK'){ e.preventDefault(); toggleBoard(); return; }
+  switch(e.code){
+    case 'ArrowRight': case 'Space': case 'PageDown': case 'Enter':
+      e.preventDefault(); next(); break;
+    case 'ArrowLeft': case 'PageUp': case 'Backspace':
+      e.preventDefault(); prev(); break;
+    case 'ArrowUp': case 'ArrowDown': e.preventDefault(); break;
+    case 'Home': e.preventDefault(); go(0); break;
+    case 'End':  e.preventDefault(); go(slides.length-1); break;
+    case 'Escape': closeModal('lotto'); $('#board').classList.remove('open'); break;
+  }
+});
+// منع التمرير بعجلة الماوس أو اللمس
+window.addEventListener('wheel', e => { if(!e.target.closest('.scroll')) e.preventDefault(); }, { passive:false });
+window.addEventListener('touchmove', e => { if(!e.target.closest('textarea,.b-list,.scroll')) e.preventDefault(); }, { passive:false });
+
+/* أزرار الشريط */
+$('#bNext').onclick = next;
+$('#bPrev').onclick = prev;
+$('#bClap').onclick = clap;
+$('#bLotto').onclick = toggleLotto;
+$('#bBoard').onclick = toggleBoard;
+$('#bFull').onclick = () => {
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen && document.exitFullscreen();
+};
+
+/* نقرات عامة (تفويض الأحداث) */
+document.addEventListener('click', e => {
+  const who = e.target.closest('.who'); if(who) spinName($('.who-name', who));
+  const gc = e.target.closest('.g-chip'); if(gc) addPoint(+gc.dataset.g, 1, gc);
+  const bb = e.target.closest('.b-btn'); if(bb) addPoint(+bb.dataset.g, +bb.dataset.d, bb);
+  const cl = e.target.closest('[data-close]'); if(cl){ const id = cl.dataset.close; id === 'board' ? $('#board').classList.remove('open') : closeModal(id); }
+  const ct = e.target.closest('[data-cls]'); if(ct) setClass(ct.dataset.cls);
+  if(e.target.id === 'lotto') closeModal('lotto');
+  // إزالة التركيز عن الأزرار حتى لا يضغطها Space
+  const b = e.target.closest('button'); if(b) setTimeout(() => b.blur(), 0);
+});
+
+/* نافذة القرعة */
+$('.js-mpick').onclick = () => spinName($('.m-name'));
+$('.js-mgroup').onclick = () => spinGroup($('.m-name'));
+$('#noRep').onchange = e => state.noRepeat = e.target.checked;
+$('.js-mreset').onclick = () => { state.used[state.cls] = new Set(); updateLeft(); toast('↺ أُعيدت القرعة'); };
+/* زر القرعة في شريحة التحضير يفتح نافذة القرعة الخاصة بهذا الدرس، وتحديث الأسماء عند تغيير الشعبة */
+Roster.customDraw(() => { openModal('lotto'); updateLeft(); });
+Roster.onChange(() => setClass(Roster.current()));
+$('.js-breset').onclick = () => { if(confirm('تصفير نقاط جميع المجموعات؟')){ state.scores = CONFIG.groups.map(()=>0); store.set('scores', state.scores); renderBoard(); refreshWinner(); } };
+
+/* إخفاء شريط التحكم تلقائيًا عند عدم تحريك الماوس */
+let idleT;
+function wake(){
+  document.body.classList.remove('idle');
+  clearTimeout(idleT);
+  idleT = setTimeout(() => {
+    if(!$('#bar').matches(':hover') && !document.body.classList.contains('modal-open') && !$('#board').classList.contains('open'))
+      document.body.classList.add('idle');
+  }, 2600);
+}
+['mousemove','pointerdown','touchstart'].forEach(ev => window.addEventListener(ev, wake, { passive:true }));
+
+/* البدء */
+setClass(state.cls);
+renderBoard();
+refreshWinner();
+slides[0].classList.add('active');
+enter(slides[0]);
+updateUI();
+wake();
+</script>
+</body>
+</html>
