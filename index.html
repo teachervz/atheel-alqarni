@@ -3,176 +3,279 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الدروس التفاعلية</title>
+<title>مكتبة الدروس</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F4F6FB;
-    --ink:#18213F;
-    --muted:#5B6585;
-    --card:#FFFFFF;
-    --line:#E2E6F0;
+    --paper:#FBF8FF; --ink:#3A3456; --muted:#857DA3;
+    --wood:#EAD9C6; --wood-d:#8B6FB8; --wood-l:#F6EBDD; --back:#FFFDF9;
+    --ok:#34B98A; --part:#F5B841; --line:#ECE6F7;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Tajawal',sans-serif;
-    background:var(--bg);
-    color:var(--ink);
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:40px 16px;
-  }
-  header{text-align:center;margin-bottom:36px}
-  h1{font-size:clamp(28px,5vw,42px);font-weight:900}
-  header p{color:var(--muted);font-size:18px;margin-top:8px}
-  .school{
-    display:inline-block;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:6px 18px;
-    margin-bottom:14px;
-    font-size:18px;
-    font-weight:800;
-    color:#5B57D9;
-  }
-  .teacher{font-size:20px;font-weight:700;margin-top:10px}
-  .grid{
-    width:100%;
-    max-width:900px;
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:18px;
-  }
-  .btn{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    padding:22px 24px;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:18px;
-    text-decoration:none;
-    color:var(--ink);
-    font-size:22px;
-    font-weight:800;
-    box-shadow:0 4px 14px rgba(24,33,63,.06);
-    transition:transform .15s, box-shadow .15s, border-color .15s;
-  }
-  .btn:hover,.btn:focus-visible{
-    transform:translateY(-3px);
-    box-shadow:0 10px 24px rgba(24,33,63,.12);
-    border-color:var(--c);
-    outline:none;
-  }
-  .num{
-    flex:none;
-    width:52px;height:52px;
-    border-radius:14px;
-    display:grid;place-items:center;
-    background:var(--c);
-    color:#fff;
-    font-size:24px;
-    font-weight:900;
-  }
-  .arrow{margin-inline-start:auto;color:var(--c);font-size:26px}
-  .multi{flex-wrap:wrap;cursor:default}
-  .multi:hover{transform:none}
-  .lessons{display:flex;flex-wrap:wrap;gap:10px;width:100%}
-  .lessons a{
-    flex:1 1 auto;
-    text-align:center;
-    padding:8px 10px;
-    border-radius:12px;
-    background:color-mix(in srgb,var(--c) 12%,white);
-    color:var(--ink);
-    text-decoration:none;
-    font-size:17px;
-    font-weight:800;
-    white-space:nowrap;
-    transition:background .15s,color .15s;
-  }
-  .lessons a:hover,.lessons a:focus-visible{background:var(--c);color:#fff;outline:none}
-  .lessons .unit{flex-basis:100%;font-size:15px;font-weight:900;color:var(--c);margin-top:4px}
-  .admin{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    margin-top:28px;
-    padding:12px 22px;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:999px;
-    text-decoration:none;
-    color:var(--muted);
-    font-size:18px;
-    font-weight:800;
-    transition:color .15s, border-color .15s;
-  }
-  .admin:hover,.admin:focus-visible{color:#5B57D9;border-color:#5B57D9;outline:none}
+  body{font-family:'Tajawal',sans-serif;color:var(--ink);min-height:100vh;padding:28px 16px 60px;
+    background:radial-gradient(900px 500px at 90% -10%,#FFE4F1,transparent 60%),radial-gradient(900px 500px at 0% 0%,#E3F1FF,transparent 55%),radial-gradient(800px 500px at 50% 110%,#E6FAF1,transparent 60%),var(--paper)}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  /* ---------- الرأس ---------- */
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:18px 28px;margin-bottom:22px}
+  .brand{flex:1;min-width:260px}
+  .school{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 16px;font-size:16px;font-weight:800;color:var(--wood-d)}
+  h1{font-family:'Amiri',serif;font-size:clamp(34px,5vw,52px);line-height:1.2;margin-top:8px}
+  h1 span{background:linear-gradient(90deg,#8B6FB8,#E879A9 60%,#F5A25D);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .teacher{font-size:19px;font-weight:700;color:var(--muted)}
+  .stats{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:12px 20px;box-shadow:0 10px 28px rgba(139,111,184,.12)}
+  .ring{--p:0;width:74px;height:74px;border-radius:50%;flex:none;display:grid;place-items:center;
+    background:conic-gradient(var(--ok) calc(var(--p)*1%),#EFEAF8 0)}
+  .ring b{width:56px;height:56px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:18px;font-weight:900;color:var(--ok)}
+  .stats .t{font-size:15px;color:var(--muted);font-weight:700;line-height:1.6}
+  .stats .t b{color:var(--ink);font-size:18px}
+
+  /* ---------- أدوات البحث والتصفية ---------- */
+  .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:26px}
+  .search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 14px}
+  .search input{flex:1;border:0;outline:0;font:inherit;font-size:17px;padding:11px 0;background:transparent;color:var(--ink)}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font:inherit;font-size:15px;font-weight:800;color:var(--muted);cursor:pointer}
+  .chip.on{background:linear-gradient(135deg,#A98BDB,#E99BC4);border-color:transparent;color:#fff}
+  .admin{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:15px;font-weight:800;color:var(--wood-d)}
+  .admin:hover{border-color:var(--wood-d)}
+
+  /* ---------- الرفوف (خشب فاتح) ---------- */
+  .case{background:linear-gradient(180deg,#F8EEE2,#EEDDC9);border-radius:28px;padding:16px;box-shadow:0 20px 50px rgba(176,140,100,.18),inset 0 2px 0 #fff}
+  .shelf{position:relative;background:linear-gradient(180deg,#FFFFFF,#FFF8F0 70%,#FBEFE2);
+    border-radius:16px;padding:16px 18px 0;margin-bottom:16px;box-shadow:inset 0 8px 18px rgba(176,140,100,.14)}
+  .shelf:last-of-type{margin-bottom:0}
+  .plaque{position:absolute;top:-8px;right:24px;z-index:3;display:flex;align-items:center;gap:10px;
+    background:#fff;border:2px solid color-mix(in srgb,var(--c) 35%,white);border-radius:999px;padding:4px 14px 4px 6px;
+    font-weight:900;font-size:17px;color:var(--ink);box-shadow:0 6px 14px rgba(139,111,184,.15)}
+  .plaque i{font-style:normal;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,var(--c) 75%,white);color:#fff;display:grid;place-items:center;font-size:15px}
+  .plaque small{font-size:13px;color:var(--muted);font-weight:800;background:color-mix(in srgb,var(--c) 12%,white);border-radius:999px;padding:1px 8px}
+  .books{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-auto-rows:262px;gap:0 18px;padding-top:30px;
+    background:repeating-linear-gradient(180deg,transparent 0 238px,#E2CDB4 238px 240px,#F3E4D2 240px 252px,#E8D3BC 252px 262px)}
+  .shelf.empty{display:none}
+
+  /* ---------- الكتاب (ألوان باستيل) ---------- */
+  .book{position:relative;align-self:start;height:228px;margin-top:10px;border-radius:6px 14px 14px 6px;cursor:pointer;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--c) 70%,white) 0 10px,rgba(255,255,255,.7) 10px 12px,transparent 12px),
+      linear-gradient(160deg,color-mix(in srgb,var(--c) 14%,white),color-mix(in srgb,var(--c) 26%,white));
+    color:var(--ink);box-shadow:0 10px 18px color-mix(in srgb,var(--c) 22%,transparent),inset -3px 0 0 rgba(255,255,255,.8);
+    border:1px solid color-mix(in srgb,var(--c) 22%,white);
+    display:flex;flex-direction:column;padding:16px 14px 12px 24px;transition:transform .18s,box-shadow .18s;text-decoration:none;outline:none}
+  .book:hover,.book:focus-visible{transform:translateY(-8px) rotate(-1deg);box-shadow:0 18px 28px color-mix(in srgb,var(--c) 30%,transparent)}
+  .book::after{content:"";position:absolute;inset:8px 8px 8px 20px;border:1.5px dashed color-mix(in srgb,var(--c) 30%,white);border-radius:4px 8px 8px 4px;pointer-events:none}
+  .book .ic{font-size:40px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}
+  .book .unit{font-size:12px;font-weight:800;color:color-mix(in srgb,var(--c) 75%,black)}
+  .book h3{font-size:19px;font-weight:900;line-height:1.35;color:color-mix(in srgb,var(--c) 55%,#2B2340)}
+  .book .st{margin-top:auto;margin-bottom:34px;font-size:12.5px;font-weight:800;line-height:1.4;background:rgba(255,255,255,.75);color:var(--muted);border-radius:8px;padding:4px 8px}
+  .book.done .st{color:#1F8A63;background:#E8F8F1}
+  .book.part .st{color:#A87410;background:#FFF5DE}
+  .ribbon{position:absolute;top:-6px;left:22px;width:26px;height:46px;background:#DCD6E8;z-index:2;
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);display:grid;place-items:start center;padding-top:8px;font-size:14px;color:#fff;font-weight:900}
+  .book.done .ribbon{background:var(--ok)}
+  .book.part .ribbon{background:var(--part)}
+  .mark{position:absolute;bottom:10px;left:10px;right:22px;z-index:3;border:1px solid color-mix(in srgb,var(--c) 30%,white);border-radius:10px;background:#fff;color:color-mix(in srgb,var(--c) 70%,black);font:inherit;font-weight:900;font-size:13.5px;padding:6px 9px;cursor:pointer;box-shadow:0 3px 8px rgba(139,111,184,.12)}
+  .mark:hover{background:color-mix(in srgb,var(--c) 10%,white)}
+  .book.done .mark{background:#E8F8F1;border-color:#BFE9D6;color:#1F8A63}
+
+  /* ---------- نافذة التتبع ---------- */
+  .pop{position:fixed;z-index:50;width:300px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 50px rgba(139,111,184,.25);padding:14px 16px;display:none}
+  .pop.on{display:block;animation:pin .18s ease-out}
+  @keyframes pin{from{opacity:0;transform:translateY(6px)}}
+  .pop h4{font-size:17px;margin-bottom:2px}
+  .pop .sub{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px}
+  .row{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:10px;cursor:pointer;font-weight:800}
+  .row:hover{background:var(--paper)}
+  .row input{width:20px;height:20px;accent-color:var(--ok)}
+  .row span{flex:1}
+  .row small{color:var(--muted);font-weight:700;font-size:12.5px}
+  .pop .acts{display:flex;gap:8px;margin-top:10px}
+  .pop .acts button{flex:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;font:inherit;font-weight:800;font-size:14px;padding:8px;cursor:pointer;color:var(--ink)}
+  .pop .acts .all{background:var(--ok);border-color:var(--ok);color:#fff}
+  .pop .note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.6}
+  .pop .note a{color:var(--wood-d);font-weight:800}
+  .nores{text-align:center;color:var(--muted);font-weight:800;padding:40px}
+  footer{text-align:center;color:var(--muted);font-size:13.5px;margin-top:22px;line-height:1.8}
+  @media (max-width:560px){ .books{grid-template-columns:repeat(2,1fr);gap:0 12px} .stats{width:100%} }
 </style>
 </head>
 <body>
+<div class="wrap">
   <header>
-    <div class="school">مدارس دينا العالمية</div>
-    <h1>الدروس التفاعلية</h1>
-    <div class="teacher">المعلمة: أثيل القرني</div>
-    <p>اختر الصف للدخول إلى الدرس</p>
+    <div class="brand">
+      <span class="school">🏫 مدارس دينا العالمية</span>
+      <h1>📚 <span>مكتبة الدروس التفاعلية</span></h1>
+      <div class="teacher">المعلمة: أثيل القرني</div>
+    </div>
+    <div class="stats"><div class="ring" id="ring"><b id="pct">0%</b></div>
+      <div class="t">تم شرح <b id="nDone">0</b> من <b id="nAll">0</b> درسًا<br>بقي <b id="nLeft">0</b> 📖</div></div>
   </header>
 
-  <nav class="grid">
-    <div class="btn multi" style="--c:#0fa797"><span class="num">٥</span>الصف الخامس
-      <div class="lessons">
-        <a href="sound/sound.html">الوسائط المتعددة</a>
-        <a href="sound/index.html">أصنع فيلمي عن وطني</a>
-        <span class="unit">الوحدة الرابعة</span>
-        <a href="5th/index.html">١- كيفية تصميم برنامج</a>
-        <a href="5th/sprites.html">٢- الكائنات في سكراتش</a>
-      </div>
-    </div>
-    <div class="btn multi" style="--c:#F59E0B"><span class="num">٦</span>الصف السادس
-      <div class="lessons">
-        <a href="database/database_5.html">قواعد البيانات</a>
-        <a href="database/index-database.html">إنشاء قاعدة بيانات</a>
-        <a href="database/index.html">الفرز والتصفية</a>
-        <span class="unit">الوحدة الرابعة</span>
-        <a href="6th/index-scratch.html">١- التكرارات في سكراتش</a>
-      </div>
-    </div>
-    <div class="btn multi" style="--c:#16A34A"><span class="num">١</span>الأول متوسط
-      <div class="lessons">
-        <a href="excel/index.html">التنسيق المتقدم</a>
-        <a href="1st-mid/index.html">الدوال المتقدمة</a>
-      </div>
-    </div>
-    <div class="btn multi" style="--c:#2563EB"><span class="num">٢</span>الثاني متوسط
-      <div class="lessons">
-        <a href="python/index.html">المعاملات الشرطية والمنطقية</a>
-        <a href="2nd-mid/index-python.html">الجمل الشرطية</a>
-      </div>
-    </div>
-    <div class="btn multi" style="--c:#DB2777"><span class="num">٣</span>الثالث متوسط
-      <div class="lessons">
-        <a href="3rd/index-ecommercee.html">مقدمة في التجارة الإلكترونية</a>
-        <a href="3rd/index.html">التعاملات عبر الإنترنت</a>
-        <a href="3rd/query.html">الاستعلام في قاعدة البيانات</a>
-        <a href="3rd/reports.html">التقارير في قواعد البيانات</a>
-      </div>
-    </div>
-    <div class="btn multi" style="--c:#5B57D9"><span class="num">١</span>الأول ثانوي
-      <div class="lessons">
-        <a href="control/index.html">المراقبة والتحكم</a>
-        <a href="control/index-new-tech.html">التقنيات الناشئة</a>
-        <a href="1st-sec/index-new-tech.html">الصحة والبيئة</a>
-      </div>
-    </div>
-  </nav>
+  <div class="tools">
+    <label class="search">🔎 <input id="q" placeholder="ابحثي عن درس…"></label>
+    <button class="chip on" data-f="all">الكل</button>
+    <button class="chip" data-f="todo">لم يُشرح</button>
+    <button class="chip" data-f="done">تم الشرح</button>
+    <a class="admin" href="admin/index.html">🗂️ لوحة الإدارة</a>
+  </div>
 
-  <a class="admin" href="admin/index.html">📚 لوحة الإدارة</a>
+  <main class="case" id="case"></main>
+  <footer>👆 اضغطي على الكتاب لفتح الدرس • زر <b>✓ تتبع</b> لتسجيل شرح الدرس لكل شعبة<br>يُحفظ التتبع في هذا المتصفح، ويُضمَّن في <b>النسخة الاحتياطية</b> من لوحة الإدارة</footer>
+</div>
+
+<div class="pop" id="pop"></div>
+
+<script>
+/* =====================================================================
+   📚 رفوف المكتبة — لإضافة درس: أضيفي سطرًا في رف الصف المناسب
+   • id ثابت لكل درس (لا تغيّريه حتى لا يضيع تتبع الشرح) • href مسار الملف
+   • name = اسم الصف كما هو في لوحة الإدارة (لجلب الشعب)
+   ===================================================================== */
+const SHELVES = [
+  { name:'الصف الخامس', n:'٥', c:'#2BB3A0', books:[
+    { id:'sound/sound.html',     href:'sound/sound.html',     ic:'🎧', t:'الوسائط المتعددة', u:'الوحدة الثالثة' },
+    { id:'sound/index.html',     href:'sound/index.html',     ic:'🎬', t:'أصنع فيلمي عن وطني' },
+    { id:'5th/index.html',       href:'5th/index.html',       ic:'🧩', t:'كيفية تصميم برنامج', u:'الوحدة الرابعة • الدرس الأول' },
+    { id:'5th/sprites.html',     href:'5th/sprites.html',     ic:'🦖', t:'الكائنات في سكراتش', u:'الوحدة الرابعة • الدرس الثاني' } ]},
+  { name:'الصف السادس', n:'٦', c:'#F2A24B', books:[
+    { id:'database/database_5.html',     href:'database/database_5.html',     ic:'🗃️', t:'قواعد البيانات' },
+    { id:'database/index-database.html', href:'database/index-database.html', ic:'🧱', t:'إنشاء قاعدة بيانات' },
+    { id:'database/index.html',          href:'database/index.html',          ic:'🔃', t:'الفرز والتصفية' },
+    { id:'6th/index-scratch.html',       href:'6th/index-scratch.html',       ic:'🔁', t:'التكرارات في سكراتش', u:'الوحدة الرابعة • الدرس الأول' } ]},
+  { name:'الأول متوسط', n:'١', c:'#4CBF7A', books:[
+    { id:'excel/index.html',        href:'excel/index.html',          ic:'🎨', t:'التنسيق المتقدم' },
+    { id:'1st-mid/index.html',      href:'1st-mid/index.html',        ic:'🧮', t:'الدوال المتقدمة' },
+    { id:'1st-mid/index copy.html', href:'1st-mid/index%20copy.html', ic:'💻', t:'ما البرنامج؟' } ]},
+  { name:'الثاني متوسط', n:'٢', c:'#5B8DEF', books:[
+    { id:'python/index.html',         href:'python/index.html',         ic:'🐍', t:'المعاملات الشرطية والمنطقية' },
+    { id:'2nd-mid/index-python.html', href:'2nd-mid/index-python.html', ic:'🔀', t:'الجمل الشرطية' } ]},
+  { name:'الثالث متوسط', n:'٣', c:'#E8689F', books:[
+    { id:'3rd/index-ecommercee.html', href:'3rd/index-ecommercee.html', ic:'🛒', t:'مقدمة في التجارة الإلكترونية' },
+    { id:'3rd/index.html',            href:'3rd/index.html',            ic:'💳', t:'التعاملات عبر الإنترنت' },
+    { id:'3rd/query.html',            href:'3rd/query.html',            ic:'🔎', t:'الاستعلام في قاعدة البيانات' },
+    { id:'3rd/reports.html',          href:'3rd/reports.html',          ic:'📊', t:'التقارير في قواعد البيانات' } ]},
+  { name:'الأول ثانوي', n:'١', c:'#8C7BE0', books:[
+    { id:'control/index.html',          href:'control/index.html',          ic:'🎛️', t:'المراقبة والتحكم' },
+    { id:'control/index-new-tech.html', href:'control/index-new-tech.html', ic:'🚀', t:'التقنيات الناشئة' },
+    { id:'1st-sec/index-new-tech.html', href:'1st-sec/index-new-tech.html', ic:'🌱', t:'الصحة والبيئة' } ]},
+  { name:'الثالث ثانوي', n:'٣', c:'#3AA7C9', books:[
+    { id:'3rd-sec/cyber/index.html',   href:'3rd-sec/cyber/index.html',   ic:'🛡️', t:'الأمن السيبراني' },
+    { id:'3rd-sec/cyber/lesson2.html', href:'3rd-sec/cyber/lesson2.html', ic:'🔐', t:'حسابات المستخدم وأذونات الملفات' } ]}
+];
+
+/* =====================================================================
+   🗂️ تتبع الشرح — مفتاح مستقل لا يمسّ بيانات لوحة الإدارة
+   { v:1, done:{ [id]: { [شعبة]: { at:'YYYY-MM-DD' } } } }
+   • القراءة لا تحذف أي حقل غير معروف • كل كتابة تعيد القراءة ثم تدمج التغيير فقط
+   ===================================================================== */
+const TKEY = 'atheel-lessons-v1', AKEY = 'atheel-admin-v1', ALL = '_';
+const readLog = () => {
+  let d = null; try { d = JSON.parse(localStorage.getItem(TKEY)); } catch (e) {}
+  if (!d || typeof d !== 'object') d = {};
+  if (!d.done || typeof d.done !== 'object') d.done = {};
+  if (!d.v) d.v = 1;
+  return d;
+};
+const updateLog = fn => { const d = readLog(); fn(d); try { localStorage.setItem(TKEY, JSON.stringify(d)); } catch (e) { alert('تعذّر الحفظ في المتصفح'); } return d; };
+const sectionsOf = grade => {
+  let db = null; try { db = JSON.parse(localStorage.getItem(AKEY)); } catch (e) {}
+  const g = db && Array.isArray(db.grades) ? db.grades.find(x => x.name === grade) : null;
+  const s = g ? (g.sections || []).map(x => x.name).filter(Boolean) : [];
+  return s.length ? s : [ALL];
+};
+const secLabel = s => s === ALL ? 'الصف كله' : 'شعبة ' + s;
+const fmtD = iso => { try { return new Date(iso + 'T12:00').toLocaleDateString('ar-SA', { day:'numeric', month:'long' }); } catch (e) { return iso; } };
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+
+/* حالة الكتاب: كم شعبة شُرح لها (تسجيل «الصف كله» القديم يُحتسب لكل الشعب) */
+function stateOf(shelf, b, log) {
+  const secs = sectionsOf(shelf.name), rec = log.done[b.id] || {};
+  const got = secs.filter(s => rec[s] || rec[ALL]);
+  const dates = got.map(s => (rec[s] || rec[ALL]).at).sort();
+  return { secs, n: secs.length, k: got.length, last: dates[dates.length - 1] };
+}
+
+let filter = 'all', query = '';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function render() {
+  const log = readLog(); let all = 0, done = 0, shown = 0;
+  const html = SHELVES.map((sh, si) => {
+    let dn = 0;
+    const items = sh.books.map((b, bi) => {
+      const st = stateOf(sh, b, log), full = st.k === st.n; all++; if (full) { done++; dn++; }
+      const cls = full ? 'done' : st.k ? 'part' : '';
+      const okF = filter === 'all' || (filter === 'done' ? full : !full);
+      const okQ = !query || (b.t + ' ' + sh.name + ' ' + (b.u || '')).includes(query);
+      if (!okF || !okQ) return '';
+      shown++;
+      const txt = full ? `✓ تم الشرح${st.n > 1 ? ' لكل الشعب' : ''} • ${fmtD(st.last)}` : st.k ? `شُرح لـ ${st.k} من ${st.n} شعب` : 'لم يُشرح بعد';
+      return `<a class="book ${cls}" href="${b.href}" style="--c:${sh.c}" title="افتحي درس ${esc(b.t)}">
+        <span class="ribbon">${full ? '✓' : st.k ? '½' : ''}</span>
+        <span class="ic">${b.ic}</span>${b.u ? `<span class="unit">${b.u}</span>` : ''}<h3>${esc(b.t)}</h3>
+        <span class="st">${txt}</span>
+        <button class="mark" data-s="${si}" data-b="${bi}" title="تسجيل شرح الدرس">${full ? '✓ تم الشرح' : '☐ تتبع الشرح'}</button></a>`;
+    }).join('');
+    return `<section class="shelf${items ? '' : ' empty'}"><div class="plaque" style="--c:${sh.c}"><i>${sh.n}</i>${sh.name}<small>${dn}/${sh.books.length}</small></div><div class="books">${items}</div></section>`;
+  }).join('');
+  $('#case').innerHTML = html + (shown ? '' : '<div class="nores">لا توجد دروس مطابقة 🔍</div>');
+  const p = all ? Math.round(done / all * 100) : 0;
+  $('#ring').style.setProperty('--p', p); $('#pct').textContent = p + '%';
+  $('#nDone').textContent = done; $('#nAll').textContent = all; $('#nLeft').textContent = all - done;
+}
+
+/* نافذة التتبع لكل شعبة */
+let popFor = null;
+function openPop(btn) {
+  const sh = SHELVES[+btn.dataset.s], b = sh.books[+btn.dataset.b];
+  popFor = { sh, b };
+  paintPop();
+  const pop = $('#pop'), r = btn.getBoundingClientRect();
+  pop.classList.add('on');
+  const w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(10, Math.min(innerWidth - w - 10, r.left + r.width / 2 - w / 2)) + 'px';
+  pop.style.top = (r.bottom + h + 10 < innerHeight ? r.bottom + 8 : Math.max(10, r.top - h - 8)) + 'px';
+}
+function paintPop() {
+  const { sh, b } = popFor, rec = readLog().done[b.id] || {}, secs = sectionsOf(sh.name);
+  $('#pop').innerHTML = `<h4>${b.ic} ${esc(b.t)}</h4><div class="sub">${sh.name} — هل شرحتِ الدرس؟</div>
+    ${secs.map(s => { const r = rec[s] || rec[ALL]; return `<label class="row"><input type="checkbox" data-sec="${esc(s)}"${r ? ' checked' : ''}><span>${secLabel(s)}</span><small>${r ? '✓ ' + fmtD(r.at) : 'لم يُشرح'}</small></label>`; }).join('')}
+    <div class="acts">${secs.length > 1 ? '<button class="all">✓ الكل</button>' : ''}<button class="clr">مسح</button><button class="cls">إغلاق</button></div>
+    ${secs[0] === ALL ? '<div class="note">💡 أضيفي شعب الصف من <a href="admin/index.html">لوحة الإدارة</a> لتتبّعي الشرح لكل شعبة.</div>' : ''}`;
+}
+function setSecs(list, on) {
+  const { b, sh } = popFor;
+  updateLog(d => {
+    const rec = d.done[b.id] || (d.done[b.id] = {});
+    /* عند إلغاء شعبة من تسجيل «الصف كله» القديم: يُوزَّع على الشعب أولًا حتى لا يضيع تاريخ البقية */
+    if (rec[ALL] && !on) { const at = rec[ALL]; delete rec[ALL]; sectionsOf(sh.name).forEach(s => { if (s !== ALL) rec[s] = rec[s] || at; }); }
+    list.forEach(s => { if (on) rec[s] = rec[s] || { at: today() }; else delete rec[s]; });
+    if (!Object.keys(rec).length) delete d.done[b.id];
+  });
+  paintPop(); render();
+}
+document.addEventListener('click', e => {
+  const m = e.target.closest('.mark');
+  if (m) { e.preventDefault(); e.stopPropagation(); openPop(m); return; }
+  const pop = $('#pop');
+  if (pop.contains(e.target)) {
+    if (e.target.matches('.cls')) pop.classList.remove('on');
+    else if (e.target.matches('.all')) setSecs(sectionsOf(popFor.sh.name), true);
+    else if (e.target.matches('.clr')) { if (confirm('مسح تتبع شرح هذا الدرس؟')) setSecs([...sectionsOf(popFor.sh.name), ALL], false); }
+    return;
+  }
+  pop.classList.remove('on');
+  const c = e.target.closest('.chip');
+  if (c) { document.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === c)); filter = c.dataset.f; render(); }
+});
+document.addEventListener('change', e => { const cb = e.target.closest('#pop input[data-sec]'); if (cb) setSecs([cb.dataset.sec], cb.checked); });
+$('#q').addEventListener('input', e => { query = e.target.value.trim(); render(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') $('#pop').classList.remove('on'); });
+/* تحديث تلقائي إذا تغيّرت الشعب أو التتبع في تبويب آخر */
+addEventListener('storage', e => { if (e.key === TKEY || e.key === AKEY) render(); });
+addEventListener('focus', render);
+render();
+</script>
 </body>
 </html>

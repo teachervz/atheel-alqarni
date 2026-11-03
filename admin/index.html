@@ -213,6 +213,7 @@ const CATS = [
 const DEF_W = { part: 10, hw: 10, perf: 15, proj: 15, practical: 20, written: 30 };
 const SEC_NAMES = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح', 'ط', 'ي'];
 const KEY = 'atheel-admin-v1';
+const LKEY = 'atheel-lessons-v1';   // تتبع شرح الدروس (من صفحة المكتبة)
 
 const $ = (q, el = document) => el.querySelector(q);
 const $$ = (q, el = document) => [...el.querySelectorAll(q)];
@@ -225,7 +226,7 @@ function seed() {
   return {
     grades: [
       ['الصف الخامس', '#0fa797'], ['الصف السادس', '#F59E0B'], ['الأول متوسط', '#16A34A'],
-      ['الثاني متوسط', '#2563EB'], ['الثالث متوسط', '#DB2777'], ['الأول ثانوي', '#5B57D9']
+      ['الثاني متوسط', '#2563EB'], ['الثالث متوسط', '#DB2777'], ['الأول ثانوي', '#5B57D9'], ['الثالث ثانوي', '#0E7490']
     ].map(([name, color]) => ({ id: uid(), name, color, weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] }))
   };
 }
@@ -241,6 +242,13 @@ if (!db.v) {
     at < 0 ? db.grades.push(g) : db.grades.splice(at, 0, g);
   }
   db.v = 2;
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
+}
+/* إضافة صف الثالث ثانوي للبيانات المحفوظة قبل إضافته (مرة واحدة فقط) */
+if (db.v < 3) {
+  if (!db.grades.some(g => g.name === 'الثالث ثانوي'))
+    db.grades.push({ id: uid(), name: 'الثالث ثانوي', color: '#0E7490', weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] });
+  db.v = 3;
   try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
 }
 
@@ -535,7 +543,9 @@ const ACTS = {
   print() { print(); },
   export() {
     const d = new Date().toISOString().slice(0, 10);
-    download(`لوحة-المعلمة-${d}.json`, JSON.stringify(db, null, 2), 'application/json');
+    /* النسخة تشمل تتبع شرح الدروس من المكتبة (مفتاح مستقل) */
+    let lessonsLog = null; try { lessonsLog = JSON.parse(localStorage.getItem(LKEY)); } catch {}
+    download(`لوحة-المعلمة-${d}.json`, JSON.stringify(lessonsLog ? { ...db, lessonsLog } : db, null, 2), 'application/json');
     toast('تم تنزيل النسخة الاحتياطية');
   },
   import() { $('#file').click(); }
@@ -598,6 +608,16 @@ $('#file').addEventListener('change', async e => {
     const data = JSON.parse(await f.text());
     if (!Array.isArray(data.grades)) throw 0;
     if (!confirm('سيتم استبدال البيانات الحالية بالنسخة الاحتياطية. متابعة؟')) return;
+    /* نسخة أمان من البيانات الحالية قبل الاسترجاع */
+    try { localStorage.setItem(KEY + ':before-import', JSON.stringify(db)); } catch {}
+    /* تتبع شرح الدروس: يُدمج مع الموجود ولا يُحذف شيء منه */
+    if (data.lessonsLog && data.lessonsLog.done) {
+      let cur = null; try { cur = JSON.parse(localStorage.getItem(LKEY)); } catch {}
+      cur = cur && cur.done ? cur : { v: 1, done: {} };
+      for (const [id, rec] of Object.entries(data.lessonsLog.done)) cur.done[id] = { ...rec, ...(cur.done[id] || {}) };
+      try { localStorage.setItem(LKEY, JSON.stringify(cur)); } catch {}
+    }
+    delete data.lessonsLog;
     db = data; ui.g = db.grades[0]?.id; ui.s = null;
     save('تم استرجاع النسخة الاحتياطية'); render();
   } catch { alert('الملف غير صالح.'); }
