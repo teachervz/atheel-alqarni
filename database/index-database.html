@@ -1560,7 +1560,7 @@ const R = {
       if(v === st.answer){
         row.classList.remove('bad'); row.classList.add('ok'); b.classList.add('picked');
         score++; $('.js-sc',el).textContent = score; celebrate(b);
-        if(score === s.statements.length) setTimeout(()=>{ showPop('🌟 ممتاز! أجبتِ عن الجميع'); clap(); }, 900);
+        if(score === s.statements.length) setTimeout(()=>{ showPop('🌟 ممتاز! أجبتِ عن الجميع'); }, 900);
       } else { row.classList.remove('bad'); void row.offsetWidth; row.classList.add('bad'); oops(); }
     }));
   },
@@ -1767,5 +1767,7 @@ enter(slides[0]);
 updateUI();
 wake();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

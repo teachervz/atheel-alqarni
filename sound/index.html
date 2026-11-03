@@ -970,7 +970,7 @@ function flyEmojis(emoji = "👏", count = 16, fromEl = null){
   }
 }
 function centerOf(el){ const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; }
-function celebrate(el){ const [x,y] = el ? centerOf(el) : [innerWidth/2, innerHeight/2]; confetti(x, y, 60); Sound.success(); }
+function celebrate(el){ const [x,y] = el ? centerOf(el) : [innerWidth/2, innerHeight/2]; confetti(x, y, 60); Sound.pop(); }   // بدون صوت تصفيق تلقائي
 function shake(el){ el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
 function pulse(el){ el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse"); }
 const fmt = s => { s = Math.max(0, Math.ceil(s)); return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); };
@@ -1590,7 +1590,7 @@ const R = {
         clearInterval(id);
         if(running) id = setInterval(() => {
           left--; draw(); if(left <= 5 && left > 0) Sound.tick();
-          if(left <= 0){ clearInterval(id); running = false; startB.textContent = "▶ ابدئي"; Sound.bell(); setTimeout(clap, 900); }
+          if(left <= 0){ clearInterval(id); running = false; startB.textContent = "▶ ابدئي"; Sound.bell(); }
         }, 1000);
       });
       el.querySelector(".reset").addEventListener("click", () => { clearInterval(id); running = false; left = d.seconds; startB.textContent = "▶ ابدئي"; draw(); });
@@ -1726,5 +1726,7 @@ wake();
 /* البدء (يدعم فتح شريحة معيّنة مثل index.html#5) */
 go(Math.max(0, (parseInt(location.hash.slice(1)) || 1) - 1));
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

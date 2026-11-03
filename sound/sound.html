@@ -1745,7 +1745,7 @@ const Renderers = {
       const li = $(`[data-task="${id}"]`, el); if (li) { li.classList.add('done'); popEl(li); }
       const core = s.tasks.filter(t => !t.optional), n = core.filter(t => S.done.has(t.id)).length;
       $('.tasks-prog span', el).style.width = (n / core.length * 100) + '%';
-      if (n === core.length && !S.celebrated) { S.celebrated = true; setTimeout(() => { Sound.success(); confetti(200); toast('🎧 أحسنتِ يا خبيرة الصوت! أنجزتِ جميع المهام 👏'); }, 400); }
+      if (n === core.length && !S.celebrated) { S.celebrated = true; setTimeout(() => { Sound.pop(); confetti(200); toast('🎧 أحسنتِ يا خبيرة الصوت! أنجزتِ جميع المهام 👏'); }, 400); }
     }
     const snap = () => ({ t1: S.t1.slice(), t2: S.t2 ? S.t2.slice() : null });
     function pushUndo() { S.undo.push(snap()); if (S.undo.length > 15) S.undo.shift(); S.redo = []; }
@@ -2069,5 +2069,7 @@ const startAt = parseInt((location.hash || '').slice(1), 10);
 go(Number.isFinite(startAt) ? startAt - 1 : 0, true);
 wake();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

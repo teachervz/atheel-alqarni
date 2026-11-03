@@ -2167,7 +2167,7 @@ RENDER.podium = (s, root) => {
       const first = +c.dataset.p === 0;
       tm.push(setTimeout(() => {
         c.classList.remove('hid');
-        if (first){ Sound.success(); Sound.applause(); rain(); confettiAt(c.querySelector('.pc-card')); } else Sound.ding();
+        if (first){ Sound.ding(); rain(); confettiAt(c.querySelector('.pc-card')); } else Sound.ding();
       }, k * 1100 + (first ? 900 : 0)));
     });
   };
@@ -2297,5 +2297,7 @@ const startAt = parseInt(location.hash.slice(1), 10) - 1;
 go(startAt >= 0 && startAt < els.length ? startAt : 0);
 wake();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

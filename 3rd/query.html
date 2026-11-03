@@ -721,6 +721,16 @@ body.idle{cursor:none}
 
 .mcol.opts .mbtn{font-size:30px;padding:16px 24px}
 .mcol{gap:16px}
+
+/* 👣 دليل الخطوات في محاكي الاستعلام */
+.qs-glow{outline:4px solid #F59E0B!important;outline-offset:2px;border-radius:6px;animation:qsGlow 1s ease-in-out infinite;position:relative;z-index:3}
+@keyframes qsGlow{50%{outline-color:#FDE68A;box-shadow:0 0 0 8px rgba(245,158,11,.25)}}
+.qs-tipbox{position:absolute;z-index:40;max-width:380px;background:#1F2937;color:#fff;font-size:19px;font-weight:700;line-height:1.5;padding:9px 16px;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.3);pointer-events:none;animation:qsTip .35s both}
+.qs-tipbox b{color:#FDE68A}
+.qs-tipbox::before{content:"";position:absolute;top:-9px;left:calc(var(--ax,50%) - 9px);border:9px solid transparent;border-top:0;border-bottom-color:#1F2937}
+.qs-tipbox.up::before{top:auto;bottom:-9px;border-bottom:0;border-top:9px solid #1F2937}
+@keyframes qsTip{from{opacity:0;transform:translateY(6px)}}
+.ms-tools{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -885,12 +895,12 @@ const CONFIG = {
       title:'محاكي <span class="hl">تصميم الاستعلام</span>',
       missions:[
         { text:'أنشئي استعلامًا يعرض <b>الاسم</b> و<b>اسم العائلة</b> و<b>العنوان الوطني</b> من جدول بيانات الطلبة، ثم <b>شغّليه</b>',
-          need:{ fields:['الاسم','اسم العائلة','العنوان الوطني'] },
+          need:{ fields:['الاسم','اسم العائلة','العنوان الوطني'], tables:['بيانات الطلبة'] },
           hint:'إنشاء ← تصميم الاستعلام ← اختاري «بيانات الطلبة» ← إضافة ← إغلاق ← اضغطي مزدوجًا على الحقول الثلاثة بالترتيب ← تشغيل ❗' },
         { text:'احفظي الاستعلام باسم <b>أدوات التواصل</b>', save:'أدوات التواصل',
           hint:'اضغطي بزر الفأرة الأيمن (أو اضغطي) على علامة تبويب الاستعلام ← حفظ ← اكتبي الاسم ← موافق' },
         { text:'افرزي النتائج <b>تنازليًا</b> حسب <b>الاسم</b> ثم شغّلي الاستعلام',
-          need:{ fields:['الاسم','اسم العائلة','العنوان الوطني'], sort:['الاسم','desc'] },
+          need:{ fields:['الاسم','اسم العائلة','العنوان الوطني'], sort:['الاسم','desc'], tables:['بيانات الطلبة'] },
           hint:'عرض التصميم ← في عمود «الاسم» صف «فرز» اختاري «تنازلي» ← تشغيل ❗' }
       ]},
 
@@ -916,7 +926,21 @@ const CONFIG = {
         { icon:'د', text:'تسمح بتعديل هيكل جداول قاعدة البيانات مباشرة' }
       ], correct:1 },
 
-    /* 12) استعلام من عدة جداول */
+    /* 12) المحاكي: استعلام من عدة جداول */
+    { type:'qsim', anim:'zoom', strategy:'🎮 جربي بنفسك • تطبيق عملي', draw:true, preSaved:true,
+      title:'استعلام من <span class="hl">عدة جداول</span> بمعيار',
+      missions:[
+        { text:'أنشئي استعلامًا من <b>الجداول الثلاثة</b> يعرض <b>الاسم</b> و<b>اسم المادة</b> و<b>الدرجة النهائية</b> ثم شغّليه',
+          need:{ fields:['الاسم','اسم المادة','الدرجة النهائية'], tables:['بيانات الطلبة','المواد الدراسية','درجات الطلبة'] },
+          hint:'تصميم الاستعلام ← اختاري الجداول الثلاثة ← إضافة ← إغلاق ← اضغطي مزدوجًا: الاسم ثم اسم المادة ثم الدرجة النهائية ← تشغيل' },
+        { text:'اكتبي المعيار <b dir="ltr">&lt;95</b> في عمود <b>الدرجة النهائية</b> ثم شغّلي الاستعلام',
+          need:{ fields:['الاسم','اسم المادة','الدرجة النهائية'], crit:['الدرجة النهائية','<95'], tables:['بيانات الطلبة','المواد الدراسية','درجات الطلبة'] },
+          hint:'عرض التصميم ← صف «المعايير» تحت الدرجة النهائية ← اكتبي &lt;95 ← تشغيل. ستظهر 4 سجلات: أحمد، خالد، فهد، أسامة' },
+        { text:'احفظي الاستعلام باسم <b>الاستعلام عن بيانات طالب</b>', save:'الاستعلام عن بيانات طالب',
+          hint:'زر الفأرة الأيمن على علامة تبويب الاستعلام ← حفظ ← اكتبي الاسم ← موافق' }
+      ]},
+
+    /* 13) استعلام من عدة جداول */
     { type:'steps', anim:'slide', strategy:'🔍 لاحظي واكتشفي',
       title:'استعلام من <span class="hl">عدة جداول</span> ذات صلة 🔗',
       subtitle:'من الطلبة الذين درجاتهم النهائية أقل من 95؟ وفي أي مادة؟',
@@ -928,20 +952,6 @@ const CONFIG = {
         'اضغطي <b>تشغيل</b> ثم احفظي الاستعلام باسم <b>«الاستعلام عن بيانات طالب»</b>'
       ],
       note:'💡 الجداول مرتبطة <b>بعلاقات</b> عبر «رقم الطالب» و«رقم المادة»… لذلك يستطيع الاستعلام جمع بياناتها في نتيجة واحدة.' },
-
-    /* 13) المحاكي: استعلام من عدة جداول */
-    { type:'qsim', anim:'zoom', strategy:'🎮 جربي بنفسك • تطبيق عملي', draw:true, preSaved:true,
-      title:'استعلام من <span class="hl">عدة جداول</span> بمعيار',
-      missions:[
-        { text:'أنشئي استعلامًا من <b>الجداول الثلاثة</b> يعرض <b>الاسم</b> و<b>اسم المادة</b> و<b>الدرجة النهائية</b> ثم شغّليه',
-          need:{ fields:['الاسم','اسم المادة','الدرجة النهائية'] },
-          hint:'تصميم الاستعلام ← اختاري الجداول الثلاثة ← إضافة ← إغلاق ← اضغطي مزدوجًا: الاسم ثم اسم المادة ثم الدرجة النهائية ← تشغيل' },
-        { text:'اكتبي المعيار <b dir="ltr">&lt;95</b> في عمود <b>الدرجة النهائية</b> ثم شغّلي الاستعلام',
-          need:{ fields:['الاسم','اسم المادة','الدرجة النهائية'], crit:['الدرجة النهائية','<95'] },
-          hint:'عرض التصميم ← صف «المعايير» تحت الدرجة النهائية ← اكتبي &lt;95 ← تشغيل. ستظهر 4 سجلات: أحمد، خالد، فهد، أسامة' },
-        { text:'احفظي الاستعلام باسم <b>الاستعلام عن بيانات طالب</b>', save:'الاستعلام عن بيانات طالب',
-          hint:'زر الفأرة الأيمن على علامة تبويب الاستعلام ← حفظ ← اكتبي الاسم ← موافق' }
-      ]},
 
     /* 14) سؤالان (تدريب 1 – س3، س4) */
     { type:'mcq', anim:'zoom', strategy:'✅ اختاري الإجابة الصحيحة', draw:true,
@@ -1140,7 +1150,7 @@ const FX = {
   }
 };
 function clap(){ Sound.applause(); FX.claps(); }
-function celebrate(){ Sound.success(); FX.confetti(60); }
+function celebrate(){ Sound.pop(); FX.confetti(60); }   // احتفال هادئ بدون صوت تصفيق (التصفيق فقط من زر 👏 أو حرف ت)
 
 /* =====================================================================
    🧰 أدوات مساعدة
@@ -1294,7 +1304,7 @@ const R = {
         const cnt={present:0,absent:0,late:0,none:0}; Attend.status.forEach(s=>cnt[s||'none']++);
         Object.entries(cnt).forEach(([k,v])=>$(`[data-c=${k}]`,el).textContent=v);
         const n=CONFIG.students.length;
-        if(cnt.none===0 && cnt.absent===0){ msg.textContent='🎉 الحضور كامل اليوم! 👏'; if(!celebrated){ celebrated=true; clap(); } }
+        if(cnt.none===0 && cnt.absent===0){ msg.textContent='🎉 الحضور كامل اليوم! 👏'; if(!celebrated){ celebrated=true; celebrate(); } }
         else { celebrated = cnt.none===0 && cnt.absent===0; msg.textContent = cnt.none===0 ? `✔️ تم التحضير: ${cnt.present+cnt.late} من ${n}` : ''; }
         refreshDrawUI();
       };
@@ -1486,7 +1496,7 @@ const R = {
       opts.forEach(o=>o.onclick=()=>{
         if(solved) return;
         const i=+o.dataset.i;
-        if(i===d.correct){ solved=true; o.classList.add('right'); feedback(fb,true); celebrate(); FX.claps(8); }
+        if(i===d.correct){ solved=true; o.classList.add('right'); feedback(fb,true); celebrate(); }
         else { o.classList.add('wrong'); shakeEl(o); feedback(fb,false); Sound.wrong(); }
       });
       $('[data-role=retry]',el).onclick=()=>{ solved=false; opts.forEach(o=>o.classList.remove('right','wrong')); fb.innerHTML=''; };
@@ -1535,7 +1545,7 @@ const R = {
           const s=document.createElement('span'); s.textContent=sel.textContent; $('.in',bk).appendChild(s);
           sel.remove(); sel=null; score++; pts.textContent=score; Sound.success();
           feedback(fb,true,'أحسنتِ! 👏 تصنيف صحيح');
-          if(score===d.items.length){ fb.innerHTML='<span class="ok">🏆 رائع! صنّفتِ كل البيانات بنجاح</span>'; timer.reset&&timer.reset(); celebrate(); FX.claps(14); }
+          if(score===d.items.length){ fb.innerHTML='<span class="ok">🏆 رائع! صنّفتِ كل البيانات بنجاح</span>'; timer.reset&&timer.reset(); celebrate(); }
         } else { shakeEl(sel); shakeEl(bk); feedback(fb,false); Sound.wrong(); }
       });
       el.addEventListener('timeup',()=>{ fb.innerHTML=`<span class="no">⏰ انتهى الوقت! النتيجة: ${score} من ${d.items.length}</span>`; });
@@ -1685,7 +1695,7 @@ const R = {
         if(d.pairs[i][1]===b.dataset.o){
           [selT,b].forEach(x=>{ x.classList.remove('sel'); x.classList.add('done'); x.style.setProperty('--mc',cols[i]); x.insertAdjacentHTML('beforeend','<span class="tick">✓</span>'); });
           selT=null; done++; Sound.success(); feedback(fb,true);
-          if(done===d.pairs.length){ fb.innerHTML='<span class="ok">🏆 ممتاز! وصّلتِ كل المصطلحات</span>'; celebrate(); FX.claps(12); }
+          if(done===d.pairs.length){ fb.innerHTML='<span class="ok">🏆 ممتاز! وصّلتِ كل المصطلحات</span>'; celebrate(); }
         } else { shakeEl(b); feedback(fb,false); Sound.wrong(); }
       });
       $('[data-role=reset]',el).onclick=()=>{ $$('.mbtn',el).forEach(x=>{ x.classList.remove('done','sel'); x.style.removeProperty('--mc'); const t=$('.tick',x); t&&t.remove(); }); selT=null; done=0; fb.innerHTML=''; };
@@ -1750,7 +1760,7 @@ const R = {
       const ph=$('.ph',el), model=$('.h-model',el), deep=$('.h-deep',el), hint=$('.h-hint',el);
       const show=(x)=>{ ph.style.display='none'; x.style.display=''; x.style.animation='none'; void x.offsetWidth; x.style.animation='zoomIn .5s cubic-bezier(.2,.8,.2,1)'; Sound.pop(); };
       $('[data-role=hint]',el).onclick=()=>{ hint.textContent=d.hint; Sound.pop(); };
-      $('[data-role=model]',el).onclick=()=>{ deep.style.display='none'; show(model); FX.claps(8); };
+      $('[data-role=model]',el).onclick=()=>{ deep.style.display='none'; show(model); };
       $('[data-role=deep]',el).onclick=()=>{ model.style.display='none'; show(deep); };
       $('[data-role=deepans]',el).onclick=()=>{ $('.ans',deep).style.display=''; celebrate(); };
     }
@@ -1877,7 +1887,7 @@ Object.assign(R, {
         <ol class="stp">${d.steps.map((s,i)=>`<li class="rv"><i>${i+1}</i><span>${s}</span></li>`).join('')}</ol>
         ${d.note?`<div class="stp-note card stg">${d.note}</div>`:''}
       </div>
-      <div class="center stg" style="margin-top:18px"><button class="btn" data-act="reveal" data-final="celebrate">${d.button||'الخطوة التالية ◂'}</button></div></div>`
+      <div class="center stg" style="margin-top:18px"><button class="btn" data-act="reveal">${d.button||'الخطوة التالية ◂'}</button></div></div>`
   },
 
   /* ---------- رابط للتطبيق العملي ---------- */
@@ -1906,6 +1916,7 @@ Object.assign(R, {
      🔎 محاكي تصميم الاستعلام (Query Design)
      ===================================================================== */
   qsim:{
+    enter:el=>setTimeout(()=>el._guide&&el._guide(),650),
     html:d=>`${head(d)}
       <div class="body"><div class="qs">
         <div class="ax"></div>
@@ -1921,8 +1932,8 @@ Object.assign(R, {
       };
       const ui=missionsUI(el,d,()=>st.mi);
       const doneMission=()=>{
-        st.mi++; ui.paint(); celebrate();
-        if(st.mi>=d.missions.length){ ui.say('🏆 رائع! أنجزتِ كل المهام','ok'); FX.claps(14); }
+        st.mi++; ui.paint(); Sound.pop(); setTimeout(()=>guide(),0);
+        if(st.mi>=d.missions.length){ ui.say('🏆 رائع! أنجزتِ كل المهام','ok'); }
         else ui.say('✅ أحسنتِ! انتقلي للمهمة التالية','ok');
       };
       const okRun=m=>{
@@ -1999,6 +2010,68 @@ Object.assign(R, {
         ax.innerHTML=`<div class="ax-title"><span>قاعدة بيانات الطلبة : قاعدة بيانات</span><i>— ☐ ✕</i></div>${tabs()}${ribbon()}
           <div class="ax-main">${nav()}<div class="ax-doc">${doc()}</div></div>${dialog()}${navMenu()}`;
         const inp=$('.ax-name',ax); if(inp){ inp.focus(); inp.select(); }
+        guide();
+      };
+
+      /* 👣 دليل الخطوات: يُضيء المكان الذي نضغط عليه ويشرح الطريقة */
+      let guideOn=true;
+      const nextStep=()=>{
+        const m=d.missions[st.mi]; if(!m) return null;
+        const tq=(n,v)=>`[data-q="${n}"]`+(v!==undefined?`[data-i="${v}"]`:'');
+        if(st.dialog){ const v=($('.ax-name',ax)||{}).value||'';
+          return v.trim()===m.save ? {q:tq('ok'), t:'👆 اضغطي <b>موافق</b>'} : {q:'.ax-name', t:`⌨️ اكتبي اسم الاستعلام: <b>${m.save||''}</b>`}; }
+        if(st.menu&&st.menu.nav) return {q:tq('designq'), t:'👆 اختاري <b>عرض التصميم</b>'};
+        if(st.menu==='tab') return m.save ? {q:tq('save'), t:'👆 اختاري <b>حفظ</b>'} : {q:tq('close'), t:'👆 أغلقي القائمة'};
+        if(m.save){
+          if(st.view==='home') return {q:tq('new'), t:'👆 أنشئي الاستعلام أولًا: <b>تصميم الاستعلام</b>'};
+          return {q:tq('tabmenu'), t:'🖱️ اضغطي <b>بزر الفأرة الأيمن</b> على علامة تبويب الاستعلام'};
+        }
+        const n=m.need;
+        if(st.view==='home'){
+          const sv=Object.keys(st.saved)[0];
+          if(st.mi>0&&sv) return {q:`[data-q="navq"]`, t:'🖱️ اضغطي <b>بزر الفأرة الأيمن</b> على الاستعلام المحفوظ'};
+          return {q:tq('new'), t:'👆 من تبويب <b>إنشاء</b> اضغطي <b>تصميم الاستعلام</b>'};
+        }
+        if(st.view==='ds') return {q:tq('design'), t:'👆 اضغطي <b>عرض التصميم</b> للرجوع إلى التصميم'};
+        const need=n.tables||[], missing=need.filter(t=>!st.q.tables.includes(t));
+        if(st.pane){
+          if(missing.length){
+            const un=missing.find(t=>!st.paneSel.includes(t));
+            if(un) return {q:`.ax-pi[data-t="${un}"]`, t:`👆 اضغطي على جدول <b>${un}</b> لتحديده`};
+            return {q:tq('padd'), t:'👆 اضغطي <b>إضافة الجداول المحددة</b>'};
+          }
+          return {q:tq('paneclose'), t:'👆 أغلقي لوحة «إضافة جداول» ✕'};
+        }
+        if(missing.length) return {q:tq('pane'), t:'👆 اضغطي <b>إضافة جداول</b>'};
+        const cols=st.q.cols;
+        for(let i=0;i<n.fields.length;i++){
+          if(cols[i]&&cols[i].f!==n.fields[i]) return {q:tq('rmcol',i), t:`✕ هذا العمود ليس في مكانه.. احذفيه (المطلوب: <b>${n.fields[i]}</b>)`};
+          if(!cols[i]){ const tb=st.q.tables.find(t=>ACC.tables[t].fields.includes(n.fields[i]));
+            return {q:`.ax-f[data-t="${tb}"][data-f="${n.fields[i]}"]`, t:`🖱️🖱️ اضغطي <b>ضغطًا مزدوجًا</b> على حقل <b>${n.fields[i]}</b>`}; }
+          if(!cols[i].show) return {q:tq('show',i), t:'☑️ فعّلي مربع <b>إظهار</b>'};
+        }
+        if(cols.length>n.fields.length) return {q:tq('rmcol',n.fields.length), t:'✕ احذفي هذا العمود الزائد'};
+        if(n.sort){ const i=cols.findIndex(c=>c.f===n.sort[0]);
+          if(cols[i].sort!==n.sort[1]) return {q:tq('sort',i), t:`🔃 في عمود <b>${n.sort[0]}</b> من صف <b>فرز</b> اختاري <b>${n.sort[1]==='desc'?'تنازلي':'تصاعدي'}</b>`}; }
+        if(n.crit){ const i=cols.findIndex(c=>c.f===n.crit[0]);
+          if(normCrit(cols[i].crit)!==normCrit(n.crit[1])) return {q:tq('crit',i), t:`⌨️ في صف <b>المعايير</b> تحت <b>${n.crit[0]}</b> اكتبي <b dir="ltr">${escH(n.crit[1])}</b>`}; }
+        return {q:tq('run'), t:'👆 اضغطي <b>تشغيل ❗</b> لعرض النتائج'};
+      };
+      const guide=()=>{
+        $$('.qs-glow',ax).forEach(x=>x.classList.remove('qs-glow')); $('.qs-tipbox',ax)?.remove();
+        if(!guideOn) return;
+        const g=nextStep(); if(!g) return;
+        const t=$(g.q,ax); if(!t) return;
+        t.classList.add('qs-glow');
+        const a=ax.getBoundingClientRect(), r=t.getBoundingClientRect(), k=a.width/ax.offsetWidth;
+        const tip=document.createElement('div'); tip.className='qs-tipbox'; tip.innerHTML=g.t; ax.appendChild(tip);
+        const w=tip.offsetWidth, h=tip.offsetHeight, cx=(r.left+r.width/2-a.left)/k;
+        let top=(r.bottom-a.top)/k+14, up=false;
+        if(top+h>ax.offsetHeight-6){ top=(r.top-a.top)/k-h-14; up=true; }
+        tip.style.top=Math.max(4,top)+'px';
+        tip.style.left=Math.max(6,Math.min(ax.offsetWidth-w-6,cx-w/2))+'px';
+        tip.style.setProperty('--ax',(cx-Math.max(6,Math.min(ax.offsetWidth-w-6,cx-w/2)))+'px');
+        tip.classList.toggle('up',up);
       };
       const run=()=>{
         if(!st.q.cols.length){ ui.say('👆 أضيفي حقولًا بالضغط المزدوج عليها أولًا','no'); return; }
@@ -2049,9 +2122,14 @@ Object.assign(R, {
         const t=e.target, i=+t.dataset.i;
         if(t.dataset.q==='sort'){ st.q.cols[i].sort=t.value; Sound.tick(); }
         if(t.dataset.q==='show') st.q.cols[i].show=t.checked;
+        guide();
       });
-      ax.addEventListener('input',e=>{ if(e.target.dataset.q==='crit') st.q.cols[+e.target.dataset.i].crit=e.target.value; });
+      ax.addEventListener('input',e=>{ if(e.target.dataset.q==='crit') st.q.cols[+e.target.dataset.i].crit=e.target.value; guide(); });
       ax.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('ax-name')) save(e.target.value); });
+      ax.addEventListener('keyup',e=>{ if(e.target.classList.contains('ax-name')){ const p=e.target.selectionStart; guide(); e.target.focus(); e.target.setSelectionRange(p,p); } });
+      $('.ms-tools',el).insertAdjacentHTML('afterbegin','<button class="btn small mint" data-x="guide" title="إظهار/إخفاء دليل الخطوات">👣 الدليل ✓</button>');
+      $('[data-x=guide]',el).onclick=e=>{ guideOn=!guideOn; e.currentTarget.textContent='👣 الدليل '+(guideOn?'✓':'✗'); guide(); Sound.pop(); };
+      el._guide=guide;
       $('[data-x=hint]',el).onclick=()=>{ const m=d.missions[st.mi]; ui.say(m?'💡 '+m.hint:'🏆 أنجزتِ كل المهام',''); Sound.pop(); };
       $('[data-x=reset]',el).onclick=()=>{ fresh(); ui.paint(); ui.say('',''); paint(); };
       fresh(); ui.paint(); paint();
@@ -2091,7 +2169,7 @@ Object.assign(R, {
       const paintReq=()=>{
         $$('.ms-list li',el).forEach(li=>li.classList.toggle('done',!!checks[li.dataset.k]()));
         const main=['fields','groups','sort','layout','title'].every(k=>checks[k]());
-        if(st.finished&&main&&!st.celebrated){ st.celebrated=true; celebrate(); FX.claps(12); say('🎉 تقريرك الأول جاهز! جرّبي الآن <b>طريقة عرض التخطيط</b> لتعديله','ok'); }
+        if(st.finished&&main&&!st.celebrated){ st.celebrated=true; celebrate(); say('🎉 تقريرك الأول جاهز! جرّبي الآن <b>طريقة عرض التخطيط</b> لتعديله','ok'); }
         if(checks.edit()&&!st.saved.includes('edit')){ st.saved.push('edit'); celebrate(); say('🏆 رائع! عدّلتِ التقرير بنجاح','ok'); }
       };
       /* ترتيب سجلات التقرير: التجميع أولًا ثم الفرز */
@@ -2376,5 +2454,7 @@ function wake(){
 wake();
 refreshDrawUI();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

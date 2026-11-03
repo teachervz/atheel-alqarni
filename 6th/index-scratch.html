@@ -890,7 +890,7 @@ R.objectives = s => ({
   init(el){
     $$('.obj',el).forEach(o=> o.onclick=()=>{
       o.classList.toggle('done'); if(o.classList.contains('done')) sfx.pop();
-      if($$('.obj.done',el).length===s.items.length){ clap(); bigConfetti(); }
+      if($$('.obj.done',el).length===s.items.length){ bigConfetti(); }
     });
   }
 });
@@ -1223,7 +1223,7 @@ R.tps = s => ({
     const tm=$('.timer',el);
     $$('.phase',el).forEach(b=> b.onclick=()=>{
       $$('.phase',el).forEach(x=>x.classList.toggle('act',x===b)); const p=s.phases[+b.dataset.i];
-      if(p.sec){ tm._t.set(p.sec); tm._t.start(); } else { tm._t.stop(); clap(); }
+      if(p.sec){ tm._t.set(p.sec); tm._t.start(); } else { tm._t.stop(); }
     });
     // بناء جدول التتبع
     const rows=[]; let x=s.x0, y=s.y0, k=0;
@@ -1254,7 +1254,7 @@ R.quiz = s => ({
       body.style.animation='none'; void body.offsetWidth; body.style.animation='rise .45s both';
       dots.forEach((d,i)=>{ d.classList.toggle('cur',i===cur); d.classList.toggle('ok',state[i].ok); });
       bindMCQ(body,q,()=>{ if(!state[cur].ok){ if(!state[cur].tried){ score++; $('.qz-score b',el).textContent=score; } state[cur].ok=true; dots[cur].classList.add('ok');
-          if(state.every(x=>x.ok)) setTimeout(()=>{ toast(`🏆 أنهيتِ الأسئلة! النقاط: ${score} / ${s.questions.length}`); clap(); },700); } },
+          if(state.every(x=>x.ok)) setTimeout(()=>{ toast(`🏆 أنهيتِ الأسئلة! النقاط: ${score} / ${s.questions.length}`); },700); } },
         ()=>{ state[cur].tried=true; });
     };
     $('.qz-next',el).onclick=()=>{ if(cur<s.questions.length-1){ cur++; render(); } };
@@ -1409,5 +1409,7 @@ function fit(){
 addEventListener('resize',fit);
 fit(); go(0); wake();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

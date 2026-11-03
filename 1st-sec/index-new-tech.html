@@ -1989,7 +1989,7 @@ const T = {
     init:(el,s,ctx)=>{
       const fb=$('.fb',el), box=$('.opts',el);
       const pick=i=>{ const b=$$('.opt',el)[i]; if(!b || box.classList.contains('solved') || b.classList.contains('wrong')) return;
-        if(i===s.answer){ b.classList.add('correct'); box.classList.add('solved'); celebrate(); FX.claps(b);
+        if(i===s.answer){ b.classList.add('correct'); box.classList.add('solved'); celebrate();
           fb.innerHTML=`<span class="good">أحسنتِ! 👏 إجابة صحيحة</span>${s.explain?`<small>💡 ${s.explain}</small>`:''}`; }
         else { b.classList.add('wrong','shake'); setTimeout(()=>b.classList.remove('shake'),500); Sound.wrong();
           fb.innerHTML='<span class="bad">حاولي مرة أخرى 💜</span>'; } };
@@ -2169,7 +2169,7 @@ const T = {
       const answer=v=>{ const it=s.items[cur]; if(res[cur]===true) return;
         if(v===it.a){ res[cur]=true; celebrate(); } else { res[cur]=false; Sound.wrong(); $('.tf-card',el).classList.add('shake'); setTimeout(()=>$('.tf-card',el).classList.remove('shake'),500); }
         show(); if(v!==it.a) $('.fb',el).innerHTML='<span class="bad">حاولي مرة أخرى 💜</span>';
-        if(res.every(r=>r===true)) setTimeout(()=>{ clap(); toast('🏆 أنهيتِ جميع العبارات بنجاح!'); },700); };
+        if(res.every(r=>r===true)) setTimeout(()=>{ toast('🏆 أنهيتِ جميع العبارات بنجاح!'); },700); };
       $('.yes',el).onclick=()=>answer(true); $('.no',el).onclick=()=>answer(false);
       $('.nextQ',el).onclick=()=>{ cur=(cur+1)%s.items.length; show(); };
       $('.prevQ',el).onclick=()=>{ cur=(cur-1+s.items.length)%s.items.length; show(); };
@@ -2198,7 +2198,7 @@ const T = {
       const item=$('.ch-item',el), btns=$('.ch-btns',el), start=$('.startC',el), fb=$('.fb',el);
       const end=msg=>{ clearInterval(iv); on=false; btns.style.display='none'; start.style.display=''; start.textContent='🔄 العبي مرة أخرى';
         item.innerHTML=`${msg}<br>نتيجتكِ: ${pts} من ${items.length} ${pts>=items.length*.7?'🏆':'💪'}`; fb.innerHTML='';
-        if(pts>=items.length*.7){ celebrate(); clap(); } else Sound.bell(); };
+        if(pts>=items.length*.7){ celebrate(); } else Sound.bell(); };
       const showItem=()=>{ item.textContent=items[idx].t; item.style.animation='none'; item.offsetWidth; item.style.animation='rise .35s both'; };
       const tick=()=>{ left--; $('.tl',el).textContent=left; $('.bar i',el).style.width=(left/s.seconds*100)+'%'; if(left<=5&&left>0) Sound.tick(); if(left<=0) end('⏰ انتهى الوقت!'); };
       const answer=ai=>{ if(!on) return; const exp=items[idx].a??items[idx].ai, ok=exp===ai;
@@ -2861,5 +2861,7 @@ if('speechSynthesis' in window) speechSynthesis.getVoices();
 
 Deck.build();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

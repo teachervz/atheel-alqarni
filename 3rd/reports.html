@@ -721,6 +721,24 @@ body.idle{cursor:none}
 
 .mcol.opts .mbtn{font-size:30px;padding:16px 24px}
 .mcol{gap:16px}
+
+/* 👣 دليل الخطوات في محاكي التقارير */
+.qs-glow{outline:4px solid #F59E0B!important;outline-offset:2px;border-radius:6px;animation:qsGlow 1s ease-in-out infinite;position:relative;z-index:3}
+@keyframes qsGlow{50%{outline-color:#FDE68A;box-shadow:0 0 0 8px rgba(245,158,11,.25)}}
+.qs-tipbox{position:absolute;z-index:40;max-width:380px;background:#1F2937;color:#fff;font-size:19px;font-weight:700;line-height:1.5;padding:9px 16px;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.3);pointer-events:none;animation:qsTip .35s both}
+.qs-tipbox b{color:#FDE68A}
+.qs-tipbox small{font-size:15px;opacity:.85}
+.qs-tipbox::before{content:"";position:absolute;top:-9px;left:calc(var(--ax,50%) - 9px);border:9px solid transparent;border-top:0;border-bottom-color:#1F2937}
+.qs-tipbox.up::before{top:auto;bottom:-9px;border-bottom:0;border-top:9px solid #1F2937}
+@keyframes qsTip{from{opacity:0;transform:translateY(6px)}}
+.ms-tools{flex-wrap:wrap}
+
+/* محاكي تعديل التقرير */
+.ax-save{cursor:pointer;margin-inline-end:10px;font-weight:400}
+.ax-menu .off{opacity:.45;pointer-events:none}
+.rp.lv td[data-col]{cursor:grab}
+.ax.dragging,.ax.dragging *{cursor:grabbing!important}
+[data-col].drop{background:#FFF3D6;outline:2px dashed #F59E0B;outline-offset:-2px}
 </style>
 </head>
 <body>
@@ -885,7 +903,19 @@ const CONFIG = {
         { icon:'د', text:'الاستعلام' }
       ], correct:2 },
 
-    /* 9) خطوات معالج التقرير */
+    /* 9) المحاكي: معالج التقارير */
+    { type:'rwizard', anim:'zoom', strategy:'🎮 جربي بنفسك • تطبيق عملي', draw:true,
+      title:'محاكي <span class="hl">معالج التقارير</span>',
+      req:[
+        { k:'fields', text:'الحقول: كلها <b>ما عدا رقم الطالب</b>', hint:'معالج التقارير ← انقلي الحقول بزر &gt; واحدًا واحدًا (أو &gt;&gt; ثم أرجعي «رقم الطالب» بزر &lt;)' },
+        { k:'groups', text:'التجميع: <b>رقم الفصل</b> ثم <b>الاسم</b>', hint:'في صفحة التجميع: اختاري «رقم الفصل» ← &gt; ثم «الاسم» ← &gt;' },
+        { k:'sort', text:'الفرز: <b>العنوان الوطني</b>', hint:'في صفحة الفرز: اختاري «العنوان الوطني» من القائمة الأولى' },
+        { k:'layout', text:'التخطيط: <b>مخطط تفصيلي</b>', hint:'في صفحة التخطيط: اختاري «مخطط تفصيلي» ثم التالي' },
+        { k:'title', text:'الاسم: <b>بيانات الطلبة</b> ← إنهاء', hint:'اكتبي «بيانات الطلبة» عنوانًا للتقرير ثم اضغطي إنهاء' },
+        { k:'edit', text:'التعديل: احذفي <b>تسمية</b> وغمّقي <b>عنوان التقرير</b>', hint:'طريقة عرض التخطيط ← اضغطي على تسمية «الاسم» ← حذف، ثم اضغطي على العنوان ← غامق B' }
+      ]},
+
+    /* 10) خطوات معالج التقرير */
     { type:'steps', anim:'slide', strategy:'👀 شاهدي وطبّقي',
       title:'إنشاء تقرير «بيانات الطلبة» بـ<span class="hl">معالج التقرير</span> 🪄',
       steps:[
@@ -898,18 +928,6 @@ const CONFIG = {
         '<b>التسمية:</b> اكتبي <b>بيانات الطلبة</b> ← <b>إنهاء</b> <em>Finish</em> 🎉'
       ],
       note:'💡 ترتيب نقل حقول التجميع <b>مهم</b>: الأولوية للحقل العلوي على الحقول التالية، ويمكن تغييرها بالأسهم.<br><br>🔃 يمكنك الفرز حسب ما يصل إلى <b>4 حقول</b> تصاعديًا أو تنازليًا.' },
-
-    /* 10) المحاكي: معالج التقارير */
-    { type:'rwizard', anim:'zoom', strategy:'🎮 جربي بنفسك • تطبيق عملي', draw:true,
-      title:'محاكي <span class="hl">معالج التقارير</span>',
-      req:[
-        { k:'fields', text:'الحقول: كلها <b>ما عدا رقم الطالب</b>', hint:'معالج التقارير ← انقلي الحقول بزر &gt; واحدًا واحدًا (أو &gt;&gt; ثم أرجعي «رقم الطالب» بزر &lt;)' },
-        { k:'groups', text:'التجميع: <b>رقم الفصل</b> ثم <b>الاسم</b>', hint:'في صفحة التجميع: اختاري «رقم الفصل» ← &gt; ثم «الاسم» ← &gt;' },
-        { k:'sort', text:'الفرز: <b>العنوان الوطني</b>', hint:'في صفحة الفرز: اختاري «العنوان الوطني» من القائمة الأولى' },
-        { k:'layout', text:'التخطيط: <b>مخطط تفصيلي</b>', hint:'في صفحة التخطيط: اختاري «مخطط تفصيلي» ثم التالي' },
-        { k:'title', text:'الاسم: <b>بيانات الطلبة</b> ← إنهاء', hint:'اكتبي «بيانات الطلبة» عنوانًا للتقرير ثم اضغطي إنهاء' },
-        { k:'edit', text:'التعديل: احذفي <b>تسمية</b> وغمّقي <b>عنوان التقرير</b>', hint:'طريقة عرض التخطيط ← اضغطي على تسمية «الاسم» ← حذف، ثم اضغطي على العنوان ← غامق B' }
-      ]},
 
     /* 11) فكر - زاوج - شارك */
     { type:'tps', anim:'slide', strategy:'👭 فكّري – زاوجي – شاركي', draw:true,
@@ -931,6 +949,18 @@ const CONFIG = {
         { icon:'ج', text:'حذف السجلات المكررة' },
         { icon:'د', text:'تغيير أنواع بيانات الحقول' }
       ], correct:1 },
+
+    /* 🎮 محاكي تعديل التقرير */
+    { type:'redit', anim:'zoom', strategy:'🎮 جربي بنفسك • تطبيق عملي', draw:true,
+      title:'محاكي <span class="hl">تعديل التقرير</span> ✏️',
+      missions:[
+        { text:'افتحي تقرير <b>بيانات الطلبة</b> في <b>طريقة عرض التخطيط</b>', hint:'جزء التنقل ← زر الفأرة الأيمن على تقرير «بيانات الطلبة» ← طريقة عرض التخطيط' },
+        { text:'احذفي تسمية <b>الاسم</b>', hint:'اضغطي على تسمية «الاسم» (عنوان العمود) لتحديدها ← حذف أو مفتاح Delete' },
+        { text:'غيّري موضع مربع النص <b>العنوان الوطني</b> بالسحب والإفلات', hint:'اسحبي أي خلية من عمود «العنوان الوطني» وأفلتيها فوق عمود «اسم العائلة»' },
+        { text:'اجعلي <b>عنوان التقرير</b> و<b>رقم الفصل</b> غامقين <b>B</b>', hint:'اضغطي على العنوان ← غامق B، ثم اضغطي على رقم الفصل ← غامق B' },
+        { text:'كبّري <b>حجم خط</b> عنوان التقرير', hint:'اضغطي على العنوان ← A⁺ تكبير الخط' },
+        { text:'احفظي التقرير 💾', hint:'اضغطي 💾 في أعلى النافذة أو Ctrl+S' }
+      ]},
 
     /* 13) تعديل التقرير */
     { type:'steps', anim:'slide', strategy:'👀 شاهدي وطبّقي',
@@ -1122,7 +1152,7 @@ const FX = {
   }
 };
 function clap(){ Sound.applause(); FX.claps(); }
-function celebrate(){ Sound.success(); FX.confetti(60); }
+function celebrate(){ Sound.pop(); FX.confetti(60); }   // احتفال هادئ بدون صوت تصفيق (التصفيق فقط من زر 👏 أو حرف ت)
 
 /* =====================================================================
    🧰 أدوات مساعدة
@@ -1276,7 +1306,7 @@ const R = {
         const cnt={present:0,absent:0,late:0,none:0}; Attend.status.forEach(s=>cnt[s||'none']++);
         Object.entries(cnt).forEach(([k,v])=>$(`[data-c=${k}]`,el).textContent=v);
         const n=CONFIG.students.length;
-        if(cnt.none===0 && cnt.absent===0){ msg.textContent='🎉 الحضور كامل اليوم! 👏'; if(!celebrated){ celebrated=true; clap(); } }
+        if(cnt.none===0 && cnt.absent===0){ msg.textContent='🎉 الحضور كامل اليوم! 👏'; if(!celebrated){ celebrated=true; celebrate(); } }
         else { celebrated = cnt.none===0 && cnt.absent===0; msg.textContent = cnt.none===0 ? `✔️ تم التحضير: ${cnt.present+cnt.late} من ${n}` : ''; }
         refreshDrawUI();
       };
@@ -1468,7 +1498,7 @@ const R = {
       opts.forEach(o=>o.onclick=()=>{
         if(solved) return;
         const i=+o.dataset.i;
-        if(i===d.correct){ solved=true; o.classList.add('right'); feedback(fb,true); celebrate(); FX.claps(8); }
+        if(i===d.correct){ solved=true; o.classList.add('right'); feedback(fb,true); celebrate(); }
         else { o.classList.add('wrong'); shakeEl(o); feedback(fb,false); Sound.wrong(); }
       });
       $('[data-role=retry]',el).onclick=()=>{ solved=false; opts.forEach(o=>o.classList.remove('right','wrong')); fb.innerHTML=''; };
@@ -1517,7 +1547,7 @@ const R = {
           const s=document.createElement('span'); s.textContent=sel.textContent; $('.in',bk).appendChild(s);
           sel.remove(); sel=null; score++; pts.textContent=score; Sound.success();
           feedback(fb,true,'أحسنتِ! 👏 تصنيف صحيح');
-          if(score===d.items.length){ fb.innerHTML='<span class="ok">🏆 رائع! صنّفتِ كل البيانات بنجاح</span>'; timer.reset&&timer.reset(); celebrate(); FX.claps(14); }
+          if(score===d.items.length){ fb.innerHTML='<span class="ok">🏆 رائع! صنّفتِ كل البيانات بنجاح</span>'; timer.reset&&timer.reset(); celebrate(); }
         } else { shakeEl(sel); shakeEl(bk); feedback(fb,false); Sound.wrong(); }
       });
       el.addEventListener('timeup',()=>{ fb.innerHTML=`<span class="no">⏰ انتهى الوقت! النتيجة: ${score} من ${d.items.length}</span>`; });
@@ -1667,7 +1697,7 @@ const R = {
         if(d.pairs[i][1]===b.dataset.o){
           [selT,b].forEach(x=>{ x.classList.remove('sel'); x.classList.add('done'); x.style.setProperty('--mc',cols[i]); x.insertAdjacentHTML('beforeend','<span class="tick">✓</span>'); });
           selT=null; done++; Sound.success(); feedback(fb,true);
-          if(done===d.pairs.length){ fb.innerHTML='<span class="ok">🏆 ممتاز! وصّلتِ كل المصطلحات</span>'; celebrate(); FX.claps(12); }
+          if(done===d.pairs.length){ fb.innerHTML='<span class="ok">🏆 ممتاز! وصّلتِ كل المصطلحات</span>'; celebrate(); }
         } else { shakeEl(b); feedback(fb,false); Sound.wrong(); }
       });
       $('[data-role=reset]',el).onclick=()=>{ $$('.mbtn',el).forEach(x=>{ x.classList.remove('done','sel'); x.style.removeProperty('--mc'); const t=$('.tick',x); t&&t.remove(); }); selT=null; done=0; fb.innerHTML=''; };
@@ -1732,7 +1762,7 @@ const R = {
       const ph=$('.ph',el), model=$('.h-model',el), deep=$('.h-deep',el), hint=$('.h-hint',el);
       const show=(x)=>{ ph.style.display='none'; x.style.display=''; x.style.animation='none'; void x.offsetWidth; x.style.animation='zoomIn .5s cubic-bezier(.2,.8,.2,1)'; Sound.pop(); };
       $('[data-role=hint]',el).onclick=()=>{ hint.textContent=d.hint; Sound.pop(); };
-      $('[data-role=model]',el).onclick=()=>{ deep.style.display='none'; show(model); FX.claps(8); };
+      $('[data-role=model]',el).onclick=()=>{ deep.style.display='none'; show(model); };
       $('[data-role=deep]',el).onclick=()=>{ model.style.display='none'; show(deep); };
       $('[data-role=deepans]',el).onclick=()=>{ $('.ans',deep).style.display=''; celebrate(); };
     }
@@ -1904,7 +1934,7 @@ Object.assign(R, {
       const ui=missionsUI(el,d,()=>st.mi);
       const doneMission=()=>{
         st.mi++; ui.paint(); celebrate();
-        if(st.mi>=d.missions.length){ ui.say('🏆 رائع! أنجزتِ كل المهام','ok'); FX.claps(14); }
+        if(st.mi>=d.missions.length){ ui.say('🏆 رائع! أنجزتِ كل المهام','ok'); }
         else ui.say('✅ أحسنتِ! انتقلي للمهمة التالية','ok');
       };
       const okRun=m=>{
@@ -2041,9 +2071,151 @@ Object.assign(R, {
   },
 
   /* =====================================================================
+     ✏️ محاكي تعديل التقرير (طريقة عرض التخطيط Layout View)
+     ===================================================================== */
+  redit:{
+    enter:el=>setTimeout(()=>el._guide&&el._guide(),650),
+    html:d=>`${head(d)}
+      <div class="body"><div class="qs">
+        <div class="ax"></div>
+        <div class="ms card stg">${missionsHTML(d)}</div>
+      </div></div>`,
+    init:(el,d)=>{
+      const ax=$('.ax',el), T=ACC.tables['بيانات الطلبة'], ix=f=>T.fields.indexOf(f);
+      const ui=missionsUI(el,d,()=>st.mi);
+      let st, guideOn=true, drag=null;
+      const fresh=()=>{ st={ view:'none', menu:null, focus:null, del:[], bold:[], size:{}, align:{}, order:['الاسم','اسم العائلة','العنوان الوطني'], moved:false, saved:false, mi:0 }; };
+      const SZ=k=>st.size[k]||(k==='title'?38:k.startsWith('lbl|')?19:19);
+      /* فحص المهام بالترتيب */
+      const OK=[
+        ()=>st.view==='layout',
+        ()=>st.del.includes('lbl|الاسم'),
+        ()=>st.moved,
+        ()=>st.bold.includes('title')&&st.bold.includes('val|رقم الفصل'),
+        ()=>SZ('title')>38,
+        ()=>st.saved
+      ];
+      const check=()=>{ let adv=false; while(st.mi<d.missions.length&&OK[st.mi]()){ st.mi++; adv=true; }
+        if(adv){ ui.paint(); celebrate(); ui.say(st.mi>=d.missions.length?'🏆 رائع! عدّلتِ التقرير وحفظتِه':'✅ أحسنتِ! انتقلي للمهمة التالية','ok'); } };
+      const sty=k=>`font-size:${SZ(k)}px;${st.align[k]?`text-align:${st.align[k]};display:block;`:''}`;
+      const cls=(base,k)=>`${base}${st.bold.includes(k)?' b':''}${st.focus===k?' foc':''}`;
+      const lbl=f=>st.del.includes('lbl|'+f)?'':`<span class="${cls('rp-l','lbl|'+f)}" data-r="lbl|${f}" style="${sty('lbl|'+f)}">${f}</span>`;
+      const val=(f,v)=>`<span class="${cls('rp-v','val|'+f)}" data-r="val|${f}" style="${sty('val|'+f)}">${escH(v)}</span>`;
+      const report=()=>{
+        const rows=[...T.rows].sort((a,b)=>cmpV(a[ix('رقم الفصل')],b[ix('رقم الفصل')])||cmpV(a[ix('العنوان الوطني')],b[ix('العنوان الوطني')]));
+        const classes=[...new Set(rows.map(r=>r[ix('رقم الفصل')]))];
+        const title=st.del.includes('title')?'':`<h2 class="${cls('rp-title','title')}" data-r="title" style="${sty('title')}">بيانات الطلبة</h2>`;
+        const body=classes.map(c=>`<div class="rp-g"><div class="rp-gh">${lbl('رقم الفصل')} ${val('رقم الفصل',c)}</div>
+          <table class="rp-t"><thead><tr>${st.order.map(f=>`<th data-col="${f}">${lbl(f)}</th>`).join('')}</tr></thead>
+          <tbody>${rows.filter(r=>r[ix('رقم الفصل')]===c).map(r=>`<tr>${st.order.map(f=>`<td data-col="${f}">${val(f,r[ix(f)])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`).join('');
+        return `<div class="rp scroll${st.view==='layout'?' lv':''}"><div class="rp-page">${title}${body}
+          <div class="rp-foot"><span>${new Date().toLocaleDateString('ar-SA',{day:'numeric',month:'long',year:'numeric'})}</span><span>صفحة 1 من 1</span></div></div></div>`;
+      };
+      const ribbon=()=>st.view==='layout'?`<div class="ax-rib">
+          <button class="ax-b big" data-e="del"><span>🗑️</span>حذف<small>Delete</small></button><span class="ax-g">سجلات</span>
+          <button class="ax-b big" data-e="b"><span><b>B</b></span>غامق<small>Bold</small></button>
+          <button class="ax-b big" data-e="grow"><span>A⁺</span>تكبير الخط</button><button class="ax-b big" data-e="shrink"><span>A⁻</span>تصغير الخط</button>
+          <button class="ax-b big" data-e="al:right"><span>⫸</span>يمين</button><button class="ax-b big" data-e="al:center"><span>☰</span>توسيط</button><button class="ax-b big" data-e="al:left"><span>⫷</span>يسار</button>
+          <span class="ax-g">تنسيق النص</span></div>`
+        :`<div class="ax-rib"><button class="ax-b big off"><span>📋</span>لصق</button><span class="ax-g">الحافظة</span><button class="ax-b big off"><span><b>B</b></span>غامق</button><span class="ax-g">تنسيق النص</span></div>`;
+      const doc=()=>{
+        if(st.view==='none') return `<div class="ax-blank">💡 من <b>جزء التنقل</b> اضغطي بزر الفأرة الأيمن على تقرير <b>بيانات الطلبة</b></div>`;
+        return `<div class="ax-dt"><span class="ax-tab">📊 بيانات الطلبة</span><small class="ax-tip">${st.view==='layout'?'✏️ طريقة عرض التخطيط: اضغطي على عنصر لتحديده، واسحبي مربع النص لتغيير موضعه':'👁️ طريقة عرض التقرير: للقراءة فقط'}</small></div>
+          <div class="ax-dc">${report()}</div>`;
+      };
+      const menu=()=>st.menu?`<div class="ax-menu" style="top:${st.menu.y}px;right:${st.menu.x}px"><div data-e="open">▦ فتح <small>Open</small></div><div data-e="layout">✏️ طريقة عرض التخطيط <small>Layout View</small></div><div class="off">📐 طريقة عرض التصميم <small>Design View</small></div></div>`:'';
+      const paint=()=>{
+        ax.innerHTML=`<div class="ax-title"><span><b data-e="save" class="ax-save" title="حفظ (Ctrl+S)">💾</b> قاعدة بيانات الطلبة : قاعدة بيانات</span><i>— ☐ ✕</i></div>
+          <div class="ax-tabs"><span class="file">ملف</span><span class="on">الشريط الرئيسي</span><span>إنشاء</span><span>بيانات خارجية</span><span>أدوات قاعدة البيانات</span></div>${ribbon()}
+          <div class="ax-main"><div class="ax-nav"><div class="ax-nh">كافة عناصر Access</div><div class="ax-ng">جداول</div>${Object.keys(ACC.tables).map(t=>`<div class="ax-ni">▦ ${t}</div>`).join('')}
+            <div class="ax-ng">تقارير</div><div class="ax-ni q rep" data-e="nav">📊 بيانات الطلبة</div></div><div class="ax-doc">${doc()}</div></div>${menu()}`;
+        check(); guide();
+      };
+
+      /* 👣 دليل الخطوات */
+      const nextStep=()=>{
+        const e=n=>`[data-e="${n}"]`, r=k=>`[data-r="${k}"]`;
+        switch(st.mi){
+          case 0: return st.menu?{q:e('layout'), t:'👆 اختاري <b>طريقة عرض التخطيط</b>'}:{q:'.rep', t:'🖱️ اضغطي <b>بزر الفأرة الأيمن</b> على تقرير <b>بيانات الطلبة</b>'};
+          case 1: return st.focus==='lbl|الاسم'?{q:e('del'), t:'🗑️ اضغطي <b>حذف</b> (أو مفتاح Delete)'}:{q:r('lbl|الاسم'), t:'👆 اضغطي على تسمية <b>الاسم</b> لتحديدها'};
+          case 2: return {q:r('val|العنوان الوطني'), t:'✋ اسحبي مربع النص <b>العنوان الوطني</b> وأفلتيه فوق عمود <b>اسم العائلة</b>'};
+          case 3: if(!st.bold.includes('title')) return st.focus==='title'?{q:e('b'), t:'👆 اضغطي <b>غامق B</b>'}:{q:r('title'), t:'👆 اضغطي على <b>عنوان التقرير</b> لتحديده'};
+                  return st.focus==='val|رقم الفصل'?{q:e('b'), t:'👆 اضغطي <b>غامق B</b>'}:{q:r('val|رقم الفصل'), t:'👆 اضغطي على <b>رقم الفصل</b> لتحديده'};
+          case 4: return st.focus==='title'?{q:e('grow'), t:'🔠 اضغطي <b>A⁺</b> لتكبير خط العنوان'}:{q:r('title'), t:'👆 اضغطي على <b>عنوان التقرير</b> لتحديده'};
+          case 5: return {q:e('save'), t:'💾 اضغطي <b>حفظ</b> (أو Ctrl+S)'};
+        }
+        return null;
+      };
+      const guide=()=>{
+        $$('.qs-glow',ax).forEach(x=>x.classList.remove('qs-glow')); $('.qs-tipbox',ax)?.remove();
+        if(!guideOn) return;
+        const g=nextStep(); if(!g) return;
+        const t=$(g.q,ax); if(!t) return;
+        t.classList.add('qs-glow');
+        const a=ax.getBoundingClientRect(), rc=t.getBoundingClientRect(), k=a.width/ax.offsetWidth||1;
+        const tip=document.createElement('div'); tip.className='qs-tipbox'; tip.innerHTML=g.t; ax.appendChild(tip);
+        const tw=tip.offsetWidth, h=tip.offsetHeight, cx=(rc.left+rc.width/2-a.left)/k;
+        let top=(rc.bottom-a.top)/k+14, up=false;
+        if(top+h>ax.offsetHeight-6){ top=(rc.top-a.top)/k-h-14; up=true; }
+        const left=Math.max(6,Math.min(ax.offsetWidth-tw-6,cx-tw/2));
+        tip.style.top=Math.max(4,top)+'px'; tip.style.left=left+'px'; tip.style.setProperty('--ax',(cx-left)+'px'); tip.classList.toggle('up',up);
+      };
+
+      const act=a=>{
+        if(a==='save'){ if(st.view==='none'){ ui.say('👆 افتحي التقرير أولًا','no'); return; } st.saved=true; Sound.success(); ui.say('💾 تم حفظ التقرير','ok'); paint(); return; }
+        if(st.view!=='layout'){ ui.say('✏️ افتحي التقرير في <b>طريقة عرض التخطيط</b> أولًا','no'); return; }
+        if(!st.focus){ ui.say('👆 اضغطي على عنصر في التقرير لتحديده أولًا','no'); return; }
+        const f=st.focus;
+        if(a==='del'){ if(f==='title'||f.startsWith('lbl|')){ st.del.push(f); st.focus=null; Sound.pop(); } else { ui.say('💡 احذفي <b>تسمية</b> (عنوان عمود)، أما البيانات فلا نحذفها من التقرير','no'); return; } }
+        else if(a==='b'){ const i=st.bold.indexOf(f); i<0?st.bold.push(f):st.bold.splice(i,1); Sound.pop(); }
+        else if(a==='grow'||a==='shrink'){ st.size[f]=Math.max(12,Math.min(60,SZ(f)+(a==='grow'?4:-4))); Sound.tick(); }
+        else if(a.startsWith('al:')){ st.align[f]=a.slice(3); Sound.tick(); }
+        paint();
+      };
+      ax.addEventListener('click',e=>{
+        if(drag&&drag.moved) return;
+        const b=e.target.closest('[data-e]'), rr=e.target.closest('[data-r]');
+        if(st.menu&&!(b&&['layout','open','nav'].includes(b.dataset.e))){ st.menu=null; paint(); return; }
+        if(rr&&st.view==='layout'){ st.focus=rr.dataset.r; Sound.tick(); paint(); return; }
+        if(!b) return;
+        const a=b.dataset.e;
+        if(a==='nav'){ const r=b.getBoundingClientRect(), base=ax.getBoundingClientRect(); st.menu={x:(base.right-r.right)/S+20, y:(r.bottom-base.top)/S}; paint(); }
+        else if(a==='open'){ st.menu=null; st.view='report'; st.focus=null; Sound.pop(); paint(); ui.say('👁️ هذه <b>طريقة عرض التقرير</b> للقراءة فقط… للتعديل اختاري <b>طريقة عرض التخطيط</b>',''); }
+        else if(a==='layout'){ st.menu=null; st.view='layout'; Sound.pop(); paint(); }
+        else act(a);
+      });
+      ax.addEventListener('contextmenu',e=>{ const b=e.target.closest('[data-e=nav]'); if(!b) return; e.preventDefault(); b.click(); });
+      /* السحب والإفلات لتغيير موضع مربع النص (تبديل الأعمدة) */
+      ax.addEventListener('mousedown',e=>{ const c=e.target.closest('td[data-col],th[data-col]'); if(!c||st.view!=='layout') return; drag={f:c.dataset.col,x:e.clientX,y:e.clientY,moved:false}; });
+      addEventListener('mousemove',e=>{ if(!drag) return; if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8){ drag.moved=true; ax.classList.add('dragging');
+        $$('[data-col]',ax).forEach(n=>n.classList.toggle('drop',!!document.elementFromPoint(e.clientX,e.clientY)?.closest(`[data-col="${n.dataset.col}"]`)&&n.dataset.col!==drag.f)); } });
+      addEventListener('mouseup',e=>{
+        if(!drag) return; const dd=drag; ax.classList.remove('dragging'); $$('.drop',ax).forEach(n=>n.classList.remove('drop'));
+        setTimeout(()=>{ drag=null; },0);
+        if(!dd.moved) return;
+        const tgt=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-col]'); if(!tgt||!ax.contains(tgt)) return;
+        const a=st.order.indexOf(dd.f), b=st.order.indexOf(tgt.dataset.col); if(a<0||b<0||a===b) return;
+        [st.order[a],st.order[b]]=[st.order[b],st.order[a]]; st.moved=true; st.focus='val|'+dd.f; Sound.pop(); paint();
+      });
+      document.addEventListener('keydown',e=>{
+        if(!el.classList.contains('active')) return;
+        if((e.ctrlKey||e.metaKey)&&(e.key==='s'||e.key==='س')){ e.preventDefault(); act('save'); }
+        else if((e.key==='Delete'||e.key==='Backspace')&&st.view==='layout'&&st.focus){ e.preventDefault(); e.stopImmediatePropagation(); act('del'); }
+      },true);
+      $('.ms-tools',el).insertAdjacentHTML('afterbegin','<button class="btn small mint" data-x="guide" title="إظهار/إخفاء دليل الخطوات">👣 الدليل ✓</button>');
+      $('[data-x=guide]',el).onclick=e=>{ guideOn=!guideOn; e.currentTarget.textContent='👣 الدليل '+(guideOn?'✓':'✗'); guide(); Sound.pop(); };
+      $('[data-x=hint]',el).onclick=()=>{ const m=d.missions[st.mi]; ui.say(m?'💡 '+m.hint:'🏆 أنجزتِ كل المهام',''); Sound.pop(); };
+      $('[data-x=reset]',el).onclick=()=>{ fresh(); ui.paint(); ui.say('',''); paint(); };
+      el._guide=guide;
+      fresh(); ui.paint(); paint();
+    }
+  },
+
+  /* =====================================================================
      📊 محاكي معالج التقارير (Report Wizard) + طريقة عرض التخطيط
      ===================================================================== */
   rwizard:{
+    enter:el=>setTimeout(()=>el._guide&&el._guide(),650),
     html:d=>`${head(d)}
       <div class="body"><div class="qs">
         <div class="ax"></div>
@@ -2073,7 +2245,7 @@ Object.assign(R, {
       const paintReq=()=>{
         $$('.ms-list li',el).forEach(li=>li.classList.toggle('done',!!checks[li.dataset.k]()));
         const main=['fields','groups','sort','layout','title'].every(k=>checks[k]());
-        if(st.finished&&main&&!st.celebrated){ st.celebrated=true; celebrate(); FX.claps(12); say('🎉 تقريرك الأول جاهز! جرّبي الآن <b>طريقة عرض التخطيط</b> لتعديله','ok'); }
+        if(st.finished&&main&&!st.celebrated){ st.celebrated=true; celebrate(); say('🎉 تقريرك الأول جاهز! جرّبي الآن <b>طريقة عرض التخطيط</b> لتعديله','ok'); }
         if(checks.edit()&&!st.saved.includes('edit')){ st.saved.push('edit'); celebrate(); say('🏆 رائع! عدّلتِ التقرير بنجاح','ok'); }
       };
       /* ترتيب سجلات التقرير: التجميع أولًا ثم الفرز */
@@ -2150,7 +2322,54 @@ Object.assign(R, {
           <div class="ax-tabs"><span class="file">ملف</span><span>الشريط الرئيسي</span><span class="on">إنشاء</span><span>بيانات خارجية</span><span>أدوات قاعدة البيانات</span></div>${rib}
           <div class="ax-main"><div class="ax-nav"><div class="ax-nh">كافة عناصر Access</div><div class="ax-ng">جداول</div>${Object.keys(ACC.tables).map(t=>`<div class="ax-ni">▦ ${t}</div>`).join('')}
             ${st.finished?`<div class="ax-ng">تقارير</div><div class="ax-ni q">📊 ${escH(st.title||st.src)}</div>`:''}</div><div class="ax-doc">${doc}</div></div>`;
-        paintReq();
+        paintReq(); guide();
+      };
+
+      /* 👣 دليل الخطوات: يُضيء المكان الذي نضغط عليه ويشرح الطريقة */
+      let guideOn=true;
+      const NEED=['الاسم','اسم العائلة','العنوان الوطني','الصف الدراسي','رقم الفصل'], GRP=['رقم الفصل','الاسم'];
+      const picked=(k,f)=>st.pick&&st.pick.k===k&&st.pick.f===f;
+      const nextStep=()=>{
+        const p=st.page, w=n=>`[data-w="${n}"]`, nxt={q:w('next'), t:'👆 اضغطي <b>التالي &gt;</b>'};
+        const main=['fields','groups','sort','layout','title'].every(k=>checks[k]());
+        if(p===0) return checks.edit()?null:{q:w('wizard'), t:'👆 من تبويب <b>إنشاء</b> ← مجموعة <b>تقارير</b> اضغطي <b>معالج التقارير</b>'};
+        if(p===1){
+          if(st.src!=='بيانات الطلبة') return {q:'.wz-src', t:'👆 اختاري الجدول: <b>بيانات الطلبة</b>'};
+          const extra=st.sel.find(f=>!NEED.includes(f));
+          if(extra) return picked('sel',extra) ? {q:w('back'), t:'👆 اضغطي <b>&lt;</b> لإرجاعه'} : {q:`.wz-it[data-k="sel"][data-f="${extra}"]`, t:`✋ «${extra}» غير مطلوب.. اضغطي عليه ثم <b>&lt;</b>`};
+          const miss=NEED.find(f=>!st.sel.includes(f));
+          if(miss) return picked('av',miss) ? {q:w('one'), t:'👆 اضغطي <b>&gt;</b> لنقله إلى «الحقول المحددة»'} : {q:`.wz-it[data-k="av"][data-f="${miss}"]`, t:`👆 اضغطي على حقل <b>${miss}</b> لتحديده <small>(أو ضغطًا مزدوجًا)</small>`};
+          return nxt;
+        }
+        if(p===2){
+          const bad=st.groups.find((g,i)=>g!==GRP[i]);
+          if(bad) return picked('g',bad) ? {q:w('grm'), t:'👆 اضغطي <b>&lt;</b> لإلغاء هذا التجميع'} : {q:`.wz-gp[data-f="${bad}"]`, t:`✋ التجميع بـ«${bad}» ليس في مكانه.. اضغطي عليه ثم <b>&lt;</b>`};
+          const miss=GRP.find(f=>!st.groups.includes(f));
+          if(miss) return picked('gav',miss) ? {q:w('gadd'), t:`👆 اضغطي <b>&gt;</b> للتجميع حسب <b>${miss}</b>`} : {q:`.wz-it[data-k="gav"][data-f="${miss}"]`, t:`👆 اضغطي على <b>${miss}</b> ${miss==='رقم الفصل'?'(المستوى الأول)':'(المستوى الثاني)'}`};
+          return nxt;
+        }
+        if(p===3) return st.sorts[0].f!=='العنوان الوطني' ? {q:'[data-w="sortf"][data-i="0"]', t:'🔃 من القائمة <b>الأولى</b> اختاري <b>العنوان الوطني</b>'} : nxt;
+        if(p===4) return st.layout!=='outline' ? {q:'.wz-radio label:nth-of-type(3)', t:'👆 اختاري التخطيط <b>مخطط تفصيلي</b>'} : nxt;
+        if(p===5) return st.title.trim()!=='بيانات الطلبة' ? {q:'.wz-title', t:'⌨️ اكتبي عنوان التقرير: <b>بيانات الطلبة</b>'} : {q:w('finish'), t:'👆 اضغطي <b>إنهاء</b>'};
+        if(!main) return {q:w('close'), t:'⚠️ التقرير لا يطابق المطلوب.. أغلقي المعاينة وأعيدي المعالج'};
+        if(checks.edit()) return null;
+        if(!st.layoutView) return {q:w('lv'), t:'✏️ اضغطي <b>طريقة عرض التخطيط</b> لتعديل التقرير'};
+        if(!st.del.length) return st.focus&&st.focus.startsWith('lbl|') ? {q:w('del'), t:'🗑️ اضغطي <b>حذف</b> (أو زر Delete)'} : {q:'.rp-l', t:'👆 اضغطي على <b>تسمية</b> لتحديدها'};
+        return st.focus==='title' ? {q:w('bold'), t:'👆 اضغطي <b>غامق B</b>'} : {q:'.rp-title', t:'👆 اضغطي على <b>عنوان التقرير</b> لتحديده'};
+      };
+      const guide=()=>{
+        $$('.qs-glow',ax).forEach(x=>x.classList.remove('qs-glow')); $('.qs-tipbox',ax)?.remove();
+        if(!guideOn) return;
+        const g=nextStep(); if(!g) return;
+        const t=$(g.q,ax); if(!t) return;
+        t.classList.add('qs-glow');
+        const a=ax.getBoundingClientRect(), r=t.getBoundingClientRect(), k=a.width/ax.offsetWidth||1;
+        const tip=document.createElement('div'); tip.className='qs-tipbox'; tip.innerHTML=g.t; ax.appendChild(tip);
+        const tw=tip.offsetWidth, h=tip.offsetHeight, cx=(r.left+r.width/2-a.left)/k;
+        let top=(r.bottom-a.top)/k+14, up=false;
+        if(top+h>ax.offsetHeight-6){ top=(r.top-a.top)/k-h-14; up=true; }
+        const left=Math.max(6,Math.min(ax.offsetWidth-tw-6,cx-tw/2));
+        tip.style.top=Math.max(4,top)+'px'; tip.style.left=left+'px'; tip.style.setProperty('--ax',(cx-left)+'px'); tip.classList.toggle('up',up);
       };
       const move=(k)=>{ const p=st.pick; st.pick=null; return p&&p.k===k?p.f:null; };
       ax.addEventListener('click',e=>{
@@ -2196,7 +2415,7 @@ Object.assign(R, {
         if(a==='ori') st.orient=t.value;
         if(a!=='title') paint();
       });
-      ax.addEventListener('input',e=>{ if(e.target.dataset.w==='title') st.title=e.target.value; });
+      ax.addEventListener('input',e=>{ if(e.target.dataset.w==='title'){ st.title=e.target.value; guide(); } });
       document.addEventListener('keydown',e=>{
         if(!el.classList.contains('active')||st.page!==6||!st.layoutView||!st.focus) return;
         if(e.key==='Delete'||e.key==='Backspace'){ e.preventDefault(); e.stopImmediatePropagation(); $('[data-w=del]',ax).click(); }
@@ -2206,6 +2425,9 @@ Object.assign(R, {
         say(r?'💡 '+r.hint:'🏆 أنجزتِ كل المطلوب',''); Sound.pop();
       };
       $('[data-x=reset]',el).onclick=()=>{ fresh(); say('',''); paint(); };
+      $('.ms-tools',el).insertAdjacentHTML('afterbegin','<button class="btn small mint" data-x="guide" title="إظهار/إخفاء دليل الخطوات">👣 الدليل ✓</button>');
+      $('[data-x=guide]',el).onclick=e=>{ guideOn=!guideOn; e.currentTarget.textContent='👣 الدليل '+(guideOn?'✓':'✗'); guide(); Sound.pop(); };
+      el._guide=guide;
       fresh(); paint();
     }
   }
@@ -2358,5 +2580,7 @@ function wake(){
 wake();
 refreshDrawUI();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

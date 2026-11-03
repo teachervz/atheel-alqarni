@@ -940,7 +940,7 @@ const FX = {
   }
 };
 function clap(){ Sound.applause(); FX.claps(); }
-function celebrate(){ Sound.success(); FX.confetti(60); }
+function celebrate(){ Sound.pop(); FX.confetti(60); }   // احتفال هادئ بدون صوت تصفيق (التصفيق فقط من زر 👏 أو حرف ت)
 
 /* =====================================================================
    🧰 أدوات مساعدة
@@ -1095,7 +1095,7 @@ const R = {
         const cnt={present:0,absent:0,late:0,none:0}; Attend.status.forEach(s=>cnt[s||'none']++);
         Object.entries(cnt).forEach(([k,v])=>$(`[data-c=${k}]`,el).textContent=v);
         const n=CONFIG.students.length;
-        if(cnt.none===0 && cnt.absent===0){ msg.textContent='🎉 الحضور كامل اليوم! 👏'; if(!celebrated){ celebrated=true; clap(); } }
+        if(cnt.none===0 && cnt.absent===0){ msg.textContent='🎉 الحضور كامل اليوم! 👏'; if(!celebrated){ celebrated=true; celebrate(); } }
         else { celebrated = cnt.none===0 && cnt.absent===0; msg.textContent = cnt.none===0 ? `✔️ تم التحضير: ${cnt.present+cnt.late} من ${n}` : ''; }
         refreshDrawUI();
       };
@@ -1287,7 +1287,7 @@ const R = {
       opts.forEach(o=>o.onclick=()=>{
         if(solved) return;
         const i=+o.dataset.i;
-        if(i===d.correct){ solved=true; o.classList.add('right'); feedback(fb,true); celebrate(); FX.claps(8); }
+        if(i===d.correct){ solved=true; o.classList.add('right'); feedback(fb,true); celebrate(); }
         else { o.classList.add('wrong'); shakeEl(o); feedback(fb,false); Sound.wrong(); }
       });
       $('[data-role=retry]',el).onclick=()=>{ solved=false; opts.forEach(o=>o.classList.remove('right','wrong')); fb.innerHTML=''; };
@@ -1336,7 +1336,7 @@ const R = {
           const s=document.createElement('span'); s.textContent=sel.textContent; $('.in',bk).appendChild(s);
           sel.remove(); sel=null; score++; pts.textContent=score; Sound.success();
           feedback(fb,true,'أحسنتِ! 👏 تصنيف صحيح');
-          if(score===d.items.length){ fb.innerHTML='<span class="ok">🏆 رائع! صنّفتِ كل البيانات بنجاح</span>'; timer.reset&&timer.reset(); celebrate(); FX.claps(14); }
+          if(score===d.items.length){ fb.innerHTML='<span class="ok">🏆 رائع! صنّفتِ كل البيانات بنجاح</span>'; timer.reset&&timer.reset(); celebrate(); }
         } else { shakeEl(sel); shakeEl(bk); feedback(fb,false); Sound.wrong(); }
       });
       el.addEventListener('timeup',()=>{ fb.innerHTML=`<span class="no">⏰ انتهى الوقت! النتيجة: ${score} من ${d.items.length}</span>`; });
@@ -1486,7 +1486,7 @@ const R = {
         if(d.pairs[i][1]===b.dataset.o){
           [selT,b].forEach(x=>{ x.classList.remove('sel'); x.classList.add('done'); x.style.setProperty('--mc',cols[i]); x.insertAdjacentHTML('beforeend','<span class="tick">✓</span>'); });
           selT=null; done++; Sound.success(); feedback(fb,true);
-          if(done===d.pairs.length){ fb.innerHTML='<span class="ok">🏆 ممتاز! وصّلتِ كل المصطلحات</span>'; celebrate(); FX.claps(12); }
+          if(done===d.pairs.length){ fb.innerHTML='<span class="ok">🏆 ممتاز! وصّلتِ كل المصطلحات</span>'; celebrate(); }
         } else { shakeEl(b); feedback(fb,false); Sound.wrong(); }
       });
       $('[data-role=reset]',el).onclick=()=>{ $$('.mbtn',el).forEach(x=>{ x.classList.remove('done','sel'); x.style.removeProperty('--mc'); const t=$('.tick',x); t&&t.remove(); }); selT=null; done=0; fb.innerHTML=''; };
@@ -1551,7 +1551,7 @@ const R = {
       const ph=$('.ph',el), model=$('.h-model',el), deep=$('.h-deep',el), hint=$('.h-hint',el);
       const show=(x)=>{ ph.style.display='none'; x.style.display=''; x.style.animation='none'; void x.offsetWidth; x.style.animation='zoomIn .5s cubic-bezier(.2,.8,.2,1)'; Sound.pop(); };
       $('[data-role=hint]',el).onclick=()=>{ hint.textContent=d.hint; Sound.pop(); };
-      $('[data-role=model]',el).onclick=()=>{ deep.style.display='none'; show(model); FX.claps(8); };
+      $('[data-role=model]',el).onclick=()=>{ deep.style.display='none'; show(model); };
       $('[data-role=deep]',el).onclick=()=>{ model.style.display='none'; show(deep); };
       $('[data-role=deepans]',el).onclick=()=>{ $('.ans',deep).style.display=''; celebrate(); };
     }
@@ -1752,5 +1752,7 @@ function wake(){
 wake();
 refreshDrawUI();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

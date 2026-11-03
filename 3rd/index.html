@@ -1070,7 +1070,7 @@ function tStart(el, onEnd){
       clearInterval(st.id); st.id = null;
       el.classList.remove('warn'); el.classList.add('done'); tBtn(el, '↺ إعادة');
       Sound.bell(); st.onEnd && st.onEnd();
-      if(el.dataset.end){ toast(el.dataset.end, 'ok'); clapFX(); }
+      if(el.dataset.end){ toast(el.dataset.end, 'ok'); }
     }
   }, 1000);
   tDraw(el);
@@ -1639,5 +1639,7 @@ fit();
   updateUI(); wake();
 })();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

@@ -1272,7 +1272,7 @@ const Confetti = {
     else { this.running = false; g.clearRect(0, 0, innerWidth, innerHeight); }
   }
 };
-function celebrate() { Sound.success(); Confetti.burst(); }
+function celebrate() { Sound.pop(); Confetti.burst(); }   // احتفال هادئ بدون صوت تصفيق (التصفيق فقط من زر 👏 أو حرف ت)
 
 /* ---------- التصفيق 👏 ---------- */
 function clap() {
@@ -2331,7 +2331,7 @@ const RENDERERS = {
       const api = { val, f: fOf, fmt: k => st.cells[k] && st.cells[k].fmt, show, sel: actK(), mode: st.mode && st.mode.fn };
       s.steps.forEach((t, k) => { if (!st.done[k] && (k === 0 || st.done[k - 1]) && t.ok(api)) { st.done[k] = true; Sound.success(); toast('✅ أحسنتِ! الخطوة ' + (k + 1)); } });
       renderSteps();
-      if (st.done.every(Boolean)) { st.finished = true; renderSteps(); setTimeout(() => { Confetti.burst(140); Sound.clap(); }, 300); }
+      if (st.done.every(Boolean)) { st.finished = true; renderSteps(); setTimeout(() => { Confetti.burst(140); Sound.pop(); }, 300); }
     }
     function renderSteps() {
       const cur = st.done.indexOf(false);
@@ -3083,5 +3083,7 @@ addEventListener('pointermove', showControls);
 addEventListener('pointerdown', showControls);
 showControls();
 </script>
+<script>/* 🔇 بدون نغمة احتفال تلقائية: التصفيق فقط من زر 👏 أو حرف ت */
+try{ if(typeof Sound!=='undefined' && Sound.success){ const soft=Sound.pop||Sound.ding||Sound.tick; if(soft) Sound.success=function(){ try{ return soft.call(Sound); }catch(e){} }; } }catch(e){}</script>
 </body>
 </html>

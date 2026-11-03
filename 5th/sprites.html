@@ -437,20 +437,21 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 /* =========================================================
    7) شريط التحكم
    ========================================================= */
-#controls{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);padding:7px;border-radius:999px;box-shadow:0 18px 40px -16px rgba(51,115,204,.6);z-index:40;transition:opacity .4s,transform .4s;font-size:clamp(14px,1.15vw,18px)}
-.cb{padding:9px 18px;border-radius:999px;font-weight:800;color:var(--blue-d);font-size:inherit;transition:background .2s}
+#controls{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);padding:4px;border-radius:999px;box-shadow:0 18px 40px -16px rgba(51,115,204,.6);z-index:40;transition:opacity .4s,transform .4s;font-size:clamp(12px,.9vw,15px);opacity:.6}
+#controls:hover{opacity:1}
+.cb{padding:5px 14px;border-radius:999px;font-weight:800;color:var(--blue-d);font-size:inherit;transition:background .2s}
 .cb:hover{background:var(--blue-l)}
 .cb:disabled{opacity:.35;cursor:default}
 .cb.primary{background:var(--blue);color:#fff}
 .cb.primary:hover{background:var(--blue-d)}
-.cb.clap{font-size:1.5em;padding:3px 14px;line-height:1.2;background:#FFF4CC}
-.cb-num{font-weight:900;color:var(--muted);padding:0 8px;min-width:72px;text-align:center}
+.cb.clap{font-size:1.3em;padding:1px 10px;line-height:1.2;background:#FFF4CC}
+.cb-num{font-weight:900;color:var(--muted);padding:0 8px;min-width:56px;text-align:center}
 .cb-num b{color:var(--blue)}
-.cb-sep{width:1px;height:26px;background:var(--line)}
+.cb-sep{width:1px;height:20px;background:var(--line)}
 body.idle #controls{opacity:0;transform:translate(-50%,26px);pointer-events:none}
 body.idle{cursor:none}
 #hint{position:fixed;bottom:14px;right:16px;display:flex;gap:12px;font-size:13px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.85);padding:6px 12px;border-radius:999px;z-index:39;transition:opacity .4s}
-body.idle #hint{opacity:.3}
+body.idle #hint{opacity:0}
 kbd{font-family:inherit;background:#fff;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:0 6px;font-weight:900}
 #toast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,30px);opacity:0;background:var(--ink);color:#fff;font-size:clamp(18px,2vw,30px);font-weight:900;padding:12px 32px;border-radius:999px;z-index:60;transition:.35s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translate(-50%,0)}
@@ -1069,7 +1070,7 @@ INIT.order = el => {
   $$('.o-item', el).forEach(b => b.onclick = () => {
     if(+b.dataset.i === next){
       b.disabled = true; done.insertAdjacentHTML('beforeend', `<li><i>${next+1}</i>${b.innerHTML}</li>`); next++; Sound.pop();
-      if(next === n){ msg.textContent = '🎉 ترتيب صحيح! أحسنتِ'; Sound.win(); burstFrom(done); addPoint(el.id + 'o'); }
+      if(next === n){ msg.textContent = '🎉 ترتيب صحيح! أحسنتِ'; Sound.ok(); burstFrom(done); addPoint(el.id + 'o'); }
     } else { Sound.no(); b.animate([{transform:'translateX(-10px)'},{transform:'translateX(10px)'},{transform:'none'}], 300); msg.textContent = ''; }
   });
   $('.o-reset', el).onclick = () => { next = 0; done.innerHTML = ''; msg.textContent = ''; $$('.o-item', el).forEach(b => b.disabled = false); Sound.flip(); };
@@ -1088,7 +1089,7 @@ INIT.tps = el => {
     p.classList.add('on'); Sound.pop();
     let left = +p.dataset.sec; const tm = $('.tm', p);
     tm.classList.remove('warn'); tm.textContent = fmt(left);
-    p._t = setInterval(() => { left--; tm.textContent = fmt(Math.max(0, left)); if(left <= 10) tm.classList.add('warn'); if(left <= 0){ clearInterval(p._t); Sound.win(); } }, 1000);
+    p._t = setInterval(() => { left--; tm.textContent = fmt(Math.max(0, left)); if(left <= 10) tm.classList.add('warn'); if(left <= 0){ clearInterval(p._t); Sound.ok(); } }, 1000);
   });
 };
 STOP.push(el => $$('.phase', el).forEach(x => clearInterval(x._t)));
@@ -1109,7 +1110,7 @@ INIT.practice = el => {
   go.onclick = () => {
     if(t._id){ clearInterval(t._id); t._id = null; go.textContent = '▶ متابعة'; return; }
     go.textContent = '⏸ إيقاف'; Sound.pop();
-    t._id = setInterval(() => { left--; paint(); if(left <= 0){ clearInterval(t._id); t._id = null; Sound.win(); go.textContent = '▶ ابدئي'; left = total; } }, 1000);
+    t._id = setInterval(() => { left--; paint(); if(left <= 0){ clearInterval(t._id); t._id = null; Sound.ok(); go.textContent = '▶ ابدئي'; left = total; } }, 1000);
   };
   $('.t-rs', el).onclick = () => { clearInterval(t._id); t._id = null; left = total; paint(); go.textContent = '▶ ابدئي'; };
 };
@@ -1160,7 +1161,7 @@ INIT.grid = (el, s) => {
       board.children[pos].classList.add('path'); pos = nr*6 + nc; place(pos); Sound.tone(500 + i*30, 0, .08, 'triangle'); await sleep(420);
     }
     $$('.gg-prog span', el).forEach(x => x.classList.remove('now'));
-    if(pos === s.goal){ msg.className = 'sim-msg ok'; msg.textContent = '🎉 وصلت القطة إلى القمر! تعليماتكِ واضحة ودقيقة'; Sound.win(); burstFrom(actor); addPoint(el.id + 'g'); }
+    if(pos === s.goal){ msg.className = 'sim-msg ok'; msg.textContent = '🎉 وصلت القطة إلى القمر! تعليماتكِ واضحة ودقيقة'; Sound.ok(); burstFrom(actor); addPoint(el.id + 'g'); }
     else { msg.className = 'sim-msg no'; msg.textContent = '🤔 انتهت التعليمات ولم تصل القطة… أكملي البرنامج'; Sound.no(); }
     busy = false;
   };
@@ -1213,7 +1214,7 @@ INIT.pen = (el, s) => {
     Sound.pop();
     const finished = await ps.run(script);
     if(!finished) return;
-    if(s.check){ const r = s.check(ps.st.segs, ps.P); msg.className = 'sim-msg ' + (r.ok ? 'ok' : 'no'); msg.textContent = r.msg; if(r.ok){ Sound.win(); burstFrom($('canvas', el)); addPoint(el.id + 'pen'); } else Sound.no(); }
+    if(s.check){ const r = s.check(ps.st.segs, ps.P); msg.className = 'sim-msg ' + (r.ok ? 'ok' : 'no'); msg.textContent = r.msg; if(r.ok){ Sound.ok(); burstFrom($('canvas', el)); addPoint(el.id + 'pen'); } else Sound.no(); }
     else if(s.done){ msg.className = 'sim-msg ok'; msg.textContent = s.done; Sound.ok(); }
   };
   $('.stop', el).onclick = () => { ps.stop(); Sound.flip(); };
