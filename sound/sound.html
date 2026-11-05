@@ -400,6 +400,89 @@ input{font-family:var(--fb)}
 .ex-empty{padding:60px;text-align:center;font:700 28px var(--fb);color:#aaa}
 .sim-ok{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:var(--mint);color:#fff;font:800 28px var(--fh);padding:12px 30px;border-radius:999px;white-space:nowrap;animation:fbIn .5s ease}
 
+/* محاكاة الماسح الضوئي */
+.sc-top{display:flex;align-items:center;gap:20px;margin-top:6px}
+.sc-pills{list-style:none;display:flex;gap:10px;flex:1}
+.sc-pills li{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:3px solid transparent;border-radius:999px;padding:7px 8px;font-size:26px;color:var(--muted);box-shadow:var(--shadow-s);transition:all .3s}
+.sc-pills b{font:800 21px var(--fh);white-space:nowrap}
+.sc-pills li.now{border-color:var(--p500);color:var(--ink)}
+.sc-pills li.done{background:var(--mint-l);color:#0b6f65}
+.sc-hint{align-self:center;margin-top:12px;background:var(--amber-l);border-radius:999px;padding:7px 34px;font:800 29px var(--fh);color:var(--p900)}
+.scan-wrap{display:grid;grid-template-columns:640px 1fr;gap:30px;margin-top:12px;flex:1;min-height:0}
+.scan-wrap .pc-screen{height:486px;border-width:14px}
+.sc-desk{position:relative;height:512px;border-radius:26px;background:linear-gradient(160deg,#f6e7d2,#ecd5b6);box-shadow:var(--shadow);overflow:hidden}
+.sc-port{position:absolute;left:0;top:438px;width:74px;height:48px;background:#2c2342;color:#fff;font:800 20px/48px var(--fh);text-align:center;border-radius:0 12px 12px 0}
+.sc-cable{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.sc-cable path{fill:none;stroke:#3a3350;stroke-width:9;stroke-linecap:round}
+.sc-cable .c-on{opacity:0}
+.plugged .sc-cable .c-on{opacity:1}.plugged .sc-cable .c-off{opacity:0}
+.sc-plug{position:absolute;left:312px;top:432px;width:62px;height:62px;border:none;border-radius:50%;background:#fff;font-size:34px;transition:left .6s ease;box-shadow:var(--shadow-s)}
+.plugged .sc-plug{left:70px}
+.sc-body{position:absolute;left:36px;top:96px;width:410px;height:300px;background:#4a4560;border-radius:18px;box-shadow:0 18px 26px -14px rgba(0,0,0,.55)}
+.sc-glass{position:absolute;left:14px;right:14px;top:14px;height:216px;border-radius:8px;background:linear-gradient(135deg,#a9d8ef,#dff3fb 45%,#9fcfe8);box-shadow:inset 0 0 0 4px #2f2b40}
+.sc-strip{position:absolute;left:18px;right:18px;bottom:10px;height:46px;display:flex;align-items:center;gap:14px;color:#d9d4ea}
+.sc-strip b{flex:1;font:800 18px var(--fh);letter-spacing:3px}
+.sc-led{width:16px;height:16px;border-radius:50%;background:#7c7690;transition:all .3s}
+.on .sc-led{background:#34d399;box-shadow:0 0 12px 3px #34d399}
+.sc-power{width:46px;height:46px;border:none;border-radius:50%;background:#fff;font-size:24px;font-weight:900;color:var(--p700)}
+.sc-photo{position:absolute;z-index:2;left:474px;top:150px;width:136px;height:178px;padding:0;border:none;background:none;transition:left .7s ease,top .7s ease,transform .7s ease;transform-style:preserve-3d}
+.sc-photo span{position:absolute;inset:0;border:6px solid #fff;border-radius:6px;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;box-shadow:0 6px 14px -6px rgba(0,0,0,.5)}
+.sc-photo svg{display:block;width:100%;height:100%}
+.sc-photo .ph-b{background:#fff;border-color:#eee;color:var(--muted);font:800 19px/1.5 var(--fh);display:grid;place-items:center;text-align:center;direction:rtl;transform:rotateY(180deg)}
+.placed .sc-photo{left:58px;top:116px;transform:rotateY(180deg)}
+.sc-lid{position:absolute;z-index:3;left:36px;top:96px;width:410px;height:244px;border:none;border-radius:18px;background:linear-gradient(160deg,#6d678a,#565070);transform-origin:50% 0;transform:perspective(1100px) rotateX(0);transition:transform .7s ease,opacity .3s}
+.lid-open .sc-lid{transform:perspective(1100px) rotateX(106deg);background:linear-gradient(180deg,#fbfaff,#dcd8e8)}
+.sc-lamp{position:absolute;z-index:4;left:50px;width:382px;top:110px;height:16px;border-radius:8px;background:#fff;box-shadow:0 0 30px 14px rgba(190,240,255,.95);opacity:0;pointer-events:none}
+.sweep .sc-lid{opacity:.2}
+.sweep .sc-lamp{opacity:1;animation:scLamp 2.1s ease-in-out forwards}
+@keyframes scLamp{to{top:310px}}
+.hot{animation:scHot 1.1s ease-in-out infinite;position:relative;z-index:6}
+.sc-photo.hot,.sc-lid.hot,.sc-plug.hot{position:absolute}
+.sc-lid.hot{z-index:3}
+@keyframes scHot{50%{box-shadow:0 0 0 9px rgba(245,158,11,.75)}}
+.wd{position:absolute;inset:0}
+.wd-ic{position:absolute;top:18px;right:24px;font-size:54px;text-align:center;color:#fff}
+.wd-ic small{display:block;font:700 19px var(--fb)}
+.wd-note{position:absolute;left:18px;bottom:82px;background:#fff;border-radius:14px;padding:10px 20px;font:800 23px var(--fh);box-shadow:var(--shadow);animation:winIn .4s ease}
+.wd-bar{position:absolute;left:0;right:0;bottom:0;height:68px;background:rgba(255,255,255,.75);display:grid;place-items:center}
+.wd-start{width:54px;height:54px;border:none;border-radius:12px;background:#fff;color:#0a7cd8;padding:10px}
+.sc-menu{left:50%;bottom:78px;width:560px;margin-left:-280px}
+.sc-menu .ap-opt{padding:8px 18px;margin:7px 14px}
+.sc-menu .ap-opt:last-child{margin-bottom:12px}
+.sc-dlg{inset:14px;display:flex;flex-direction:column}
+.sc-dlg-in{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:20px;padding:12px 20px}
+.sc-form{display:flex;flex-direction:column;gap:8px}
+.sc-form label{font:800 21px var(--fh);color:var(--muted)}
+.sc-sel{display:block;width:100%;margin-top:4px;text-align:right;background:#fff;border:2px solid #d9d2ea;border-radius:10px;padding:2px 14px;font:800 23px var(--fh);color:var(--ink)}
+.sc-sel.off{background:#f4f2f8;color:var(--muted)}
+.sc-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sc-opts button{border:2px solid var(--p300);border-radius:10px;background:#fff;padding:6px 0;font:800 22px var(--fh)}
+.sc-btns{display:flex;gap:10px;margin-top:auto}
+.sc-b{flex:1;border:2px solid #d9d2ea;border-radius:12px;background:#f7f5fb;padding:5px 6px;font:800 21px var(--fh)}
+.sc-b.main{background:var(--p600);border-color:var(--p600);color:#fff}
+.sc-pane{position:relative;background:#fff;border:2px solid #d9d2ea;border-radius:12px;overflow:hidden;display:grid;place-items:center;font:700 22px var(--fb);color:#b3acc4}
+.sc-img{height:100%;max-height:300px;aspect-ratio:130/170}
+.sc-img svg{display:block;width:100%;height:100%}
+.sc-pane .sc-img{height:92%}
+.sc-img.pv{opacity:.6}
+.sc-img.reveal{animation:scReveal 2.1s ease-in-out both}
+@keyframes scReveal{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+.sc-result{display:grid;place-items:center;height:calc(100% - 118px);padding:10px}
+.sc-result .sc-img{height:100%;max-height:none}
+.sc-save{left:50%;top:60px;width:600px;margin-left:-300px;z-index:8}
+.sc-save-in{padding:8px 22px 20px;display:flex;flex-direction:column;gap:12px}
+.sc-name{display:flex;justify-content:space-between;align-items:center;border:2px solid #d9d2ea;border-radius:12px;padding:8px 18px;font:800 28px var(--fh)}
+.sc-name b{color:var(--p600);direction:ltr}
+.scan-wrap .ex-grid .ph{overflow:hidden;padding:0}
+.scan-wrap .ex-grid .ph svg{width:100%;height:100%}
+.scan-wrap .sim-ok{font-size:25px}
+
+/* رابط المحاكي المختصر وحده: sound.html?sim */
+.sim-only #controls,.sim-only #hint,.sim-only #progress,.sim-only .aud-open,.sim-only .chips{display:none}
+.sim-only .slide{padding-top:44px;padding-bottom:44px}
+.sim-only .track canvas{height:300px}
+.sim-only .track.t2 canvas{height:170px}
+
 /* =====================================================================
    16) لاحظي واكتشفي (امتدادات الملفات)
    ===================================================================== */
@@ -658,7 +741,7 @@ body.idle{cursor:none}
               ولحذف شريحة احذفي القوس { ... } الخاص بها.
    أنواع الشرائح المتاحة (type):
      cover, prep, teams, flip, hook, title, list, brainstorm, mcq,
-     match, tps, camsim, order, notice, sort, tools, audacity, tf,
+     match, tps, camsim, scansim, order, notice, sort, tools, audacity, tf,
      boxes, summary, exit, closing
    • anim  : (اختياري) نوع الانتقال: 'slide' أو 'zoom' أو 'fade'
    • section / strategy : الوسوم الصغيرة أعلى الشريحة.
@@ -822,19 +905,18 @@ const LESSON = {
       ],
       photos: [['🏖️', 'IMG_001.jpg'], ['🌸', 'IMG_002.jpg'], ['🐪', 'IMG_003.jpg'], ['🌙', 'IMG_004.jpg'], ['🏫', 'IMG_005.jpg'], ['🎂', 'IMG_006.jpg']] },
 
-    /* ---------- 14) ترتيب خطوات الماسح الضوئي ---------- */
-    { type: 'order', section: '📖 الدرس', strategy: '🤝 التعلم التعاوني', timer: 90,
-      title: 'رتّبي خطوات المسح الضوئي 🖨️',
-      poolTitle: '🧩 الخطوات المبعثرة', slotsTitle: '✅ الترتيب الصحيح',
-      items: [
-        'وصّلي الماسح الضوئي بمنفذ USB وشغّليه',
-        'ضعي وجه الصورة على الزجاج وأغلقي الغطاء',
-        'افتحي «الفاكس والمسح الضوئي لويندوز» من قائمة ابدأ',
-        'اضغطي «مسح ضوئي جديد New Scan» ثم «معاينة Preview»',
-        'اختاري نوع الملف (File type) مثل JPG',
-        'اضغطي «مسح ضوئي Scan» ثم «حفظ باسم Save as»'
-      ],
-      done: 'أحسنتِ! 👏 أصبحتِ خبيرة في المسح الضوئي' },
+    /* ---------- 14) تطبيق عملي: محاكاة الماسح الضوئي ---------- */
+    { type: 'scansim', section: '📖 الدرس', strategy: '🛠️ تطبيق عملي',
+      title: 'حوّلي الصورة الورقية إلى ملف رقمي 🖼️➜💻',
+      fileName: 'صورتي',
+      steps: [
+        { icon: '🔌', label: 'وصّلي وشغّلي', hints: ['اضغطي على السلك لتوصيله بمنفذ USB', 'اضغطي زر التشغيل في الماسح الضوئي'] },
+        { icon: '🖼️', label: 'ضعي الصورة', hints: ['ارفعي غطاء الماسح', 'اضغطي على الصورة لتضعيها ووجهها على الزجاج', 'أغلقي الغطاء'] },
+        { icon: '🪟', label: 'افتحي البرنامج', hints: ['افتحي قائمة ابدأ', 'اختاري برنامج المسح الضوئي'] },
+        { icon: '👁️', label: 'عايني', hints: ['اضغطي «مسح ضوئي جديد New Scan»', 'اضغطي «معاينة Preview»'] },
+        { icon: '📄', label: 'نوع الملف', hints: ['افتحي قائمة نوع الملف File type', 'اختاري JPG'] },
+        { icon: '💾', label: 'امسحي واحفظي', hints: ['اضغطي «مسح ضوئي Scan»', 'اضغطي «حفظ باسم Save as»', 'اضغطي «حفظ Save»'] }
+      ] },
 
     /* ---------- شرح وحدات قياس حجم الملفات ---------- */
     { type: 'units', section: '📖 الدرس', strategy: '🔍 لاحظي واكتشفي',
@@ -1468,8 +1550,15 @@ const Renderers = {
     const fromInput = () => { add(input.value); input.value = ''; input.focus(); };
     input.addEventListener('keydown', e => { if (e.key === 'Enter') fromInput(); });
     $('[data-add]', el).onclick = fromInput;
-    $('[data-sugg]', el).onclick = () => s.suggestions.forEach((t, i) => setTimeout(() => add(t, 'sugg'), i * 220));
-    $('[data-clear]', el).onclick = () => { wrap.innerHTML = ''; n = 0; };
+    /* الأفكار المقترحة تظهر واحدة مع كل ضغطة */
+    const suggBtn = $('[data-sugg]', el); let shown = 0;
+    const suggLabel = () => {
+      suggBtn.textContent = shown < s.suggestions.length ? `💡 فكرة مقترحة (${shown}/${s.suggestions.length})` : '✅ انتهت الأفكار المقترحة';
+      suggBtn.disabled = shown >= s.suggestions.length;
+    };
+    suggBtn.onclick = () => { add(s.suggestions[shown++], 'sugg'); suggLabel(); };
+    $('[data-clear]', el).onclick = () => { wrap.innerHTML = ''; n = 0; shown = 0; suggLabel(); };
+    suggLabel();
   },
 
   /* ---------- اختيار من متعدد ---------- */
@@ -1591,6 +1680,95 @@ const Renderers = {
     setStep(0);
   },
 
+  /* ---------- محاكاة الماسح الضوئي: الطالبة تنفّذ الخطوات بيدها ---------- */
+  scansim(s, el) {
+    const PHOTO = `<svg viewBox="0 0 130 170" preserveAspectRatio="xMidYMid slice"><rect width="130" height="170" fill="#ffd9a0"/><rect width="130" height="70" fill="#ffbf80"/><circle cx="92" cy="58" r="24" fill="#fff3c4"/><path d="M0 118q40-34 78-10t52-8v70H0z" fill="#e9a35f"/><path d="M0 142q46-22 130 0v28H0z" fill="#c97b3d"/><path d="M38 132q-3-30 3-54" fill="none" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/><path d="M41 78q-20-10-28 6 16-6 28-6zm0 0q-14-20-30-12 18 0 30 12zm0 0q-2-22 16-22-14 8-16 22zm0 0q18-14 32 0-18-6-32 0zm0 0q18-2 24 16-10-12-24-16z" fill="#1f8a5b"/></svg>`;
+    const WIN = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="9.4" height="9.4" rx="1"/><rect x="12.6" y="2" width="9.4" height="9.4" rx="1"/><rect x="2" y="12.6" width="9.4" height="9.4" rx="1"/><rect x="12.6" y="12.6" width="9.4" height="9.4" rx="1"/></svg>';
+    /* الترتيب نفسه في s.steps: كل تلميح يقابل إجراءً واحداً */
+    const ACTS = ['plug', 'power', 'lid', 'photo', 'lid', 'start', 'app', 'new', 'preview', 'type', 'jpg', 'scan', 'saveas', 'save'];
+    const WRONG = { word: 'هذا برنامج وورد 😉 نريد برنامج المسح الضوئي', paint: 'هذا برنامج الرسام 😉 نريد برنامج المسح الضوئي', fmt: 'في درسنا نختار JPG 😉' };
+    const HINTS = s.steps.flatMap((st, i) => st.hints.map(h => ({ h, pill: i })));
+    const file = s.fileName + '.jpg';
+
+    el.innerHTML = head(s) + `<div class="sc-top rv">
+        <ol class="sc-pills">${s.steps.map(st => `<li><span>${st.icon}</span><b>${st.label}</b></li>`).join('')}</ol>
+        <button class="btn btn-ghost btn-sm" data-reset>🔄 من جديد</button></div>
+      <div class="sc-hint rv"></div>
+      <div class="scan-wrap">
+        <div class="sc-desk rv" dir="ltr">
+          <div class="sc-port">USB</div>
+          <svg class="sc-cable" viewBox="0 0 640 520"><path class="c-off" d="M250 396C250 450 300 462 330 462"/><path class="c-on" d="M250 396C250 470 150 462 74 462"/></svg>
+          <button class="sc-plug" data-sc="plug" title="السلك">🔌</button>
+          <div class="sc-body"><div class="sc-glass"></div><div class="sc-strip"><b>SCANNER</b><i class="sc-led"></i><button class="sc-power" data-sc="power" title="زر التشغيل">⏻</button></div></div>
+          <button class="sc-photo" data-sc="photo" title="الصورة الورقية"><span class="ph-f">${PHOTO}</span><span class="ph-b">وجه الصورة<br>للأسفل ⬇</span></button>
+          <button class="sc-lid" data-sc="lid" title="غطاء الماسح"></button>
+          <div class="sc-lamp"></div>
+        </div>
+        <div class="pc rv"><div class="pc-screen"></div><div class="pc-base"></div></div>
+      </div>`;
+
+    const root = $('.scan-wrap', el), scr = $('.pc-screen', el), hint = $('.sc-hint', el), pills = $$('.sc-pills li', el);
+    let step = 0, busy = false, run = 0, lidOpen = false, typeOpen = false, imgState = '';
+    const sweep = (text, then) => {
+      const id = ++run; busy = true; root.classList.add('sweep'); hint.textContent = '⏳ ' + text;
+      setTimeout(() => { if (id !== run) return; root.classList.remove('sweep'); busy = false; then(); }, 2200);
+    };
+    const pane = () => `<div class="sc-pane">${imgState ? `<div class="sc-img ${imgState}">${PHOTO}</div>` : '<span>منطقة المعاينة</span>'}</div>`;
+    const dlg = () => `<div class="win sc-dlg"><div class="win-bar"><span>مسح ضوئي جديد New Scan</span><span>✕</span></div>
+        <div class="sc-dlg-in"><div class="sc-form">
+          <label>الماسح الضوئي<div class="sc-sel off">Scanner</div></label>
+          <label>نوع الملف File type<button class="sc-sel" data-sc="type">${step > 10 ? 'JPG' : 'اختاري'} ▾</button></label>
+          ${typeOpen ? `<div class="sc-opts">${['BMP', 'JPG', 'PNG', 'TIF'].map(f => `<button data-sc="${f === 'JPG' ? 'jpg' : 'fmt'}">${f}</button>`).join('')}</div>` : ''}
+          <div class="sc-btns"><button class="sc-b" data-sc="preview">معاينة Preview</button><button class="sc-b main" data-sc="scan">مسح ضوئي Scan</button></div>
+        </div>${pane()}</div></div>`;
+    const app = () => `<div class="win explorer"><div class="win-bar"><span>الفاكس والمسح الضوئي لويندوز</span><span>✕</span></div>
+        <div class="ex-tools"><button data-sc="new">🖨️ مسح ضوئي جديد New Scan</button><button data-sc="saveas" ${step < 12 ? 'disabled' : ''}>💾 حفظ باسم Save as</button></div>
+        ${step === 7 ? '<div class="ex-empty">لا توجد صور ممسوحة بعد</div>' : `<div class="sc-result"><div class="sc-img">${PHOTO}</div></div>`}</div>`;
+    function renderPC() {
+      if (step <= 6) {
+        scr.innerHTML = `<div class="wd"><div class="wd-ic">🗑️<small>سلة المحذوفات</small></div>${step === 1 || step === 2 ? '<div class="wd-note">🖨️ تم التعرّف على الماسح الضوئي</div>' : ''}
+          <div class="wd-bar"><button class="wd-start" data-sc="start" title="ابدأ">${WIN}</button></div></div>
+          ${step === 6 ? `<div class="win sc-menu"><div class="win-bar"><span>قائمة ابدأ</span></div>
+            <button class="ap-opt" data-sc="word">📝 وورد<small>Word</small></button>
+            <button class="ap-opt" data-sc="paint">🎨 الرسام<small>Paint</small></button>
+            <button class="ap-opt" data-sc="app">🖨️ الفاكس والمسح الضوئي لويندوز<small>Windows Fax and Scan</small></button></div>` : ''}`;
+      } else if (step === 7 || step === 12) scr.innerHTML = app();
+      else if (step <= 11) scr.innerHTML = dlg();
+      else if (step === 13) scr.innerHTML = app() + `<div class="win sc-save"><div class="win-bar"><span>حفظ باسم Save as</span><span>✕</span></div>
+          <div class="sc-save-in"><div class="ex-path">هذا الكمبيوتر › الصور</div><div class="sc-name"><span>${s.fileName}</span><b>.jpg</b></div><button class="sc-b main" data-sc="save">حفظ Save</button></div></div>`;
+      else scr.innerHTML = `<div class="win explorer"><div class="win-bar"><span>🖼️ الصور (Pictures)</span><span>✕</span></div>
+          <div class="ex-path">هذا الكمبيوتر › الصور</div><div class="ex-grid"><div class="photo fly" style="--k:0"><span class="ph">${PHOTO}</span><small>${file}</small></div></div></div>
+          <div class="sim-ok">✅ أصبحت الصورة الورقية ملفاً رقمياً: <span class="ltr">${file}</span></div>`;
+    }
+    function show() {
+      const done = step >= ACTS.length, cur = HINTS[Math.min(step, HINTS.length - 1)];
+      root.classList.toggle('plugged', step > 0); root.classList.toggle('on', step > 1);
+      root.classList.toggle('lid-open', lidOpen); root.classList.toggle('placed', step > 3);
+      pills.forEach((p, i) => { p.classList.toggle('done', done || i < cur.pill); p.classList.toggle('now', !done && i === cur.pill); });
+      hint.textContent = done ? '🎉 أحسنتِ! هكذا ننقل الصور والوثائق الورقية إلى الحاسب' : '👆 ' + cur.h;
+      renderPC();
+      $$('.hot', el).forEach(h => h.classList.remove('hot'));
+      if (!done) { const t = $(`[data-sc="${ACTS[step]}"]`, el); t && t.classList.add('hot'); }
+    }
+    const advance = () => { step++; show(); };
+    el.addEventListener('click', e => {
+      const t = e.target.closest('[data-sc]'); if (!t || busy || step >= ACTS.length) return;
+      const a = t.dataset.sc;
+      if (WRONG[a]) { shake(t); Sound.wrong(); toast(WRONG[a]); return; }
+      if (a !== ACTS[step]) { shake(hint); Sound.wrong(); return; }
+      Sound.pop();
+      if (a === 'lid') lidOpen = !lidOpen;
+      if (a === 'type') typeOpen = true;
+      if (a === 'jpg') typeOpen = false;
+      if (a === 'preview') { imgState = 'pv reveal'; renderPC(); sweep('الماسح يعاين الصورة…', () => { imgState = 'pv'; advance(); }); return; }
+      if (a === 'scan') { imgState = 'reveal'; renderPC(); sweep('الماسح يقرأ الصورة…', () => { imgState = ''; advance(); }); return; }
+      advance();
+      if (a === 'save') { Sound.success(); confetti(); }
+    });
+    $('[data-reset]', el).onclick = () => { run++; busy = false; step = 0; lidOpen = typeOpen = false; imgState = ''; root.classList.remove('sweep'); show(); };
+    show();
+  },
+
   /* ---------- الترتيب ---------- */
   order(s, el) {
     const stairs = s.layout === 'stairs';
@@ -1682,7 +1860,7 @@ const Renderers = {
   /* ---------- محرر الصوت (محاكي أوداسيتي) ---------- */
   audacity(s, el) {
     el.innerHTML = head(s) + `<div class="aud-wrap">
-      <aside class="tasks rv"><h3>📝 مهامّكِ</h3><ul>${s.tasks.map(t => `<li data-task="${t.id}"><span class="chk"></span><span>${t.text}</span></li>`).join('')}</ul><div class="tasks-prog"><span></span></div><button class="btn btn-sm btn-amber" style="margin-top:12px;font-size:22px" onclick="window.open('audacity.html','_blank')">🖥️ افتحي المحاكي الكامل</button></aside>
+      <aside class="tasks rv"><h3>📝 مهامّكِ</h3><ul>${s.tasks.map(t => `<li data-task="${t.id}"><span class="chk"></span><span>${t.text}</span></li>`).join('')}</ul><div class="tasks-prog"><span></span></div><button class="btn btn-sm btn-amber aud-open" style="margin-top:12px;font-size:22px" onclick="window.open('audacity.html','_blank')">🖥️ افتحي المحاكي</button></aside>
       <div class="app rv" dir="ltr">
         <div class="app-bar"><span class="dots"><i></i><i></i><i></i></span><span>Audacity — مشروعي</span></div>
         <div class="app-tools">
@@ -2042,6 +2220,13 @@ function wake() {
 
 /* ----- التشغيل ----- */
 if (location.search.includes('static')) document.head.insertAdjacentHTML('beforeend', '<style>.slide .rv{opacity:1!important;translate:none!important;animation:none!important}</style>');
+/* sound.html?sim = المحاكي المختصر وحده، بدون بقية الشرائح وأزرار المعلمة */
+if (new URLSearchParams(location.search).has('sim')) {
+  LESSON.slides = LESSON.slides.filter(s => s.type === 'audacity');
+  document.body.classList.add('sim-only');
+  document.title = 'استوديو الصوت';
+  addEventListener('keydown', e => e.stopImmediatePropagation(), true);
+}
 build();
 buildScoreboard();
 updateScores();

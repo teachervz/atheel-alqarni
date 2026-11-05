@@ -79,6 +79,8 @@ b,strong{font-weight:800}
 .row-center{display:flex;justify-content:center;gap:18px}
 
 /* زر إعادة الشريحة */
+.sim-link{position:absolute;top:44px;left:126px;height:58px;display:flex;align-items:center;padding:0 22px;border-radius:999px;background:#fff;color:var(--p700);font-size:21px;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:var(--shadow);z-index:5}
+.sim-link:hover{background:var(--p100)}
 .slide-reset{position:absolute;top:44px;left:56px;width:58px;height:58px;border-radius:50%;border:none;background:#fff;color:var(--p600);
   font-size:30px;box-shadow:var(--shadow);opacity:.55;z-index:5;transition:opacity .2s,transform .2s}
 .slide-reset:hover{opacity:1;transform:rotate(-90deg)}
@@ -607,6 +609,12 @@ kbd{font-family:var(--mono);background:#fff;border:2px solid var(--p200);border-
 .st-add:hover{background:#E1EEE6;color:#107C41}
 .xst{display:flex;align-items:center;gap:20px;background:#F3F3F3;border-top:1px solid #E0E0E0;padding:0 14px;font-size:14px;color:#666;white-space:nowrap}
 .xlayer{position:absolute;inset:0;pointer-events:none;z-index:20}
+.x-tip{position:absolute;z-index:40;max-width:330px;background:#14532D;color:#fff;font-size:17px;font-weight:700;line-height:1.5;padding:8px 14px;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.3);pointer-events:none;animation:xTip .3s both}
+.x-tip b{color:#FDE68A}
+.x-tip::before{content:"";position:absolute;top:-8px;left:calc(var(--ax,50%) - 8px);border:8px solid transparent;border-top:0;border-bottom-color:#14532D}
+.x-tip.up::before{top:auto;bottom:-8px;border-bottom:0;border-top:8px solid #14532D}
+.x-tip.side::before{display:none}
+@keyframes xTip{from{opacity:0;transform:translateY(5px)}}
 .xpop{position:absolute;pointer-events:auto;background:#fff;border:1px solid #C6C6C6;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:4px 0;min-width:230px;font-size:16px;border-radius:4px;direction:rtl}
 .xpi{display:flex;align-items:center;gap:12px;padding:4px 14px;cursor:pointer;white-space:nowrap}
 .xpi:hover{background:#E1EEE6}
@@ -805,7 +813,32 @@ const hintFn = (k, menu, fn) => H => {
   if (H.tab !== 'formulas') return H.has('[data-tab="formulas"]');
   return H.has(`[data-cmd="${menu}"]`);
 };
+/* تلميح كتابي يظهر بجانب الزر المضيء: يصف الخطوة التالية بالضبط */
+const tipFn = (k, menuName, fn, what, dlgTip) => H => {
+  if (H.dlg) return dlgTip;
+  if (H.pop) return `اختاري <b>${fn}</b> من القائمة، ${what}`;
+  if (H.sel !== k) return `اضغطي الخلية <b>${k}</b> لتظهر النتيجة فيها 🖱️`;
+  if (H.tab !== 'formulas') return 'افتحي تبويب <b>الصيغ</b> من الأعلى';
+  return `اضغطي <b>${menuName} ▾</b> لفتح قائمة الدوال`;
+};
 const hintFill = k => H => H.sel !== k ? H.td(k) : H.has('.fh');
+/* مثل hintFn لكن تُضيء مربعات الوسيطات واحدًا تلو الآخر (n = عدد المربعات المطلوبة) */
+const hintArgs = (k, menu, fn, n) => H => {
+  if (!H.dlg) return hintFn(k, menu, fn)(H);
+  const ins = H.all('.fa-in'), i = ins.findIndex(x => x.value === '');
+  return i >= 0 && i < n ? ins[i] : H.has('.fa-ok');
+};
+/* تلميح كتابي لخطوات الوسيطات: args = ما يُكتب في كل مربع بالترتيب */
+const tipArgs = (k, menuName, fn, what, args, okTip) => H => {
+  if (H.dlg) {
+    const i = H.all('.fa-in').findIndex(x => x.value === '');
+    if (i < 0 || i >= args.length) return okTip;
+    return (i ? `اضغطي داخل <b>النص${i + 1}</b> ثم ` : '') + args[i];
+  }
+  const t = tipFn(k, menuName, fn, what)(H);
+  return !H.pop && H.sel === k && H.f(k) ? 'النتيجة غير صحيحة، أعيدي المحاولة: ' + t : t;
+};
+const tipFill = (k, end, what) => H => H.sel !== k ? `اضغطي الخلية <b>${k}</b> أولًا 🖱️` : `اسحبي المربع الأخضر الصغير <b>■</b> إلى <b>${end}</b> ${what} ⬇️`;
 
 /* بيانات الطالبات كما في جدول الكتاب (صفحة 104) */
 const STU = [['نورة', 'فهد', 15, 16, 18], ['سارة', 'عبدالله', 18, 19, 20], ['ريم', 'فواز', 19, 19, 20], ['ليان', 'محمد', 12, 15, 16], ['دانة', 'سعود', 13, 16, 19], ['جود', 'حمد', 16, 17, 16]];
@@ -837,6 +870,13 @@ const synData = (() => {
   SYN.forEach(([k, v]) => d[k] = { v, lock: true });
   return d;
 })();
+const SYN_G = { E4: ['فرد', 'إنسان', 'امرؤ'], E7: ['سلس', 'يسير', 'ميسور', 'هيّن'], E11: ['شديد', 'متين'] };
+const synCells = { E4: [4, 5, 6], E7: [7, 8, 9, 10], E11: [11, 12] };
+/* مربعات CONCAT: خلية، فاصلة، خلية، فاصلة، … */
+const synArgs = k => synCells[k].flatMap((r, i) => [...(i ? ['اكتبي الفاصلة <b>،</b>'] : []), `اضغطي الخلية <b>D${r}</b> 🖱️`]);
+const tipSyn = k => tipArgs(k, 'نص', 'CONCAT', 'لدمج المترادفات', synArgs(k), 'تأكدي من النتيجة في الأسفل، ثم اضغطي <b>موافق</b> ✅');
+const synNext = H => synOk(H, 'E7', SYN_G.E7) ? 'E11' : 'E7';
+const lenNext = H => ['F4', 'F7', 'F11'].find(k => H.f(k) !== `=LEN(E${k.slice(1)})`) || 'F11';
 const synOk = (x, k, words) => x.f(k).startsWith('=CONCAT') && new RegExp('^' + words.join('\\s*[,،]\\s*') + '$').test(x.show(x.val(k)).trim());
 
 const SLIDES = [
@@ -932,6 +972,7 @@ const SLIDES = [
   {
     type: 'funcSim', transition: 'zoom', compact: true,
     strategy: '🎮 التعلّم بالممارسة',
+    simLink: 3,
     title: 'محاكي إكسل: دالة COUNT',
     file: 'درجات الطالبات',
     cols: [['A', 190], ['B', 120], ['C', 120], ['D', 130], ['E', 130], ['F', 130]], rows: 12, start: [0, 1],
@@ -962,6 +1003,28 @@ const SLIDES = [
     explain: 'COUNT تعدّ <b>الأرقام فقط</b>: 12 و7 و20 = <b>3</b> — النص «نورة» والخلية الفارغة لا تُعدّان، و39 هو <b>المجموع</b> وليس العدد!'
   },
 
+  /* 🎮 محاكي TODAY و NOW */
+  {
+    type: 'funcSim', transition: 'zoom', compact: true,
+    strategy: '🎮 التعلّم بالممارسة',
+    simLink: 4,
+    title: 'محاكي إكسل: دالتا TODAY و NOW',
+    file: 'التاريخ والوقت',
+    cols: [['A', 170], ['B', 200], ['C', 330], ['D', 120]], rows: 8, start: [0, 0],
+    data: { A1: { v: 'الدالة', ...HDR }, B1: { v: 'TODAY', ...HDR }, C1: { v: 'NOW', ...HDR }, A2: { v: 'النتيجة', b: true, lock: true } },
+    steps: [
+      { text: 'اضغطي <b>B2</b> ← الصيغ ← <b>التاريخ والوقت ▾</b> ← <b>TODAY</b> ← <b>موافق</b>', ok: x => x.f('B2') === '=TODAY()', hint: hintFn('B2', 'm:date', 'TODAY'),
+        tip: tipFn('B2', 'التاريخ والوقت', 'TODAY', 'وهي تُرجع تاريخ اليوم 📅', 'لا تحتاج TODAY إلى وسيطات، اضغطي <b>موافق</b> ✅') },
+      { text: 'اضغطي <b>C2</b> وطبّقي دالة <b>NOW</b> بنفس الطريقة 🕒', ok: x => x.f('C2') === '=NOW()', hint: hintFn('C2', 'm:date', 'NOW'),
+        tip: tipFn('C2', 'التاريخ والوقت', 'NOW', 'وهي تُرجع التاريخ مع الوقت 🕒', 'الأقواس فارغة في <b>NOW()</b> أيضًا، اضغطي <b>موافق</b> ✅') },
+      { text: 'لاحظي: الدالتان <b>لا تأخذان أي وسيطات</b>… الأقواس فارغة <b dir="ltr">()</b>', ok: x => x.f('C2') === '=NOW()', hint: null },
+      { text: 'طبّقي <b>التقويم الهجري</b> على <b>C2</b>: الشريط الرئيسي ← <b>تنسيق الرقم ▾</b> ← التقويم الهجري 🌙', ok: x => x.fmt('C2') === 'hijri', hint: H => H.sel !== 'C2' ? H.td('C2') : H.pop ? H.item('الهجري') : H.tab !== 'home' ? H.has('[data-tab="home"]') : H.has('[data-cmd="m:nf"]'),
+        tip: H => H.sel !== 'C2' ? 'اضغطي الخلية <b>C2</b> أولًا 🖱️' : H.pop ? 'اختاري <b>التقويم الهجري</b> من القائمة 🌙' : H.tab !== 'home' ? 'افتحي تبويب <b>الشريط الرئيسي</b>' : 'افتحي قائمة <b>تنسيق الرقم ▾</b> من مجموعة رقم' }
+    ],
+    doneMsg: 'رائع! عرضتِ تاريخ جهازكِ بدالة TODAY، والتاريخ مع الوقت بدالة NOW، وبالتقويم الهجري 🌙',
+    tries: ['طبّقي <b>تاريخ طويل</b> على الخلية B2 من تنسيق الرقم', 'اضغطي ضغطًا مزدوجًا على خلية واكتبي <b dir="ltr">=TODAY()</b> بنفسكِ']
+  },
+
   /* 7) TODAY و NOW */
   {
     type: 'classify', transition: 'fade',
@@ -979,24 +1042,6 @@ const SLIDES = [
       { value: 'تُرجع <span dir="ltr">03/11/2026</span>', answer: 0 },
       { value: 'تُرجع <span dir="ltr">03/11/2026 07:30</span>', answer: 1 }
     ]
-  },
-
-  /* 🎮 محاكي TODAY و NOW */
-  {
-    type: 'funcSim', transition: 'zoom', compact: true,
-    strategy: '🎮 التعلّم بالممارسة',
-    title: 'محاكي إكسل: دالتا TODAY و NOW',
-    file: 'التاريخ والوقت',
-    cols: [['A', 170], ['B', 200], ['C', 330], ['D', 120]], rows: 8, start: [0, 0],
-    data: { A1: { v: 'الدالة', ...HDR }, B1: { v: 'TODAY', ...HDR }, C1: { v: 'NOW', ...HDR }, A2: { v: 'النتيجة', b: true, lock: true } },
-    steps: [
-      { text: 'اضغطي <b>B2</b> ← الصيغ ← <b>التاريخ والوقت ▾</b> ← <b>TODAY</b> ← <b>موافق</b>', ok: x => x.f('B2') === '=TODAY()', hint: hintFn('B2', 'm:date', 'TODAY') },
-      { text: 'اضغطي <b>C2</b> وطبّقي دالة <b>NOW</b> بنفس الطريقة 🕒', ok: x => x.f('C2') === '=NOW()', hint: hintFn('C2', 'm:date', 'NOW') },
-      { text: 'لاحظي: الدالتان <b>لا تأخذان أي وسيطات</b>… الأقواس فارغة <b dir="ltr">()</b>', ok: x => x.f('C2') === '=NOW()', hint: null },
-      { text: 'طبّقي <b>التقويم الهجري</b> على <b>C2</b>: الشريط الرئيسي ← <b>تنسيق الرقم ▾</b> ← التقويم الهجري 🌙', ok: x => x.fmt('C2') === 'hijri', hint: H => H.sel !== 'C2' ? H.td('C2') : H.pop ? H.item('الهجري') : H.tab !== 'home' ? H.has('[data-tab="home"]') : H.has('[data-cmd="m:nf"]') }
-    ],
-    doneMsg: 'رائع! عرضتِ تاريخ جهازكِ بدالة TODAY، والتاريخ مع الوقت بدالة NOW، وبالتقويم الهجري 🌙',
-    tries: ['طبّقي <b>تاريخ طويل</b> على الخلية B2 من تنسيق الرقم', 'اضغطي ضغطًا مزدوجًا على خلية واكتبي <b dir="ltr">=TODAY()</b> بنفسكِ']
   },
 
   /* 8) فكري – زاوجي – شاركي (تدريب 2) */
@@ -1057,15 +1102,20 @@ const SLIDES = [
   {
     type: 'funcSim', transition: 'zoom', compact: true,
     strategy: '🎮 التعلّم بالممارسة',
+    simLink: 5,
     title: 'محاكي إكسل: دالتا CONCAT و LEN',
     file: 'درجات الطالبات',
     cols: [['A', 150], ['B', 120], ['C', 120], ['D', 200], ['E', 130]], rows: 10, start: [0, 0],
     data: namesData,
     steps: [
-      { text: 'اضغطي <b>D4</b> ← الصيغ ← <b>نص ▾</b> ← <b>CONCAT</b>، واكتبي: <b>B4</b> ثم <b>" "</b> ثم <b>C4</b> ← موافق', ok: x => fullOk(x, 4), hint: hintFn('D4', 'm:text', 'CONCAT') },
-      { text: 'اسحبي <b>مقبض الملء ■</b> من D4 إلى <b>D9</b> لإكمال الأسماء ⬇️', ok: x => [5, 6, 7, 8, 9].every(r => fullOk(x, r)), hint: hintFill('D4') },
-      { text: 'اضغطي <b>E4</b> ← الصيغ ← <b>نص ▾</b> ← <b>LEN</b>، واكتبي <b>D4</b> ← موافق', ok: x => lenOk(x, 4), hint: hintFn('E4', 'm:text', 'LEN') },
-      { text: 'أكملي عدد الأحرف بالملء التلقائي حتى <b>E9</b> ⬇️', ok: x => [5, 6, 7, 8, 9].every(r => lenOk(x, r)), hint: hintFill('E4') }
+      { text: 'اضغطي <b>D4</b> ← الصيغ ← <b>نص ▾</b> ← <b>CONCAT</b>، واكتبي: <b>B4</b> ثم <b>" "</b> ثم <b>C4</b> ← موافق', ok: x => fullOk(x, 4), hint: hintArgs('D4', 'm:text', 'CONCAT', 3),
+        tip: tipArgs('D4', 'نص', 'CONCAT', 'وهي تدمج النصوص 🔗', ['اضغطي الخلية <b>B4</b> (الاسم) 🖱️', 'اضغطي مفتاح <b>المسافة</b> مرة واحدة ␣', 'اضغطي الخلية <b>C4</b> (اسم الأب) 🖱️'], 'تأكدي من النتيجة في الأسفل، ثم اضغطي <b>موافق</b> ✅') },
+      { text: 'اسحبي <b>مقبض الملء ■</b> من D4 إلى <b>D9</b> لإكمال الأسماء ⬇️', ok: x => [5, 6, 7, 8, 9].every(r => fullOk(x, r)), hint: hintFill('D4'),
+        tip: tipFill('D4', 'D9', 'لإكمال الأسماء') },
+      { text: 'اضغطي <b>E4</b> ← الصيغ ← <b>نص ▾</b> ← <b>LEN</b>، واكتبي <b>D4</b> ← موافق', ok: x => lenOk(x, 4), hint: hintArgs('E4', 'm:text', 'LEN', 1),
+        tip: tipArgs('E4', 'نص', 'LEN', 'وهي تعدّ الأحرف 🔢', ['اضغطي الخلية <b>D4</b> (الاسم الكامل) 🖱️'], 'لاحظي عدد الأحرف في الأسفل، ثم اضغطي <b>موافق</b> ✅') },
+      { text: 'أكملي عدد الأحرف بالملء التلقائي حتى <b>E9</b> ⬇️', ok: x => [5, 6, 7, 8, 9].every(r => lenOk(x, r)), hint: hintFill('E4'),
+        tip: tipFill('E4', 'E9', 'لإكمال عدد الأحرف') }
     ],
     doneMsg: 'ممتاز! دمجتِ الأسماء بدالة CONCAT وحسبتِ عدد أحرفها بدالة LEN — لاحظي أن المسافة حُسبت حرفًا',
     tries: ['احذفي <b>" "</b> من صيغة CONCAT… ماذا حدث للاسم؟ وكم صار عدد الأحرف؟', 'اضغطي ضغطًا مزدوجًا على D4 وأضيفي اسمًا ثالثًا للصيغة']
@@ -1091,15 +1141,18 @@ const SLIDES = [
   {
     type: 'funcSim', transition: 'zoom', compact: true,
     strategy: '🎮 تدريب 3 · لنطبق معًا',
+    simLink: 6,
     title: 'اختبار اللغة: المترادفات',
     file: 'G7.S2.2.2_Language_Test',
     cols: [['A', 100], ['B', 190], ['C', 50], ['D', 110], ['E', 260], ['F', 170]], rows: 13, start: [0, 0],
     data: synData,
     steps: [
-      { text: 'في <b>E4</b> طبّقي <b>CONCAT</b> لدمج مترادفات المجموعة 1 (D4، D5، D6) مع فاصلة <b>"،"</b> بينها', ok: x => synOk(x, 'E4', ['فرد', 'إنسان', 'امرؤ']), hint: hintFn('E4', 'm:text', 'CONCAT') },
-      { text: 'طبّقي الأمر نفسه للمجموعة 2 في <b>E7</b> وللمجموعة 3 في <b>E11</b>', ok: x => synOk(x, 'E7', ['سلس', 'يسير', 'ميسور', 'هيّن']) && synOk(x, 'E11', ['شديد', 'متين']), hint: H => hintFn(H.f('E7').startsWith('=CONCAT') ? 'E11' : 'E7', 'm:text', 'CONCAT')(H) },
-      { text: 'طبّقي <b>LEN</b> في <b>F4</b> و<b>F7</b> و<b>F11</b> لحساب طول «المترادفات معًا»', ok: x => ['4', '7', '11'].every(r => x.f('F' + r) === `=LEN(E${r})`), hint: hintFn('F4', 'm:text', 'LEN') },
-      { text: 'طبّقي <b>COUNT</b> في <b>C13</b> لعرض العدد الإجمالي للمترادفات (C4:C12)', ok: x => x.f('C13') === '=COUNT(C4:C12)' && x.val('C13') === 9, hint: hintFn('C13', 'm:sum', 'COUNT') }
+      { text: 'في <b>E4</b> طبّقي <b>CONCAT</b> لدمج مترادفات المجموعة 1 (D4، D5، D6) مع فاصلة <b>"،"</b> بينها', ok: x => synOk(x, 'E4', SYN_G.E4), hint: hintArgs('E4', 'm:text', 'CONCAT', 5), tip: tipSyn('E4') },
+      { text: 'طبّقي الأمر نفسه للمجموعة 2 في <b>E7</b> وللمجموعة 3 في <b>E11</b>', ok: x => synOk(x, 'E7', SYN_G.E7) && synOk(x, 'E11', SYN_G.E11), hint: H => { const k = synNext(H); return hintArgs(k, 'm:text', 'CONCAT', synArgs(k).length)(H); }, tip: H => tipSyn(synNext(H))(H) },
+      { text: 'طبّقي <b>LEN</b> في <b>F4</b> و<b>F7</b> و<b>F11</b> لحساب طول «المترادفات معًا»', ok: x => ['4', '7', '11'].every(r => x.f('F' + r) === `=LEN(E${r})`), hint: H => hintArgs(lenNext(H), 'm:text', 'LEN', 1)(H),
+        tip: H => { const k = lenNext(H); return tipArgs(k, 'نص', 'LEN', 'وهي تعدّ الأحرف 🔢', [`اضغطي الخلية <b>E${k.slice(1)}</b> 🖱️`], 'اضغطي <b>موافق</b> ✅')(H); } },
+      { text: 'طبّقي <b>COUNT</b> في <b>C13</b> لعرض العدد الإجمالي للمترادفات (C4:C12)', ok: x => x.f('C13') === '=COUNT(C4:C12)' && x.val('C13') === 9, hint: H => H.mode ? H.td('C4') : hintFn('C13', 'm:sum', 'COUNT')(H),
+        tip: H => H.mode ? 'اسحبي لتحديد <b>C4</b> إلى <b>C12</b> ثم اضغطي <b>Enter</b> ⏎' : tipFn('C13', 'جمع تلقائي', 'COUNT', 'وهي تعدّ الأرقام 🔢')(H) }
     ],
     doneMsg: 'عثرت المجموعات على <b>9 مترادفات</b>! 🎉 أجيبي: ما وسيطات CONCAT التي استخدمتِها؟ وفي أي خلية طبّقتِ COUNT؟'
   },
@@ -2338,11 +2391,33 @@ const RENDERERS = {
       $$('.pg-steps li', el).forEach((li, k) => { li.classList.toggle('done', st.done[k]); li.classList.toggle('cur', k === cur); });
       $('.pg-done', el).classList.toggle('hidden', !st.finished);
       $$('.glow', el).forEach(n => n.classList.remove('glow'));
+      $('.x-tip', xw)?.remove();
       if (st.hints && cur >= 0 && s.steps[cur].hint) {
-        const h = s.steps[cur].hint({ sel: actK(), tab: st.tab, mode: st.mode && st.mode.fn, dlg: st.dlg && st.dlg.fn, pop: !!$('.xpop', layer), f: fOf,
-          has: q => $(q, el), all: q => $$(q, el), td: k => $(`td[data-k="${k}"]`, grid), item: t => $$('.xpi', layer).find(n => n.textContent.includes(t)) });
+        const H = { sel: actK(), tab: st.tab, mode: st.mode && st.mode.fn, dlg: st.dlg && st.dlg.fn, pop: !!$('.xpop', layer), f: fOf, val, show,
+          has: q => $(q, el), all: q => $$(q, el), td: k => $(`td[data-k="${k}"]`, grid), item: t => $$('.xpi', layer).find(n => n.textContent.includes(t)) };
+        const h = s.steps[cur].hint(H);
         const n = h && (typeof h === 'string' ? $(h, el) : h); n && n.classList.add('glow');
+        const t = n && s.steps[cur].tip && s.steps[cur].tip(H);
+        if (t) showTip(t, n, H.mode);
       }
+    }
+    /* يضع التلميح تحت الهدف (أو فوقه إن لم تتسع المساحة)، وبجانب القائمة حتى لا يغطي خياراتها */
+    function showTip(html, n, above) {
+      const tip = document.createElement('div'); tip.className = 'x-tip'; tip.innerHTML = html; xw.appendChild(tip);
+      const W = xw.offsetWidth, H = xw.offsetHeight, tw = tip.offsetWidth, th = tip.offsetHeight, r = relEl(n), menu = n.closest('.xpop, .xd');
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      let left, top;
+      if (menu) {
+        const m = relEl(menu); left = m.x - tw - 12 >= 6 ? m.x - tw - 12 : Math.min(m.x + m.w + 12, W - tw - 6);
+        top = clamp(r.y + r.h / 2 - th / 2, 6, H - th - 6); tip.classList.add('side');
+      } else if (n.matches('.fh')) {                         /* بجانب مقبض الملء حتى لا يغطي الخلية ولا مسار السحب */
+        left = clamp(r.x - tw - 14, 6, W - tw - 6); top = clamp(r.y + r.h / 2 - th / 2, 6, H - th - 6); tip.classList.add('side');
+      } else {
+        const below = r.y + r.h + 12, up = above || below + th > H - 6, cx = r.x + r.w / 2;
+        left = clamp(cx - tw / 2, 6, W - tw - 6); top = up ? r.y - th - 12 : below;
+        tip.classList.toggle('up', up); tip.style.setProperty('--ax', (cx - left) + 'px');
+      }
+      tip.style.left = left + 'px'; tip.style.top = top + 'px';
     }
     $('.pg-hint', el).onclick = e => { st.hints = !st.hints; e.currentTarget.textContent = '💡 التلميحات: ' + (st.hints ? 'تعمل' : 'متوقفة'); renderSteps(); };
     const refresh = () => { renderGrid(); check(); };
@@ -2399,6 +2474,7 @@ const RENDERERS = {
         }
         $$('.fa-in', dlg).forEach(i => { const a = norm(i.value); $('.fa-v', i.closest('.fa-row')).textContent = a === '' ? '' : '= ' + JSON.stringify(show(argSafe(a))); });
         const f = formula(); $('.fa-res b', dlg).textContent = f ? show(calc(f)) : '';
+        renderSteps();                                        /* ليتقدّم التلميح مع تعبئة كل مربع */
       };
       const bind = () => $$('.fa-in', dlg).forEach(i => { i.oninput = upd; i.onfocus = () => { st.lastField = i; }; });
       bind(); upd();
@@ -2970,6 +3046,12 @@ function build(i) {
     r.className = 'slide-reset'; r.title = 'إعادة الشريحة من البداية'; r.textContent = '↺';
     r.onclick = () => { build(i); if (i === cur && built[i].api.enter) built[i].api.enter(); Sound.pop(); };
     b.el.appendChild(r);
+  }
+  /* زر يفتح التدريب نفسه في محاكي إكسل الموحّد */
+  if (s.simLink) {
+    const a = document.createElement('a');
+    a.className = 'sim-link'; a.href = 'excel-sim.html#' + s.simLink; a.target = '_blank'; a.textContent = '📗 افتحي في محاكي إكسل';
+    b.el.appendChild(a);
   }
 }
 

@@ -79,6 +79,8 @@ b,strong{font-weight:800}
 .row-center{display:flex;justify-content:center;gap:18px}
 
 /* زر إعادة الشريحة */
+.sim-link{position:absolute;top:44px;left:126px;height:58px;display:flex;align-items:center;padding:0 22px;border-radius:999px;background:#fff;color:var(--p700);font-size:21px;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:var(--shadow);z-index:5}
+.sim-link:hover{background:var(--p100)}
 .slide-reset{position:absolute;top:44px;left:56px;width:58px;height:58px;border-radius:50%;border:none;background:#fff;color:var(--p600);
   font-size:30px;box-shadow:var(--shadow);opacity:.55;z-index:5;transition:opacity .2s,transform .2s}
 .slide-reset:hover{opacity:1;transform:rotate(-90deg)}
@@ -449,6 +451,8 @@ kbd{font-family:var(--mono);background:#fff;border:2px solid var(--p200);border-
 /* لوحة المهمة */
 .pc-guide{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
 .pg-h{font-size:26px;font-weight:900;color:var(--p700)}
+.pg-tip{background:#FFF3D6;border-right:6px solid var(--accent);border-radius:12px;padding:8px 12px;font-size:21px;font-weight:800;line-height:1.4;color:var(--p800);flex-shrink:0}
+.pg-tip:empty{display:none}
 .pg-steps{list-style:none;display:flex;flex-direction:column;gap:7px}
 .pg-steps li{display:flex;gap:10px;align-items:center;font-size:19px;line-height:1.4;padding:7px 10px;border-radius:14px;background:var(--p50);color:#344A3E;transition:background .3s,opacity .3s}
 .pg-steps li code{font-size:16px}
@@ -870,6 +874,7 @@ const SLIDES = [
   {
     type: 'formatLab', transition: 'slide',
     strategy: '🔬 لاحظي واكتشفي',
+    simLink: 1,
     title: 'تنسيق الأرقام: نفس القيمة… بأشكال مختلفة!',
     values: [40, 19, 1250, 0.75],
     formats: [
@@ -899,33 +904,11 @@ const SLIDES = [
     explain: 'تنسيق <b>المحاسبة</b> يقوم بمحاذاة الأرقام بعلاماتها العشرية 👌'
   },
 
-  /* 8) تنسيق التاريخ: رتّبي الخطوات */
-  {
-    type: 'order', transition: 'slide',
-    strategy: '🔍 لاحظي واكتشفي',
-    title: 'تنسيق التاريخ في إكسل',
-    facts: [
-      { icon: '🌍', text: 'لا تستخدم جميع الدول نفس تنسيق التاريخ، <b>فبعضها يضع الشهر قبل اليوم</b>' },
-      { icon: '🌙', text: 'يمكن اختيار <b>نوع التقويم</b>: هجري أو ميلادي' },
-      { icon: '✨', text: 'أمثلة: <b>١٤٤٢/٠٩/٢٣</b> أو <b>٢٣/٠٩/١٤٤٢</b>' }
-    ],
-    poolTitle: '🧩 رتّبي خطوات تنسيق التاريخ',
-    steps: [
-      'حدّدي الخلية <b>A1</b> التي فيها التاريخ',
-      'من <b>الشريط الرئيسي</b> ← مجموعة <b>رقم</b>',
-      'اضغطي زر <b>التوسيع ↘</b>',
-      'في نافذة <b>تنسيق خلايا</b> اختاري <b>التاريخ</b>',
-      'اختاري <b>النوع</b> المناسب من القائمة',
-      'اضغطي <b>موافق</b> ✔️'
-    ],
-    doneTitle: '🎉 رائع! هكذا يتغيّر شكل التاريخ:',
-    finale: '<div class="cellpair"><span class="cellbox big">1442/09/23</span><span class="arrow">←</span><span class="cellbox big">١٤٤٢/٠٩/٢٣</span></div><div class="cell-lbl">نفس التاريخ… بتنسيق مختلف 📅</div>'
-  },
-
   /* 🎮 محاكي إكسل: تنسيق لائحة البقالة (صفحات 94 – 99 في الكتاب) */
   {
     type: 'excelSim', transition: 'zoom', compact: true,
     strategy: '🎮 التعلّم بالممارسة',
+    simLink: 2,
     title: 'محاكي إكسل: نسّقي لائحة البقالة',
     /* بيانات الجدول كما في الكتاب */
     data: {
@@ -962,6 +945,29 @@ const SLIDES = [
       'جرّبي حذف ورقة فيها بيانات (زر الفأرة الأيمن ← حذف)… ماذا يظهر؟ ⚠️',
       'اضغطي ضغطًا مزدوجًا على أي خلية لتعديل قيمتها ✍️'
     ]
+  },
+
+  /* 8) تنسيق التاريخ: رتّبي الخطوات */
+  {
+    type: 'order', transition: 'slide',
+    strategy: '🔍 لاحظي واكتشفي',
+    title: 'تنسيق التاريخ في إكسل',
+    facts: [
+      { icon: '🌍', text: 'لا تستخدم جميع الدول نفس تنسيق التاريخ، <b>فبعضها يضع الشهر قبل اليوم</b>' },
+      { icon: '🌙', text: 'يمكن اختيار <b>نوع التقويم</b>: هجري أو ميلادي' },
+      { icon: '✨', text: 'أمثلة: <b>١٤٤٢/٠٩/٢٣</b> أو <b>٢٣/٠٩/١٤٤٢</b>' }
+    ],
+    poolTitle: '🧩 رتّبي خطوات تنسيق التاريخ',
+    steps: [
+      'حدّدي الخلية <b>A1</b> التي فيها التاريخ',
+      'من <b>الشريط الرئيسي</b> ← مجموعة <b>رقم</b>',
+      'اضغطي زر <b>التوسيع ↘</b>',
+      'في نافذة <b>تنسيق خلايا</b> اختاري <b>التاريخ</b>',
+      'اختاري <b>النوع</b> المناسب من القائمة',
+      'اضغطي <b>موافق</b> ✔️'
+    ],
+    doneTitle: '🎉 رائع! هكذا يتغيّر شكل التاريخ:',
+    finale: '<div class="cellpair"><span class="cellbox big">1442/09/23</span><span class="arrow">←</span><span class="cellbox big">١٤٤٢/٠٩/٢٣</span></div><div class="cell-lbl">نفس التاريخ… بتنسيق مختلف 📅</div>'
   },
 
   /* 9) فكري – زاوجي – شاركي */
@@ -1481,6 +1487,7 @@ const RENDERERS = {
       </div>
       <div class="pc-guide anim" dir="rtl">
         <div class="pg-h">🎯 مهمتكِ كما في الكتاب</div>
+        <div class="pg-tip"></div>
         <ol class="pg-steps">${s.steps.map((t, k) => `<li data-k="${k}"><span class="pg-n">${k + 1}</span><span>${t}</span></li>`).join('')}</ol>
         <div class="pg-done hidden">
           <div class="pg-ok">🏆 أحسنتِ! نسّقتِ لائحة البقالة وحفظتِها بنجاح</div>
@@ -2020,52 +2027,59 @@ const RENDERERS = {
     }
     function refresh() {
       $$('.glow', el).forEach(n => n.classList.remove('glow'));
+      const tip = $('.pg-tip', el); tip.textContent = '';
       if (!st.hints) return;
       const i = st.done.indexOf(false); if (i < 0) return;
       const has = q => $(q, el), r = R();
-      const g = q => { const n = typeof q === 'string' ? has(q) : q; n && n.classList.add('glow'); };
-      const cells = ks => ks.forEach(k => g(`td[data-k="${k}"]`));
-      const home = () => st.tab === 'home' || (g('[data-tab="home"]'), false);
+      /* g: تُضيء العنصر وتكتب ما يجب فعله الآن */
+      const g = (q, text) => { const n = typeof q === 'string' ? has(q) : q; n && n.classList.add('glow'); tip.textContent = '👆 ' + text; };
+      const cells = (ks, text) => { ks.forEach(k => g(`td[data-k="${k}"]`, text)); };
+      const home = () => st.tab === 'home' || (g('[data-tab="home"]', 'افتحي تبويب «الشريط الرئيسي»'), false);
       const isR = (c1, c2, r1, r2) => r.c1 === c1 && r.c2 === c2 && r.r1 === r1 && r.r2 === r2;
-      if (has('.bsx') && i !== 8) return g('.bs-back');
-      if (i <= 4 && !S().main) return g(`.xs-tab[data-i="${st.sheets.findIndex(x => x.main)}"]`);
+      if (has('.bsx') && i !== 8) return g('.bs-back', 'اضغطي سهم الرجوع للعودة إلى الجدول');
+      if (i <= 4 && !S().main) return g(`.xs-tab[data-i="${st.sheets.findIndex(x => x.main)}"]`, 'ارجعي إلى الورقة الأولى من أسفل الشاشة');
       switch (i) {
-        case 0: return cells(['C4', 'C5', 'C6', 'C7', 'C8', 'C9']);
+        case 0: return cells(['C4', 'C5', 'C6', 'C7', 'C8', 'C9'], 'اضغطي على C4 واسحبي الفأرة إلى C9');
         case 1:
-          if (has('.xpop [data-nf]')) return g('[data-nf="currency"]');
-          if (has('.fc')) return g(has('[data-cat="currency"].sel') ? '.fc-ok' : '[data-cat="currency"]');
-          if (!(r.c1 === 2 && r.c2 === 2 && r.r1 <= 4 && r.r2 >= 9)) return cells(['C4', 'C5', 'C6', 'C7', 'C8', 'C9']);
-          return home() && g('.nf-drop');
+          if (has('.xpop [data-nf]')) return g('[data-nf="currency"]', 'اختاري «العملة» من القائمة');
+          if (has('.fc')) return has('[data-cat="currency"].sel') ? g('.fc-ok', 'اضغطي «موافق»') : g('[data-cat="currency"]', 'اختاري «العملة» من القائمة');
+          if (!(r.c1 === 2 && r.c2 === 2 && r.r1 <= 4 && r.r2 >= 9)) return cells(['C4', 'C5', 'C6', 'C7', 'C8', 'C9'], 'حدّدي خلايا السعر أولاً: اسحبي من C4 إلى C9');
+          return home() && g('.nf-drop', 'افتحي قائمة تنسيق الرقم في مجموعة «رقم»');
         case 2:
           if (has('.fc')) {
-            if (!has('.fc-tabs [data-t="num"].on')) return g('.fc-tabs [data-t="num"]');
-            if (!has('[data-cat="date"].sel')) return g('[data-cat="date"]');
-            return g('.fc-ok');
+            if (!has('.fc-tabs [data-t="num"].on')) return g('.fc-tabs [data-t="num"]', 'افتحي تبويب «رقم» في النافذة');
+            if (!has('[data-cat="date"].sel')) return g('[data-cat="date"]', 'اختاري «التاريخ» من القائمة');
+            return g('.fc-ok', 'اختاري نوع التاريخ ثم اضغطي «موافق»');
           }
-          if (has('.xpop [data-nf]')) return g('[data-nf="dateShort"]');
-          if (!isR(0, 0, 1, 1)) return cells(['A1']);
-          return home() && g('[data-cmd="dlg:num"]');
+          if (has('.xpop [data-nf]')) return g('[data-nf="dateShort"]', 'اختاري «تاريخ قصير»');
+          if (!isR(0, 0, 1, 1)) return cells(['A1'], 'اضغطي على الخلية A1');
+          return home() && g('[data-cmd="dlg:num"]', 'اضغطي سهم التوسيع ↘ بجانب كلمة «رقم»');
         case 3:
           if (has('.fc')) {
-            if (!has('.fc-tabs [data-t="align"].on')) return g('.fc-tabs [data-t="align"]');
-            return g(has('.fc-merge:checked') ? '.fc-ok' : has('.fc-merge').parentElement);
+            if (!has('.fc-tabs [data-t="align"].on')) return g('.fc-tabs [data-t="align"]', 'افتحي تبويب «محاذاة» في النافذة');
+            return has('.fc-merge:checked') ? g('.fc-ok', 'اضغطي «موافق»') : g(has('.fc-merge').parentElement, 'ضعي علامة ✓ عند دمج الخلايا');
           }
-          if (!isR(0, 3, 2, 2)) return cells(['A2', 'B2', 'C2', 'D2']);
-          return home() && g('.rb-merge');
+          if (!isR(0, 3, 2, 2)) return cells(['A2', 'B2', 'C2', 'D2'], 'اسحبي الفأرة من A2 إلى D2');
+          return home() && g('.rb-merge', 'اضغطي «دمج وتوسيط»');
         case 4: {
           const m = st.sheets.find(x => x.main);
-          if (!(r.c1 === 0 && r.c2 >= 3 && r.r1 === 3 && r.r2 === 3)) return cells(['A3', 'B3', 'C3', 'D3']);
-          return home() && g(['A3', 'B3', 'C3', 'D3'].every(k => (m.cells[k] || {}).b) ? '.rb-fill' : '.rb-b');
+          if (!(r.c1 === 0 && r.c2 >= 3 && r.r1 === 3 && r.r2 === 3)) return cells(['A3', 'B3', 'C3', 'D3'], 'اسحبي الفأرة من A3 إلى D3');
+          return home() && (['A3', 'B3', 'C3', 'D3'].every(k => (m.cells[k] || {}).b) ? g('.rb-fill', 'اضغطي لون التعبئة 🪣 لتلوين الخلفية') : g('.rb-b', 'اضغطي B لجعل العناوين عريضة'));
         }
         case 5:
-          if (has('.icd')) return g(has('.ic-cell.on') ? '.icd-ins' : has('.icd-in').value.trim() ? '.ic-cell' : '.icd-search');
-          return g(st.tab === 'insert' ? '.rb-icons' : '[data-tab="insert"]');
-        case 6: return g('.st-add');
-        case 7: return g(has('.xs-tab input') ? '.xs-tab input' : st.added ? '.xs-tab.on' : '.st-add');
+          if (has('.icd')) {
+            if (has('.ic-cell.on')) return g('.icd-ins', 'اضغطي «إدراج»');
+            return has('.icd-in').value.trim() ? g('.ic-cell', 'اضغطي على أيقونة لاختيارها') : g('.icd-search', 'اكتبي «البقالة» في مربع البحث');
+          }
+          return st.tab === 'insert' ? g('.rb-icons', 'اضغطي «أيقونات»') : g('[data-tab="insert"]', 'افتحي تبويب «إدراج»');
+        case 6: return g('.st-add', 'اضغطي ⊕ أسفل الشاشة لإضافة ورقة');
+        case 7:
+          if (has('.xs-tab input')) return g('.xs-tab input', 'اكتبي «جدول اللياقة» ثم اضغطي Enter');
+          return st.added ? g('.xs-tab.on', 'اضغطي ضغطًا مزدوجًا على اسم الورقة') : g('.st-add', 'اضغطي ⊕ أسفل الشاشة لإضافة ورقة');
         case 8:
-          if (has('.sv')) return g('.sv-save');
-          if (!has('.bsx')) return g('[data-tab="file"]');
-          return g(st.bs === 'saveas' ? '.bs-browse' : '[data-bs="saveas"]');
+          if (has('.sv')) return g('.sv-save', 'اكتبي «قائمة التسوق» ثم اضغطي «حفظ»');
+          if (!has('.bsx')) return g('[data-tab="file"]', 'افتحي تبويب «ملف»');
+          return st.bs === 'saveas' ? g('.bs-browse', 'اضغطي «استعراض»') : g('[data-bs="saveas"]', 'اضغطي «حفظ باسم»');
       }
     }
     $('.pg-hint', el).onclick = e => { st.hints = !st.hints; e.currentTarget.textContent = '💡 التلميحات: ' + (st.hints ? 'تعمل' : 'متوقفة'); refresh(); };
@@ -2529,6 +2543,12 @@ function build(i) {
     r.className = 'slide-reset'; r.title = 'إعادة الشريحة من البداية'; r.textContent = '↺';
     r.onclick = () => { build(i); if (i === cur && built[i].api.enter) built[i].api.enter(); Sound.pop(); };
     b.el.appendChild(r);
+  }
+  /* زر يفتح التدريب نفسه في محاكي إكسل الموحّد */
+  if (s.simLink) {
+    const a = document.createElement('a');
+    a.className = 'sim-link'; a.href = '../1st-mid/excel-sim.html#' + s.simLink; a.target = '_blank'; a.textContent = '📗 افتحي في محاكي إكسل';
+    b.el.appendChild(a);
   }
 }
 

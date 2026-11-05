@@ -615,6 +615,8 @@ $('#file').addEventListener('change', async e => {
       let cur = null; try { cur = JSON.parse(localStorage.getItem(LKEY)); } catch {}
       cur = cur && cur.done ? cur : { v: 1, done: {} };
       for (const [id, rec] of Object.entries(data.lessonsLog.done)) cur.done[id] = { ...rec, ...(cur.done[id] || {}) };
+      /* الشريحة التي وصلت إليها المعلمة: تُدمج بالطريقة نفسها */
+      if (data.lessonsLog.prog) { cur.prog = cur.prog || {}; for (const [id, rec] of Object.entries(data.lessonsLog.prog)) cur.prog[id] = { ...rec, ...(cur.prog[id] || {}) }; }
       try { localStorage.setItem(LKEY, JSON.stringify(cur)); } catch {}
     }
     delete data.lessonsLog;
