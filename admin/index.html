@@ -225,6 +225,7 @@ const fmt = n => Math.round(n * 10) / 10;
 function seed() {
   return {
     grades: [
+      ['الأول ابتدائي', '#F97316'], ['الثاني ابتدائي', '#EC4899'], ['الثالث ابتدائي', '#EAB308'],
       ['الصف الخامس', '#0fa797'], ['الصف السادس', '#F59E0B'], ['الأول متوسط', '#16A34A'],
       ['الثاني متوسط', '#2563EB'], ['الثالث متوسط', '#DB2777'], ['الأول ثانوي', '#5B57D9'], ['الثالث ثانوي', '#0E7490']
     ].map(([name, color]) => ({ id: uid(), name, color, weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] }))
@@ -249,6 +250,15 @@ if (db.v < 3) {
   if (!db.grades.some(g => g.name === 'الثالث ثانوي'))
     db.grades.push({ id: uid(), name: 'الثالث ثانوي', color: '#0E7490', weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] });
   db.v = 3;
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
+}
+/* إضافة الصفوف الأولية (الأول – الثالث ابتدائي) في بداية القائمة (مرة واحدة فقط) */
+if (db.v < 4) {
+  [['الثالث ابتدائي', '#EAB308'], ['الثاني ابتدائي', '#EC4899'], ['الأول ابتدائي', '#F97316']].forEach(([name, color]) => {
+    if (!db.grades.some(g => g.name === name))
+      db.grades.unshift({ id: uid(), name, color, weights: { ...DEF_W }, sections: [{ id: uid(), name: 'أ', students: [] }] });
+  });
+  db.v = 4;
   try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {}
 }
 
