@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المكتبات البرمجية | عرض تفاعلي</title>
+<!-- الخطوط (تعمل عند وجود إنترنت، وإلا يُستخدم خط النظام تلقائيًا) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   🎨 الألوان والهوية البصرية
+   ========================================================= */
+:root{
+  --p:#6D28D9; --p2:#8B5CF6; --p3:#C4B5FD; --ps:#F3EEFF;
+  --b:#2563EB; --b2:#60A5FA; --bs:#EAF2FF;
+  --acc:#F59E0B; --accs:#FFF4DC; --pink:#EC4899; --mint:#10B981;
+  --ok:#16A34A; --oks:#DCFCE7; --bad:#E11D48; --bads:#FFE4E6;
+  --ink:#1E1640; --muted:#6B6488; --line:#E7E2F7;
+  --code:#1D1736; --term:#110C22;
+  --mono:'JetBrains Mono','Fira Code',Consolas,'Courier New',monospace;
+  --font:'Tajawal','Segoe UI',Tahoma,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body{font-family:var(--font);background:#120C2A;color:var(--ink);-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body.idle{cursor:none}
+input{font-family:inherit;-webkit-user-select:text;user-select:text}
+button{font-family:inherit;cursor:pointer}
+[role=button]{cursor:pointer}
+.mono{font-family:var(--mono)}
+b{font-weight:800}
+
+/* =========================================================
+   🖥️ المسرح: 1920×1080 ثابت ويُكبَّر/يُصغَّر ليناسب أي شاشة (16:9)
+   ========================================================= */
+#viewport{position:fixed;inset:0;overflow:hidden;
+  background:radial-gradient(1200px 700px at 15% 10%,#3B2A80 0%,transparent 60%),radial-gradient(900px 600px at 90% 90%,#1E3A8A 0%,transparent 60%),#120C2A}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center;overflow:hidden;
+  background-color:#FCFBFF;
+  background-image:linear-gradient(rgba(109,40,217,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(109,40,217,.045) 1px,transparent 1px);
+  background-size:56px 56px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.6;pointer-events:none}
+.blob.b1{width:640px;height:640px;background:#E9DDFF;top:-240px;right:-180px}
+.blob.b2{width:580px;height:580px;background:#DCEBFF;bottom:-260px;left:-180px}
+.blob.b3{width:320px;height:320px;background:#FFE9F4;bottom:60px;right:32%;opacity:.45}
+.bits{position:absolute;font-family:var(--mono);font-size:22px;color:rgba(109,40,217,.10);letter-spacing:6px;pointer-events:none;white-space:nowrap;direction:ltr}
+.bits.t{top:22px;left:40px}.bits.bt{bottom:22px;right:40px}
+
+/* =========================================================
+   🎞️ الشرائح والانتقالات
+   ========================================================= */
+.slide{position:absolute;inset:0;padding:58px 100px 140px;display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .55s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility 0s linear .7s}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto;transform:none;
+  transition:opacity .55s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility 0s}
+.slide.enter{transition:none!important}
+.slide.enter.t-slide{transform:translateX(var(--dx,-140px))}
+.slide.enter.t-zoom{transform:scale(.9)}
+.slide.leave.t-slide{transform:translateX(calc(var(--dx,-140px) * -1))}
+.slide.leave.t-zoom{transform:scale(1.06)}
+.slide.leave.t-fade{transform:none}
+
+@keyframes rise{from{opacity:0;transform:translateY(38px)}to{opacity:1;transform:none}}
+.slide.active .anim{animation:rise .7s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0) * 110ms + 220ms)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-14px)}40%{transform:translateX(12px)}60%{transform:translateX(-8px)}80%{transform:translateX(5px)}}
+@keyframes popIn{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.45)}50%{box-shadow:0 0 0 18px rgba(139,92,246,0)}}
+@keyframes blink{50%{opacity:0}}
+.slide.active .shake{animation:shake .5s ease}
+.slide.active .pop{animation:popIn .45s cubic-bezier(.2,.8,.2,1)}
+.float-ico{display:inline-block;animation:floaty 3.2s ease-in-out infinite}
+
+/* =========================================================
+   🧩 عناصر عامة
+   ========================================================= */
+.s-head{display:flex;align-items:center;gap:26px;margin-bottom:30px;flex-shrink:0}
+.badge{font-family:var(--font);background:var(--ps);color:var(--p);font-weight:800;font-size:26px;padding:10px 24px;border-radius:999px;border:2px solid #E2D6FF;white-space:nowrap}
+.badge::before{content:"# ";font-family:var(--mono);opacity:.6}
+.s-head h2{font-size:60px;font-weight:900;line-height:1.15;color:var(--ink)}
+.s-body{flex:1;min-height:0;display:flex;gap:56px;align-items:center}
+.s-body.col{flex-direction:column;justify-content:center;gap:26px}
+.col-text{flex:1;display:flex;flex-direction:column;gap:22px;min-width:0}
+.col-code{flex:1.05;display:flex;flex-direction:column;gap:18px;min-width:0}
+.row{display:flex;align-items:center;justify-content:center}
+.gap{gap:18px}
+.lead{font-size:36px;font-weight:700;color:var(--muted);text-align:center;line-height:1.5}
+.hint{font-size:28px;color:var(--muted);font-weight:700;text-align:center}
+.points{list-style:none;display:flex;flex-direction:column;gap:16px}
+.points li{font-size:36px;font-weight:700;line-height:1.45;padding-right:52px;position:relative}
+.points li::before{content:"";position:absolute;right:6px;top:15px;width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--p2),var(--b2));transform:rotate(45deg)}
+.points.sm li{font-size:30px}
+.points .mono{direction:ltr;display:inline-block}
+.note{font-size:30px;font-weight:700;background:var(--accs);border:2px dashed #F6C66B;color:#7A4B00;padding:18px 26px;border-radius:20px;line-height:1.5}
+.note .mono{direction:ltr;display:inline-block}
+.predict-box{font-size:34px;font-weight:800;color:var(--p);background:var(--ps);border-radius:22px;padding:20px 28px;border-right:8px solid var(--p2)}
+.grad{background:linear-gradient(90deg,var(--p),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* الأزرار */
+.btn{font-size:30px;font-weight:800;padding:16px 32px;border-radius:18px;border:none;color:#fff;
+  background:linear-gradient(135deg,var(--p),var(--p2));box-shadow:0 7px 0 #4C1D95,0 14px 24px -8px rgba(76,29,149,.5);
+  transition:transform .15s ease,box-shadow .15s ease,filter .2s;white-space:nowrap}
+.btn:hover{transform:translateY(-3px);filter:brightness(1.07)}
+.btn:active{transform:translateY(5px);box-shadow:0 2px 0 #4C1D95}
+.btn.blue{background:linear-gradient(135deg,var(--b),var(--b2));box-shadow:0 7px 0 #1E40AF,0 14px 24px -8px rgba(30,64,175,.45)}
+.btn.blue:active{box-shadow:0 2px 0 #1E40AF}
+.btn.ghost{background:#fff;color:var(--p);border:3px solid var(--p3);box-shadow:0 6px 0 #DDD0FF}
+.btn.ghost:active{box-shadow:0 1px 0 #DDD0FF}
+.btn.sm{font-size:24px;padding:12px 22px}
+.btn.run{background:linear-gradient(135deg,#059669,#10B981);box-shadow:0 7px 0 #065F46,0 14px 24px -8px rgba(6,95,70,.45)}
+.btn.run:active{box-shadow:0 2px 0 #065F46}
+.btn.pick{background:linear-gradient(135deg,#F59E0B,#EC4899);box-shadow:0 7px 0 #B45309,0 14px 24px -8px rgba(236,72,153,.45)}
+.btn.pick:active{box-shadow:0 2px 0 #B45309}
+
+/* صندوق الكود */
+.code{background:var(--code);color:#EEEAFF;border-radius:24px;font-family:var(--mono);font-size:30px;line-height:1.55;direction:ltr;text-align:left;
+  box-shadow:0 22px 50px -22px rgba(40,20,90,.6);overflow:hidden;border:2px solid #2E2650}
+.code .bar{display:flex;gap:10px;align-items:center;padding:14px 22px;background:rgba(255,255,255,.05);font-size:19px;color:#A99FD6}
+.code .bar i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.code .bar i:nth-child(1){background:#FF5F57}.code .bar i:nth-child(2){background:#FEBC2E}.code .bar i:nth-child(3){background:#28C840}
+.code .bar .fn{margin-left:14px}.code .bar .lang{margin-left:auto;color:#FBBF24}
+.code pre{margin:0;padding:18px 30px 24px;white-space:pre;font-family:inherit;overflow:hidden}
+.code.sm{font-size:24px}.code.sm pre{padding:12px 24px 18px}
+.c-kw{color:#FF7AC6;font-weight:600}.c-fn{color:#7DD3FC}.c-str{color:#86EFAC}.c-num{color:#FBBF24}.c-com{color:#8A82B5;font-style:italic}
+.cursor{animation:blink 1s steps(1) infinite;color:#A78BFA}
+.term{background:var(--term);border-radius:20px;border:2px solid #2A2245;overflow:hidden;direction:ltr;text-align:left}
+.term-bar{font-family:var(--mono);font-size:18px;color:#7E74AE;padding:10px 20px;background:rgba(255,255,255,.04)}
+.term-body{font-family:var(--mono);font-size:28px;color:#86EFAC;padding:14px 24px 18px;min-height:110px;white-space:pre-wrap;line-height:1.5;margin:0}
+.term-body.err{color:#FDA4AF}
+
+/* المؤقت */
+.timer{display:flex;align-items:center;gap:16px;background:#fff;border:3px solid var(--line);border-radius:24px;padding:12px 18px;flex-shrink:0}
+.tm-ring{position:relative;width:110px;height:110px}
+.tm-ring svg{width:110px;height:110px;transform:rotate(-90deg)}
+.tm-bg{fill:none;stroke:#EEE8FF;stroke-width:11}
+.tm-fg{fill:none;stroke:var(--p2);stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.tm-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:800;font-size:28px;color:var(--ink);direction:ltr}
+.tm-btns{display:flex;flex-direction:column;gap:10px}
+.tm-btns .btn{font-size:22px;padding:8px 16px}
+.timer.warn .tm-fg{stroke:var(--acc)}
+.timer.done{border-color:var(--bad);animation:glow 1.2s 3}
+.timer.done .tm-txt{color:var(--bad)}
+
+/* =========================================================
+   شريحة العنوان
+   ========================================================= */
+.center-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;position:relative;z-index:1}
+.pills{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.pill{background:#fff;border:2px solid var(--line);border-radius:999px;padding:10px 24px;font-size:26px;font-weight:700;color:var(--muted)}
+.kicker{font-size:34px;font-weight:800;color:var(--b);letter-spacing:1px}
+.hero{font-size:118px;font-weight:900;line-height:1.1;background:linear-gradient(90deg,var(--p),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 10px}
+.hero-sub{font-family:var(--mono);font-size:40px;color:var(--p2);font-weight:600}
+.title-code .code{font-size:32px;min-width:860px}
+.meta{font-size:28px;color:var(--muted);font-weight:700}
+.deco-code{position:absolute;inset:0;pointer-events:none;z-index:0}
+.deco-code span{position:absolute;font-family:var(--mono);font-weight:800;color:rgba(109,40,217,.13);font-size:110px;animation:floaty 5s ease-in-out infinite;direction:ltr}
+.deco-code span:nth-child(2n){color:rgba(37,99,235,.12);animation-duration:6.5s}
+
+/* =========================================================
+   بطاقات القلب
+   ========================================================= */
+.flip-grid{display:grid;gap:28px;width:100%}
+.flip-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.flip-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.flip-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.flip-card{perspective:1400px;height:330px}
+.flip-grid.cols-3 .flip-card{height:250px}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:26px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fc-front{background:#fff;border:3px solid var(--line);box-shadow:0 18px 40px -20px rgba(80,50,160,.35);transition:border-color .2s,transform .2s}
+.flip-card:hover .fc-front{border-color:var(--p3)}
+.fc-back{background:linear-gradient(145deg,var(--p),var(--b));color:#fff;transform:rotateY(180deg)}
+.fc-ico{font-size:64px}
+.fc-q{font-size:32px;font-weight:800;line-height:1.35}
+.fc-q .mono{direction:ltr;display:inline-block;font-size:26px;color:var(--p)}
+.fc-tap{font-size:20px;color:var(--p2);font-weight:700}
+.fc-a{font-size:31px;font-weight:700;line-height:1.5}
+.fc-a .mono{font-size:26px;direction:ltr;display:inline-block}
+
+/* =========================================================
+   الأهداف
+   ========================================================= */
+.goals{flex:1.4;display:flex;flex-direction:column;gap:16px}
+.goal{display:flex;align-items:center;gap:20px;background:#fff;border:2px solid var(--line);border-radius:22px;padding:16px 24px;font-size:32px;font-weight:700;box-shadow:0 10px 24px -18px rgba(80,50,160,.4)}
+.goal .mono{direction:ltr;display:inline-block}
+.g-num{font-family:var(--mono);width:52px;height:52px;flex-shrink:0;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--p),var(--b));color:#fff;font-weight:800;font-size:26px}
+.g-ico{font-size:36px}
+.goals-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:20px}
+.goals-side .code{font-size:26px;width:100%}
+.big-emoji{font-size:120px}
+
+/* =========================================================
+   جامع البيانات
+   ========================================================= */
+.data-src{flex:1;display:flex;flex-direction:column;gap:18px}
+.ds-title{font-size:30px;font-weight:800;color:var(--b)}
+.packets{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.packet{background:#fff;border:3px solid var(--line);border-radius:22px;padding:16px 10px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;transition:all .2s;position:relative}
+.packet:hover{border-color:var(--b2);transform:translateY(-5px)}
+.packet .pe{font-size:44px}
+.packet .pv{font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);direction:ltr}
+.packet .pt{font-size:19px;font-weight:700;color:#fff;border-radius:999px;padding:3px 14px}
+.packet.used{opacity:.35;transform:scale(.94);pointer-events:none}
+.t-int{background:#F59E0B}.t-float{background:#EC4899}.t-str{background:#10B981}.t-bool{background:#6366F1}
+.data-side{flex:1.15;display:flex;flex-direction:column;gap:16px}
+.mem{background:linear-gradient(160deg,#F5F0FF,#EAF2FF);border:3px dashed var(--p3);border-radius:26px;padding:16px 20px;min-height:170px}
+.mem-head{font-size:26px;font-weight:800;color:var(--p);display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mem-head .cnt{font-family:var(--mono);background:var(--p);color:#fff;border-radius:12px;padding:2px 14px;direction:ltr}
+.mem-items{display:flex;flex-wrap:wrap;gap:10px;direction:ltr}
+.mchip{display:flex;flex-direction:column;align-items:center;background:#fff;border:2px solid var(--p3);border-radius:14px;padding:4px 14px;animation:popIn .4s;cursor:pointer}
+.mchip small{font-family:var(--mono);font-size:17px;color:var(--b);font-weight:800}
+.mchip span{font-family:var(--mono);font-size:24px;font-weight:700}
+.mem-empty{font-size:24px;color:var(--muted);text-align:center;padding-top:30px}
+.data-side .code{font-size:24px}
+.predict{display:flex;flex-direction:column;gap:12px;background:#fff;border:2px solid var(--line);border-radius:22px;padding:16px 22px}
+.pq{font-size:30px;font-weight:800;line-height:1.4}
+.pa{font-size:28px;font-weight:700;color:var(--ok);line-height:1.5;opacity:0;max-height:0;overflow:hidden;transition:all .5s}
+.pa.show{opacity:1;max-height:200px}
+.predict .btn{align-self:flex-start}
+
+/* =========================================================
+   العصف الذهني
+   ========================================================= */
+.bs-area{position:relative;width:100%;flex:1;min-height:0}
+.bs-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:330px;height:330px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#A78BFA,#6D28D9 60%,#4C1D95);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:36px;font-weight:900;line-height:1.3;padding:30px;box-shadow:0 30px 60px -20px rgba(76,29,149,.6);animation:glow 2.8s infinite}
+.bs-center .mono{font-size:28px;color:#FDE68A;margin-top:8px;direction:ltr}
+.bs-idea{position:absolute;transform:translate(-50%,-50%);background:#fff;border:3px solid var(--c,#8B5CF6);color:var(--ink);font-size:29px;font-weight:800;padding:14px 26px;border-radius:999px;white-space:nowrap;box-shadow:0 14px 30px -14px rgba(60,30,140,.45);animation:bsPop .5s cubic-bezier(.2,.8,.2,1)}
+.bs-idea.mine{background:var(--c,#8B5CF6);color:#fff}
+@keyframes bsPop{from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)}}
+.bs-tools{display:flex;gap:16px;align-items:center;justify-content:center;flex-shrink:0}
+.bs-in{font-size:28px;padding:14px 22px;border-radius:16px;border:3px solid var(--line);width:520px;outline:none;color:var(--ink)}
+.bs-in:focus{border-color:var(--p2)}
+
+/* =========================================================
+   المخططات الشجرية
+   ========================================================= */
+.tree{gap:18px!important;justify-content:flex-start!important}
+.t-root{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,#0F4C81,#1E3A8A);color:#fff;border-radius:22px;padding:14px 36px;box-shadow:0 16px 30px -14px rgba(30,58,138,.6);transition:transform .2s}
+.t-root:hover{transform:translateY(-4px)}
+.t-root>span{font-size:44px}
+.t-root b{font-size:36px;display:block}
+.t-root small,.t-head small{font-family:var(--mono);font-size:20px;opacity:.85}
+.t-def{font-size:28px;font-weight:700;color:var(--muted)}
+.tz{opacity:0;transform:translateY(20px) scale(.97);transition:all .5s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.tz.show{opacity:1;transform:none;pointer-events:auto}
+.t-lvl1{display:flex;gap:28px;width:100%;align-items:flex-start}
+.t-branch{flex:1;background:#fff;border:3px solid var(--line);border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.t-branch.wide{flex:1.9}
+.t-head{background:#475569;color:#fff;border-radius:16px;padding:10px 18px;text-align:center;transition:transform .2s}
+.t-head:hover{transform:translateY(-3px)}
+.t-head b{font-size:28px;display:block}
+.t-head.small{background:#64748B}
+.t-head.small b{font-size:24px}
+.t-note{font-size:21px;color:var(--muted);font-weight:700;text-align:center}
+.t-sub{display:flex;gap:16px}
+.t-group{flex:1;display:flex;flex-direction:column;gap:8px}
+.t-group:first-child{flex:1.7}
+.leaves{display:grid;grid-template-columns:1fr;gap:9px}
+.leaves.two{grid-template-columns:1fr 1fr}
+.leaf{background:#F1F5F9;border:2px solid #E2E8F0;border-radius:14px;padding:7px 12px;text-align:center;position:relative}
+.leaf b{font-size:23px;display:block}
+.leaf span{font-family:var(--mono);font-size:17px;color:var(--b)}
+.leaf.star{background:linear-gradient(135deg,#FFF7DB,#FFE9A8);border-color:#F6C66B}
+.leaf em{position:absolute;top:-14px;left:8px;font-style:normal;font-size:15px;font-weight:800;background:var(--acc);color:#fff;border-radius:999px;padding:1px 10px}
+.hier .leaf b{font-family:var(--mono);font-size:24px;direction:ltr}
+.hier .leaf span{font-family:var(--font);font-size:19px;font-weight:700}
+
+/* =========================================================
+   الفهرسة
+   ========================================================= */
+.idx-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;direction:ltr}
+.idx-line{display:flex;gap:22px;align-items:center}
+.idx-tag{width:150px;font-family:var(--font);font-size:22px;font-weight:800;color:var(--muted);text-align:center;direction:rtl}
+.ib{width:190px;font-family:var(--mono);font-size:30px;font-weight:800;padding:8px 0;border-radius:14px;border:3px solid #BFDBFE;background:var(--bs);color:var(--b);transition:all .2s}
+.ib:hover{transform:translateY(-3px)}
+.ib.neg{border-color:#FBCFE8;background:#FDF2F8;color:var(--pink)}
+.ib.on{background:var(--b);color:#fff;border-color:var(--b)}
+.ib.neg.on{background:var(--pink);color:#fff;border-color:var(--pink)}
+.ibox{width:190px;height:150px;border-radius:24px;background:#fff;border:4px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .3s;cursor:pointer}
+.ibox .ie{font-size:56px}
+.ibox .iv{font-family:var(--mono);font-size:24px;font-weight:700}
+.ibox.hl{border-color:var(--acc);background:var(--accs);transform:translateY(-8px) scale(1.04);box-shadow:0 20px 34px -16px rgba(245,158,11,.7)}
+.ibox.good{border-color:var(--ok);background:var(--oks)}
+.idx-bottom{display:flex;gap:30px;width:100%;align-items:stretch}
+.idx-bottom .code{flex:1.2;font-size:26px}
+.idx-bottom .term{flex:1}
+.idx-bottom .term-body{font-size:32px;min-height:80px}
+.idx-quiz{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}
+.iq-text{font-size:30px;font-weight:800;color:var(--p);min-width:520px;text-align:center}
+.iq-text .mono{direction:ltr;display:inline-block;color:var(--pink)}
+
+/* =========================================================
+   فكر – زاوج – شارك
+   ========================================================= */
+.phases{display:flex;flex-direction:column;gap:16px}
+.phase{display:flex;align-items:center;gap:20px;background:#fff;border:3px solid var(--line);border-radius:24px;padding:18px 24px;transition:all .25s}
+.phase:hover{border-color:var(--p3)}
+.phase.on{border-color:var(--p2);background:var(--ps);transform:scale(1.03);box-shadow:0 18px 30px -18px rgba(109,40,217,.55)}
+.ph-ico{font-size:54px}
+.phase b{font-size:36px;display:block}
+.phase small{font-size:24px;color:var(--muted);font-weight:700}
+.ph-t{margin-right:auto;font-family:var(--mono);font-size:24px;font-weight:800;color:var(--p);background:#fff;border:2px solid var(--p3);border-radius:12px;padding:4px 12px}
+.type-tps .code{font-size:26px}
+.tps-timer{display:flex;justify-content:center}
+
+/* =========================================================
+   الدوال الجاهزة (رسم أعمدة)
+   ========================================================= */
+.bars{display:flex;gap:34px;align-items:flex-end;justify-content:center;height:470px;padding:0 20px;border-bottom:4px solid var(--line);direction:ltr}
+.bar-w{display:flex;flex-direction:column;align-items:center;gap:10px}
+.gbar{width:130px;height:var(--h);border-radius:20px 20px 8px 8px;background:linear-gradient(180deg,var(--p2),var(--b));position:relative;transition:all .4s;display:flex;align-items:flex-start;justify-content:center}
+.gbar .bv{font-family:var(--mono);font-size:32px;font-weight:800;color:#fff;margin-top:14px}
+.gbar .bc{position:absolute;bottom:14px;width:52px;height:52px;border-radius:50%;background:#fff;color:var(--p);font-family:var(--mono);font-weight:800;font-size:26px;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.4);transition:all .35s}
+.gbar.counted .bc{opacity:1;transform:none}
+.gbar .crown{position:absolute;top:-62px;font-size:52px;opacity:0;transition:all .4s}
+.gbar.top{background:linear-gradient(180deg,#FBBF24,#F59E0B)}
+.gbar.top .crown{opacity:1}
+.gbar.low{background:linear-gradient(180deg,#F472B6,#DB2777)}
+.gbar.sumglow{filter:brightness(1.18);box-shadow:0 0 0 6px rgba(16,185,129,.35)}
+.gbar.dim{opacity:.35}
+.bi{font-family:var(--mono);font-size:22px;color:var(--muted);font-weight:800}
+.fbtns{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fbtn{background:#fff;border:3px solid var(--line);border-radius:22px;padding:14px 18px;text-align:center;transition:all .2s}
+.fbtn:hover{border-color:var(--p2);transform:translateY(-3px)}
+.fbtn.on{border-color:var(--p);background:var(--ps)}
+.fbtn b{font-family:var(--mono);font-size:34px;color:var(--p);display:block;direction:ltr}
+.fbtn small{font-size:22px;font-weight:700;color:var(--muted)}
+.sum-badge{font-family:var(--mono);font-size:34px;font-weight:800;color:var(--ok);text-align:center;height:46px}
+
+/* =========================================================
+   المختبرات (قائمة / قاموس / ملف)
+   ========================================================= */
+.lab-list{display:flex;flex-wrap:wrap;gap:12px;direction:ltr;min-height:118px;align-items:center;justify-content:center;background:#fff;border:3px dashed var(--p3);border-radius:26px;padding:18px}
+.lab-list::before{content:"[";font-family:var(--mono);font-size:64px;color:var(--p3);font-weight:800}
+.lab-list::after{content:"]";font-family:var(--mono);font-size:64px;color:var(--p3);font-weight:800}
+.lchip{display:flex;flex-direction:column;align-items:center;background:linear-gradient(160deg,var(--ps),var(--bs));border:3px solid var(--p3);border-radius:16px;padding:4px 18px;min-width:90px}
+.lchip small{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--b)}
+.lchip span{font-family:var(--mono);font-size:32px;font-weight:800}
+.lchip.new{animation:popIn .45s;border-color:var(--acc)}
+.lchip.match{border-color:var(--ok);background:var(--oks)}
+.lempty{font-family:var(--mono);font-size:28px;color:var(--muted)}
+.lab-ops{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lop{font-family:var(--mono);font-size:24px;font-weight:800;padding:14px 8px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--p);transition:all .2s;direction:ltr}
+.lop:hover{border-color:var(--p2);transform:translateY(-3px)}
+.lop small{display:block;font-family:var(--font);font-size:18px;color:var(--muted);direction:rtl}
+.lop.reset{color:var(--muted)}
+.lab-in-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.lab-in-row label{font-size:26px;font-weight:800;color:var(--muted)}
+.lab-in{font-family:var(--mono);font-size:30px;padding:10px 18px;width:240px;border-radius:14px;border:3px solid var(--line);outline:none;direction:ltr;text-align:center}
+.lab-in:focus{border-color:var(--p2)}
+.lab-right .code{font-size:24px}
+.lab-right .term-body{font-size:26px;min-height:80px}
+
+.dict-box{display:flex;flex-wrap:wrap;gap:12px;direction:ltr;min-height:150px;align-items:center;justify-content:center;background:#fff;border:3px dashed var(--p3);border-radius:26px;padding:16px}
+.dict-box::before{content:"{";font-family:var(--mono);font-size:64px;color:var(--p3);font-weight:800}
+.dict-box::after{content:"}";font-family:var(--mono);font-size:64px;color:var(--p3);font-weight:800}
+.dcard{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:3px solid var(--p3);min-width:120px;text-align:center;background:#fff;transition:all .25s;cursor:pointer}
+.dcard .k{background:var(--p);color:#fff;font-family:var(--mono);font-size:21px;font-weight:800;padding:4px 14px}
+.dcard .v{font-family:var(--mono);font-size:24px;font-weight:800;padding:6px 14px}
+.dcard.hl{border-color:var(--acc);transform:translateY(-6px);box-shadow:0 14px 24px -12px rgba(245,158,11,.7)}
+.dcard.hl .k{background:var(--acc)}
+.dcard.new{animation:popIn .45s}
+
+.np{background:#fff;border:3px solid #CBD5E1;border-radius:16px;overflow:hidden;box-shadow:0 18px 40px -22px rgba(30,41,59,.5)}
+.np.flash{animation:popIn .4s}
+.np-bar{background:#F1F5F9;padding:8px 16px;font-size:20px;font-weight:700;color:#334155;direction:ltr;display:flex;gap:8px;align-items:center}
+.np-mode{margin-left:auto;font-family:var(--mono);background:var(--p);color:#fff;border-radius:10px;padding:0 12px;opacity:0;transition:opacity .3s}
+.np-mode.on{opacity:1}
+.np-menu{font-size:16px;color:#64748B;padding:2px 16px;border-bottom:1px solid #E2E8F0;direction:ltr;word-spacing:14px}
+.np-body{font-family:var(--mono);font-size:26px;padding:12px 18px;height:300px;overflow:hidden;direction:ltr;text-align:left;line-height:1.55}
+.np-ln{padding:0 8px;border-radius:8px;white-space:pre-wrap;transition:background .3s}
+.np-ln.cur{background:var(--accs);box-shadow:inset 5px 0 0 var(--acc)}
+.np-ln.done{color:#94A3B8}
+.np-empty{color:#94A3B8;font-family:var(--font);font-size:24px}
+
+/* =========================================================
+   مشغّل المقاطع (تبويبات أكواد)
+   ========================================================= */
+.snip-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.snip{font-family:var(--mono);font-size:23px;font-weight:800;padding:12px 10px;border-radius:18px;border:3px solid var(--line);background:#fff;color:var(--p);direction:ltr;transition:all .2s;text-align:center;line-height:1.3}
+.snip small{display:block;font-family:var(--font);font-size:19px;color:var(--muted);direction:rtl;margin-top:2px}
+.snip:hover{border-color:var(--p2);transform:translateY(-3px)}
+.snip.on{border-color:var(--p);background:var(--ps);box-shadow:0 10px 22px -14px rgba(109,40,217,.6)}
+.snip-note{font-size:26px}
+.type-snippets .code{font-size:24px}
+.type-snippets .code pre{padding:14px 24px 18px}
+.type-snippets .term-body{font-size:24px}
+
+/* =========================================================
+   نافذة tkinter / pygame
+   ========================================================= */
+.tkwin{background:#fff;border:3px solid #CBD5E1;border-radius:14px;overflow:hidden;box-shadow:0 22px 44px -22px rgba(30,41,59,.55);align-self:center;direction:ltr;flex-shrink:0}
+.tkbar{display:flex;align-items:center;gap:10px;padding:6px 14px;background:#F1F5F9;font-size:18px;color:#334155;font-weight:700}
+.tkbar .tk-x{margin-left:auto;color:#64748B;letter-spacing:4px}
+.tkwin canvas{display:block;cursor:crosshair}
+.tk-hint{font-size:24px}
+.type-canvas .code{font-size:21px}
+.type-canvas .code pre{padding:12px 22px 16px}
+.type-canvas .term-body{font-size:22px;min-height:90px}
+
+.rgb-row{display:flex;align-items:center;gap:18px;font-size:32px;font-weight:900;direction:ltr}
+.rgb-row b{width:40px;color:var(--c)}
+.rgb-row input{flex:1;accent-color:var(--c);height:34px}
+.rgb-row .rv{font-family:var(--mono);width:90px;text-align:center;font-size:30px;background:#fff;border:3px solid var(--line);border-radius:12px}
+.swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sw{display:flex;gap:10px;align-items:center;border:3px solid var(--line);border-radius:14px;padding:6px 10px;background:#fff;font-family:var(--mono);font-size:19px;font-weight:800;color:var(--ink);direction:ltr;transition:all .2s}
+.sw:hover{transform:translateY(-3px);border-color:var(--p3)}
+.sw i{width:34px;height:34px;border-radius:9px;flex-shrink:0;border:1px solid rgba(0,0,0,.15)}
+.rgb-prev{height:280px;transition:background .25s}
+
+/* =========================================================
+   القائمة المتداخلة
+   ========================================================= */
+.nest-wrap{display:flex;align-items:center;justify-content:center;gap:10px;direction:ltr}
+.nest-wrap .par{font-family:var(--mono);font-size:96px;color:var(--p3);font-weight:800}
+.nest-wrap .comma{font-family:var(--mono);font-size:48px;color:var(--muted);align-self:flex-end;margin-bottom:24px}
+.ngrp{display:flex;flex-direction:column;align-items:center;gap:10px}
+.nidx{font-family:var(--mono);font-size:26px;font-weight:800;border-radius:12px;border:3px solid #BFDBFE;background:var(--bs);color:var(--b);padding:4px 18px;transition:all .2s}
+.nidx:hover{transform:translateY(-3px)}
+.nidx.on{background:var(--b);color:#fff;border-color:var(--b)}
+.nin{display:flex;align-items:center;gap:8px;background:#fff;border:4px solid var(--line);border-radius:22px;padding:12px 14px;transition:all .3s;min-height:118px}
+.nin .ip{font-family:var(--mono);font-size:50px;color:var(--b2);font-weight:800}
+.nchip{font-family:var(--mono);font-size:30px;font-weight:800;background:linear-gradient(160deg,var(--ps),var(--bs));border:3px solid var(--p3);border-radius:16px;padding:6px 16px;display:flex;flex-direction:column;align-items:center;color:var(--ink);min-width:70px;transition:all .25s}
+.nchip small{font-size:16px;color:var(--pink)}
+.nchip.solo{background:#fff;border-color:var(--line)}
+.ngrp.hl .nin{border-color:var(--acc);background:var(--accs);transform:translateY(-6px)}
+.nchip.hl{border-color:var(--acc);background:var(--accs);transform:translateY(-6px) scale(1.06)}
+.nchip.good{border-color:var(--ok);background:var(--oks)}
+.type-nested .term-body{max-height:240px;overflow:hidden}
+
+/* =========================================================
+   الصف Tuple
+   ========================================================= */
+.tup-row{display:flex;gap:14px;align-items:center;justify-content:center;direction:ltr}
+.tup-row .par{font-family:var(--mono);font-size:80px;font-weight:800;color:var(--b2)}
+.tchip{position:relative;background:#fff;border:4px solid #BFDBFE;border-radius:20px;padding:16px 22px;font-family:var(--mono);font-size:30px;font-weight:800;text-align:center}
+.tchip small{display:block;font-size:18px;color:var(--b)}
+.tchip .lk{position:absolute;top:-22px;right:-14px;font-size:34px}
+.tup-row.denied .tchip{border-color:var(--bad);background:var(--bads)}
+.err-call{font-size:28px;font-weight:800;color:var(--bad);opacity:0;transition:opacity .4s;text-align:center}
+.err-call.show{opacity:1}
+
+/* =========================================================
+   جدول المقارنة
+   ========================================================= */
+.cmp{width:100%;max-width:1600px;border-radius:26px;overflow:hidden;border:3px solid var(--line);background:#fff}
+.cmp-row{display:grid;grid-template-columns:var(--cols,1fr 1.3fr 1.3fr);border-top:2px solid var(--line);transition:background .3s}
+.cmp-row>div{padding:16px 24px;font-size:30px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px}
+.cmp-h{border-top:none}
+.cmp-h>div{background:linear-gradient(135deg,var(--p),var(--b));color:#fff;font-size:32px;font-weight:900}
+.cmp-k{background:#F8F6FF;color:var(--p);font-weight:800!important}
+.cmp-row.hide .cmp-v{color:transparent;position:relative}
+.cmp-row.hide .cmp-v *{visibility:hidden}
+.cmp-row.hide .cmp-v::after{content:"؟";position:absolute;color:var(--p3);font-size:40px;font-weight:900}
+.cmp-row.hide:hover{background:#FBF9FF}
+.cmp-v .mono{direction:ltr;display:inline-block}
+
+/* =========================================================
+   شرائح الربط
+   ========================================================= */
+.vc-tap{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);background:var(--ink);color:#fff;font-size:24px;font-weight:800;padding:10px 26px;border-radius:999px;transition:opacity .3s;white-space:nowrap}
+.lk-quote{position:relative;background:#fff;border:3px solid var(--line);border-radius:30px;padding:34px 36px 30px;display:flex;flex-direction:column;gap:16px;min-height:330px;justify-content:center;overflow:hidden;transition:transform .25s;box-shadow:0 20px 40px -26px rgba(80,50,160,.45)}
+.lk-quote:hover{transform:translateY(-4px)}
+.lk-quote::before{content:"";position:absolute;inset:0 0 auto 0;height:12px;background:var(--lc)}
+.lk-quote.math{--lc:linear-gradient(90deg,#2563EB,#60A5FA)}
+.lk-quote.rel{--lc:linear-gradient(90deg,#0E7C66,#34D399)}
+.lk-quote.home{--lc:linear-gradient(90deg,#006C35,#22C55E)}
+.lk-quote.law{--lc:linear-gradient(90deg,var(--p),var(--b))}
+.lq-label{font-size:28px;font-weight:800;color:var(--p)}
+.lk-quote.rel .lq-label,.lk-quote.home .lq-label{color:#0E7C66}
+.lq-text{font-size:44px;font-weight:900;line-height:1.6;color:var(--ink);filter:blur(10px);opacity:.3;transition:all .6s}
+.lk-quote.law .lq-text{font-size:36px}
+.lk-quote.rel .lq-text{color:#0E7C66;font-size:46px;text-align:center}
+.lk-quote.small .lq-text{font-size:34px}
+.lq-src{font-size:26px;font-weight:700;color:var(--muted);filter:blur(10px);opacity:.3;transition:all .6s .15s}
+.lk-quote.open .lq-text,.lk-quote.open .lq-src{filter:none;opacity:1}
+.lk-quote.open .vc-tap{opacity:0}
+.lk-quote .vc-tap{top:55%}
+.lk-link{font-size:30px;font-weight:700;line-height:1.6;background:var(--ps);border-radius:22px;padding:18px 26px;border-right:8px solid var(--p2)}
+.lk-link .mono{direction:ltr;display:inline-block;color:var(--p)}
+.lk-chips{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;background:#fff;border:3px dashed #BFDBFE;border-radius:24px;padding:12px 14px}
+.lk-chips .par{font-family:var(--mono);font-size:56px;color:var(--b2);font-weight:800}
+.lkc{background:#fff;border:3px solid #BFDBFE;border-radius:16px;padding:6px 16px;text-align:center;cursor:pointer;transition:all .25s}
+.lkc:hover{transform:translateY(-3px);border-color:var(--b2)}
+.lkc small{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--b);display:block}
+.lkc b{font-family:var(--mono);font-size:26px;display:block}
+.lkc span{font-size:19px;color:var(--muted);font-weight:700}
+.lkc.on{border-color:var(--acc);background:var(--accs);transform:translateY(-6px);box-shadow:0 14px 24px -12px rgba(245,158,11,.7)}
+.lk-chips.many{gap:7px;padding:10px}
+.lk-chips.many .par{font-size:40px}
+.lk-chips.many .lkc{padding:3px 9px;border-radius:12px}
+.lk-chips.many .lkc b{font-size:17px}
+.lk-chips.many .lkc span{font-size:15px}
+.lk-chips.many .lkc small{font-size:13px}
+.lk-chips.denied .lkc{border-color:var(--bad);background:var(--bads)}
+.type-link .code{font-size:23px}
+.type-link .term-body{font-size:26px;min-height:76px}
+.lk-acts{justify-content:flex-start;flex-wrap:wrap}
+
+/* =========================================================
+   الأسئلة
+   ========================================================= */
+.q-card{width:100%;max-width:1500px;background:#fff;border:3px solid var(--line);border-radius:30px;padding:28px 40px;display:flex;flex-direction:column;gap:18px;align-items:center;text-align:center;box-shadow:0 20px 40px -26px rgba(80,50,160,.4)}
+.q-num{font-size:24px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--p),var(--b));border-radius:999px;padding:6px 22px}
+.q-text{font-size:52px;font-weight:900;line-height:1.35}
+.q-text .mono{direction:ltr;display:inline-block}
+.q-card .code{font-size:30px;min-width:700px}
+.opts{display:grid;gap:22px;width:100%;max-width:1500px}
+.opts.cols-2{grid-template-columns:repeat(2,1fr)}
+.opts.cols-3{grid-template-columns:repeat(3,1fr)}
+.opts.cols-4{grid-template-columns:repeat(4,1fr)}
+.opt{display:flex;align-items:center;gap:20px;background:#fff;border:4px solid var(--line);border-radius:26px;padding:22px 28px;font-size:38px;font-weight:800;color:var(--ink);text-align:right;transition:transform .2s,border-color .2s,background .2s;box-shadow:0 8px 0 #ECE7FA}
+.opt:hover{transform:translateY(-4px);border-color:var(--p3)}
+.opt .o-ico{width:66px;height:66px;flex-shrink:0;border-radius:18px;background:var(--ps);display:flex;align-items:center;justify-content:center;font-size:38px}
+.opt .o-t.mono{direction:ltr;font-size:34px}
+.opt.correct{background:var(--oks);border-color:var(--ok);box-shadow:0 8px 0 #A7E8BD}
+.opt.correct .o-ico{background:var(--ok);color:#fff}
+.opt.wrong{background:var(--bads);border-color:var(--bad);box-shadow:0 8px 0 #FBC4CF;opacity:.75}
+.opt:disabled{cursor:default}
+.feedback{font-size:40px;font-weight:900;height:56px;text-align:center}
+.feedback.ok{color:var(--ok)}.feedback.no{color:var(--pink)}
+.explain{font-size:28px;font-weight:700;color:var(--muted);text-align:center;opacity:0;transition:opacity .4s;min-height:40px}
+.explain.show{opacity:1}
+
+/* =========================================================
+   صح أم خطأ
+   ========================================================= */
+.tf-list{width:100%;max-width:1600px;display:flex;flex-direction:column;gap:14px}
+.tf-row{display:grid;grid-template-columns:1fr auto;gap:10px 20px;align-items:center;background:#fff;border:3px solid var(--line);border-radius:22px;padding:14px 24px;transition:all .3s}
+.tf-s{font-size:31px;font-weight:800}
+.tf-s .mono{direction:ltr;display:inline-block;color:var(--p)}
+.tf-btns{display:flex;gap:12px}
+.tfb{font-size:26px;font-weight:900;padding:10px 24px;border-radius:14px;border:3px solid;background:#fff;transition:all .2s}
+.tfb.t{border-color:#86EFAC;color:var(--ok)}.tfb.f{border-color:#FDA4AF;color:var(--bad)}
+.tfb:hover{transform:translateY(-3px)}
+.tfb.t.sel{background:var(--ok);color:#fff;border-color:var(--ok)}
+.tfb.f.sel{background:var(--bad);color:#fff;border-color:var(--bad)}
+.tf-why{grid-column:1/-1;font-size:24px;font-weight:700;color:var(--ok);display:none}
+.tf-row.ok{border-color:var(--ok);background:#F6FFF8}
+.tf-row.ok .tf-why{display:block}
+.tf-row.no{border-color:var(--pink)}
+.tf-score{font-size:32px;font-weight:900;color:var(--p)}
+
+/* =========================================================
+   تحدي الدقيقة
+   ========================================================= */
+.ch-top{display:flex;gap:28px;align-items:center;justify-content:center}
+.ch-top .code{font-size:30px}
+.ch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:100%}
+.ch-cell{background:#fff;border:3px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.mini{font-family:var(--mono);font-size:21px;line-height:1.45;background:var(--code);color:#EEEAFF;padding:12px 16px;direction:ltr;text-align:left;white-space:pre;flex:1;margin:0;overflow:hidden}
+.ch-res{padding:10px 12px;text-align:center;min-height:56px;display:flex;align-items:center;justify-content:center;transition:background .3s}
+.ch-res .q{font-size:22px;font-weight:800;color:var(--p2)}
+.ch-res .a{display:none;font-family:var(--mono);font-size:18px;font-weight:800;color:var(--ok);line-height:1.35;white-space:pre-wrap}
+.ch-res .a.ar{font-family:var(--font);font-size:23px;direction:rtl}
+.ch-res.open{background:var(--oks)}
+.ch-res.open .q{display:none}.ch-res.open .a{display:block}
+
+/* =========================================================
+   التعلم التعاوني
+   ========================================================= */
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.role{background:#fff;border:3px solid var(--line);border-radius:20px;padding:12px 6px;text-align:center}
+.role span{font-size:42px;display:block}
+.role b{font-size:22px}
+.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:12px}
+.steps li{counter-increment:s;font-size:29px;font-weight:700;line-height:1.4;background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 18px 12px 18px;display:flex;gap:16px;align-items:center}
+.steps li::before{content:counter(s);font-family:var(--mono);flex-shrink:0;width:44px;height:44px;border-radius:12px;background:var(--b);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:22px}
+.steps li .mono{direction:ltr;display:inline-block;color:var(--p)}
+.sol .code{font-size:23px}
+.sol.long .code{font-size:20px}
+.sol .ln{display:inline;transition:filter .5s,opacity .5s}
+.sol .ln.hid{filter:blur(8px);opacity:.35}
+.task-top{display:flex;justify-content:center;gap:16px;align-items:center}
+
+/* =========================================================
+   التقييم الفوري
+   ========================================================= */
+.rates{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;width:100%;max-width:1500px}
+.rate{background:#fff;border:4px solid var(--line);border-radius:30px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;transition:all .2s}
+.rate:hover{transform:translateY(-6px);border-color:var(--p3)}
+.rate .re{font-size:96px}
+.rate b{font-size:30px;line-height:1.35}
+.rate .rc{font-family:var(--mono);font-size:44px;font-weight:800;color:var(--p);background:var(--ps);border-radius:18px;padding:4px 28px}
+.rate.bump .rc{animation:popIn .35s}
+.exit{font-size:32px;font-weight:700;background:var(--accs);border:3px dashed #F6C66B;border-radius:24px;padding:18px 30px;max-width:1500px;text-align:center;line-height:1.5}
+
+/* =========================================================
+   الختام
+   ========================================================= */
+.huge{font-size:110px}
+.hero-sub2{font-size:38px;font-weight:700;color:var(--muted);max-width:1400px;line-height:1.55}
+.close-code .code{font-size:28px;min-width:820px}
+.clapbig{font-size:36px;padding:20px 40px;background:linear-gradient(135deg,#F59E0B,#EC4899);box-shadow:0 8px 0 #B45309,0 16px 28px -10px rgba(236,72,153,.5)}
+.hw{font-size:30px;font-weight:800;background:#fff;border:3px solid var(--line);border-radius:20px;padding:14px 26px}
+
+/* =========================================================
+   🎛️ شريط التحكم والمؤشرات (خارج المسرح)
+   ========================================================= */
+#progress{position:fixed;top:0;right:0;height:6px;background:linear-gradient(90deg,var(--b),var(--p2),var(--pink));z-index:55;transition:width .6s cubic-bezier(.2,.8,.2,1);border-radius:0 0 0 6px}
+#controls{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;padding:6px 9px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:999px;box-shadow:0 14px 40px rgba(20,10,60,.35);z-index:50;transition:opacity .4s,transform .4s;border:2px solid #EEE8FF}
+body.idle #controls{opacity:0;pointer-events:none;transform:translate(-50%,30px)}
+.cb{width:42px;height:42px;border-radius:50%;border:none;background:var(--ps);color:var(--p);font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .2s}
+.cb:hover{background:#E6DBFF;transform:scale(1.07)}
+.cb:active{transform:scale(.92)}
+.cb:disabled{opacity:.35;cursor:default;transform:none}
+.cb.clap{background:linear-gradient(135deg,#FBBF24,#EC4899);color:#fff;font-size:22px}
+.cb.small{width:34px;height:34px;font-size:15px;background:#F4F4F8;color:var(--muted)}
+.cb.home{text-decoration:none}
+#counter{font-family:var(--mono);font-size:17px;font-weight:800;color:var(--ink);min-width:72px;text-align:center;direction:ltr}
+.sep{width:2px;height:26px;background:#ECE7FA;margin:0 4px}
+
+#fx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:61}
+.clap-fly{position:absolute;bottom:70px;font-size:var(--s,44px);animation:flyUp var(--d,2s) cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes flyUp{0%{transform:translate(0,0) scale(.4);opacity:0}12%{opacity:1;transform:translate(0,-30px) scale(1.1)}100%{transform:translate(var(--dx,0),-72vh) rotate(var(--r,0deg)) scale(.9);opacity:0}}
+#toast{position:fixed;top:9%;left:50%;transform:translate(-50%,-30px) scale(.9);z-index:70;background:#fff;color:var(--ink);font-size:34px;font-weight:900;padding:18px 40px;border-radius:999px;box-shadow:0 20px 50px rgba(20,10,60,.35);opacity:0;transition:all .35s cubic-bezier(.2,.8,.2,1);pointer-events:none;border:4px solid var(--p3);white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+#toast.ok{border-color:#86EFAC;color:var(--ok)}
+#toast.no{border-color:#F9A8D4;color:var(--pink)}
+</style>
+</head>
+<body>
+
+<div id="viewport"><div id="stage">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="bits t">import math • import os • import sys • from datetime import date</div>
+  <div class="bits bt">import math • import os • import sys • from datetime import date</div>
+</div></div>
+
+<div id="progress"></div>
+
+<nav id="controls" aria-label="التحكم بالعرض">
+  <button class="cb" id="btnNext" title="التالي (→ أو Space)">→</button>
+  <div id="counter">1 / 1</div>
+  <button class="cb" id="btnPrev" title="السابق (←)">←</button>
+  <span class="sep"></span>
+  <button class="cb clap" id="btnClap" title="تصفيق (ت)">👏</button>
+  <button class="cb small" id="btnFull" title="ملء الشاشة">⛶</button>
+  <a class="cb small home" href="../index.html" title="المكتبة">📚</a>
+</nav>
+
+<div id="fx"></div>
+<canvas id="confetti"></canvas>
+<div id="toast"></div>
+
+<!-- 👩‍🎓 أسماء الطالبات من لوحة الإدارة (admin/index.html) -->
+<script src="../shared/roster.js"></script>
+<script>
+/* =====================================================================
+   👩‍🎓 صف الدرس: تُقرأ شعبه وأسماء طالباته من لوحة الإدارة
+   ===================================================================== */
+const LESSON_GRADE = 'الثالث متوسط';
+Roster.use(LESSON_GRADE);
+
+/* أدوات رسم مختصرة لشرائح tkinter / pygame (canvas) */
+const BG = (w, h, c) => ({ t:'bg', w, h, c });
+const LN = (p, o={}) => ({ t:'line', p, ...o });
+const RC = (p, o={}) => ({ t:'rect', p, ...o });
+const OV = (p, o={}) => ({ t:'oval', p, ...o });
+const PG = (p, o={}) => ({ t:'poly', p, ...o });
+const rgb = (r, g, b) => `rgb(${r},${g},${b})`;
+
+/* =====================================================================
+   ⚙️⚙️⚙️  إعدادات الدرس — عدّلي هنا فقط  ⚙️⚙️⚙️
+   ---------------------------------------------------------------------
+   • LESSON: معلومات الدرس العامة (المعلمة والمدرسة تظهر في شريحة العنوان).
+   • SLIDES: قائمة الشرائح بالترتيب. لحذف شريحة احذفي كائنها { ... }،
+     ولإضافة شريحة انسخي كائنًا من نفس النوع وعدّلي نصوصه.
+   • transition: نوع الانتقال للشريحة: 'fade' أو 'slide' أو 'zoom'.
+   • answer في الأسئلة = رقم الخيار الصحيح ويبدأ العدّ من 0 (مثل بايثون 😉).
+   • شريحة attendance = التحضير، وزر 🎯 (أو حرف ق) = قرعة من الحاضرات.
+   ===================================================================== */
+/* قوانين الفصل وأدوار المجموعات وخيارات التقييم — مشتركة في دروس الوحدة */
+const RULES = { type:'goals', transition:'slide', badge:'قوانين صفية', title:'📜 قوانين فصلنا البرمجي',
+  emoji:'🤝', file:'rules.py',
+  items:[
+    { icon:'✋', text:'أرفع يدي قبل الإجابة أو الحديث.' },
+    { icon:'👂', text:'أُنصت جيدًا للمعلمة ولزميلاتي.' },
+    { icon:'💻', text:'أحافظ على الأجهزة ولا أفتح إلا ما يُطلب مني.' },
+    { icon:'🤝', text:'أتعاون مع مجموعتي وأحترم آراء الجميع.' },
+    { icon:'⏱️', text:'ألتزم بالوقت المحدد لكل نشاط.' },
+    { icon:'🌟', text:'لا بأس بالخطأ… فهو أول خطوة للتعلّم!' },
+  ],
+  code:'rules = ("respect", "listen",\n         "teamwork", "on_time")\nprint("Ready to code! 💜")' };
+
+const ROLES = [{ i:'👩‍💻', n:'المبرمجة' },{ i:'🔍', n:'المدقّقة' },{ i:'⏱️', n:'ضابطة الوقت' },{ i:'📢', n:'المتحدثة' }];
+const TPS = [
+  { n:'فكّري', icon:'🤔', sec:30, txt:'فكّري بمفردك واكتبي توقعك' },
+  { n:'زاوجي', icon:'👭', sec:60, txt:'ناقشي إجابتك مع زميلتك' },
+  { n:'شاركي', icon:'📢', sec:0,  txt:'شاركا إجابتكما مع الفصل' },
+];
+const RATING = [{ e:'🤩', t:'فهمت وأستطيع الشرح لزميلتي' },{ e:'🙂', t:'فهمت وأحتاج تدريبًا' },{ e:'🤔', t:'أحتاج مساعدة' }];
+const ATTEND = t => ({ type:'attendance', transition:'slide', badge:'📋 التحضير', title:t });
+
+const LESSON = {
+  title:   "المكتبات البرمجية",
+  subject: "المهارات الرقمية",
+  grade:   "الصف الثالث المتوسط",
+  unit:    "البرمجة بلغة بايثون",
+  lessonNo:"الدرس الثاني",
+  teacher: "أ. أثيل القرني",
+  school:  "مدارس دينا العالمية",
+};
+
+/* تاريخ ووقت اليوم الحقيقيان (تُحسب لحظة الضغط على تشغيل) */
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const nowTime = () => { const d=new Date(), h=d.getHours(); return `${pad(h)}:${pad(d.getMinutes())} ${d.toLocaleDateString('en-US',{weekday:'long'})} ${h<12?'AM':'PM'}`; };
+const foundation = () => {
+  const t=new Date(); t.setHours(0,0,0,0);
+  let f=new Date(t.getFullYear(),1,22); const shown=ymd(f);
+  if (f<t) f=new Date(t.getFullYear()+1,1,22);
+  return `Today is: ${ymd(t)}\nThe Foundation day is on ${shown}\nDays left for the Foundation Day: ${Math.round((f-t)/864e5)}`;
+};
+
+const SLIDES = [
+
+  /* 1) ترحيب */
+  { type:'title', transition:'zoom', heroSize:112,
+    kicker:'أهلًا بمبرمجات المستقبل 💜',
+    subtitle:'Python Libraries & Modules',
+    code:'import math\nprint("صباح المكتبات يا مبرمجات 📚")',
+    deco:[['import','top:9%;left:5%'],['math.pi','top:66%;left:6%'],['os','top:13%;right:8%'],['sys','bottom:20%;right:9%'],['📚','top:40%;left:22%;font-size:70px'],['( )','top:44%;right:22%;font-size:70px']] },
+
+  /* 2) التحضير */
+  ATTEND('صباح المكتبات 📚 من حاضرة اليوم؟'),
+
+  /* 3) قوانين صفية */
+  RULES,
+
+  /* 4) مراجعة الدرس السابق */
+  { type:'flip', transition:'slide', badge:'استراتيجية الأسئلة • مراجعة',
+    title:'🔁 نتذكّر معًا: القوائم وصفوف البيانات',
+    hint:'اختاري بطاقة… فكّري في الإجابة… ثم اضغطي لكشفها',
+    cards:[
+      { icon:'📋', q:'كيف نكتب القائمة List؟', a:'بين أقواس مربعة <span class="mono">[ ]</span><br>وهي قابلة للتعديل' },
+      { icon:'🔒', q:'ما الفرق بين القائمة والصف؟', a:'الصف بين أقواس دائرية <span class="mono">( )</span><br>و<b>غير قابل للتعديل</b>' },
+      { icon:'🔢', q:'<span class="mono">grades = [89, 88, 98, 95]</span><br>ما ناتج <span class="mono">grades[-1]</span>؟', a:'<span class="mono">95</span><br>الفهرس -1 لآخر عنصر' },
+      { icon:'🧮', q:'اذكري دالة جاهزة استخدمناها مع القوائم', a:'<span class="mono">len • sum • max • min</span>' },
+    ] },
+
+  /* 5) أهداف الدرس */
+  { type:'goals', transition:'slide', badge:'أهداف الدرس', title:'🎯 في نهاية الدرس سأكون قادرة على أن…',
+    items:[
+      { icon:'📚', text:'أعرّف المكتبة البرمجية وأذكر خصائصها.' },
+      { icon:'🧩', text:'أميّز بين المكتبة والنموذج البرمجي والدالة.' },
+      { icon:'📥', text:'أستورد النماذج البرمجية بثلاث طرق مختلفة.' },
+      { icon:'🖥️', text:'أستخدم النماذج <span class="mono">sys</span> و <span class="mono">os</span> و <span class="mono">math</span>.' },
+      { icon:'📅', text:'أتعامل مع الوقت والتاريخ بـ <span class="mono">time</span> و <span class="mono">datetime</span>.' },
+      { icon:'🎮', text:'أثبّت مكتبة خارجية مثل <span class="mono">pygame</span> بمدير الحزم.' },
+    ],
+    emoji:'📚', file:'goals.py',
+    code:'today = ["Library", "Module",\n         "import", "math"]\nprint("Let\'s learn!")' },
+
+  /* 6) ماذا تتوقعين؟ */
+  { type:'code', transition:'fade', badge:'ماذا تتوقعين؟', title:'🤔 من كتب الدالة sum لنا؟',
+    predict:'استخدمنا <span class="mono" dir="ltr">sum</span> و <span class="mono" dir="ltr">max</span> في الدرس السابق دون أن نكتب طريقة حسابهما… فأين كانتا مخبّأتين؟',
+    note:'هذه <b>دوال جاهزة</b> كتبها مبرمجون قبلنا وحفظوها في <b>مكتبات بايثون</b> 📚 لنستخدمها مباشرة دون أن نكتبها من الصفر!',
+    file:'ready.py',
+    code:'grades = [89, 88, 98, 95]\nprint(sum(grades), max(grades))',
+    output:'370 98' },
+
+  /* 7) العصف الذهني */
+  { type:'brainstorm', transition:'zoom', badge:'العصف الذهني', title:'🧠 لماذا لا نصنع كل شيء من الصفر؟',
+    center:'«جاهز» في حياتنا', centerCode:'import ?',
+    ideas:['مكتبة المدرسة 📚','وصفات الطبخ الجاهزة 🍳','قطع الليغو 🧱','صندوق العدّة 🧰','القوالب الجاهزة في العروض 🖼️','المعجم والقاموس 📖'] },
+
+  /* 8) المكتبة البرمجية وخصائصها */
+  { type:'flip', transition:'slide', badge:'استراتيجية الفهم القرائي', title:'📚 المكتبة البرمجية وخصائصها', cols:3,
+    hint:'اقلبي البطاقات واحدة تلو الأخرى',
+    cards:[
+      { icon:'📚', q:'ما المكتبة البرمجية؟', a:'مجموعة من التعليمات البرمجية <b>المدمجة سابقًا</b> تقلّل وقت البرمجة' },
+      { icon:'🌐', q:'بأي لغة تُكتب؟', a:'بأي لغة برمجة، وتُستخدم غالبًا في بيئات تطوير البرامج' },
+      { icon:'♻️', q:'لماذا هي مفيدة؟', a:'نصل لتعليمات مكتوبة مسبقًا بدل كتابتها من الصفر في كل مرة' },
+      { icon:'🧩', q:'من يستخدمها؟', a:'برامج متعددة مختلفة <b>لا علاقة بينها</b>' },
+      { icon:'📞', q:'كيف نستدعي وظيفتها؟', a:'عبر آلية في لغة البرمجة مثل <span class="mono">import</span>' },
+      { icon:'🙈', q:'هل أحتاج لفهم تفاصيلها الداخلية؟', a:'لا! يكفي أن أعرف <b>وظيفتها</b> فقط' },
+    ] },
+
+  /* 9) المكتبة ← النموذج ← الدالة */
+  { type:'hier', transition:'slide', badge:'لاحظي واكتشفي', title:'🗄️ المكتبة القياسية ← النموذج ← الدالة',
+    icon:'🗄️', root:'المكتبة القياسية', rootEn:'Python Standard Library',
+    def:'تُثبَّت تلقائيًا مع بايثون وفيها أكثر من 200 نموذج 👆 اضغطي على كل نموذج لتري دواله',
+    branches:[
+      { label:'النموذج math', en:'module', note:'دوال رياضية', leaves:[['math.pi','ثابت π'],['math.sin()','جيب الزاوية'],['math.log()','اللوغاريتم'],['math.pow()','القوة']] },
+      { label:'النموذج datetime', en:'module', note:'التاريخ والوقت', leaves:[['datetime.date.today()','تاريخ اليوم'],['datetime.time()','الوقت']] },
+      { label:'النموذج queue', en:'module', note:'الطوابير', leaves:[['queue.put()','إضافة'],['queue.full()','هل امتلأ؟'],['queue.empty()','هل فرغ؟']] },
+      { label:'النموذج os', en:'module', note:'نظام التشغيل', leaves:[['os.getcwd()','المجلد الحالي'],['os.listdir()','محتويات المجلد'],['os.chdir()','تغيير المسار']] },
+    ] },
+
+  /* 10) النموذج البرمجي */
+  { type:'code', transition:'slide', badge:'استراتيجية الفهم القرائي • شرح', title:'🧩 النموذج البرمجي Module',
+    points:['حزمة ملفات فيها مقاطع برمجية، امتدادها عادةً <b class="mono">.py</b>','نستوردها إلى البرنامج لتنفيذ وظائف مختلفة.','أهميتها: <b>إعادة استخدام</b> الكود و<b>تنظيم</b> المشروعات وتقسيمها.','أمثلة: <span class="mono">tkinter • platform • turtle • openpyxl</span>'],
+    note:'استخدمتِ سابقًا نموذج السلحفاة <span class="mono">turtle</span> للرسم، ونموذج <span class="mono">openpyxl</span> لملفات إكسل 🐢📗',
+    file:'module.py',
+    code:'import math\nprint(math.sqrt(16))',
+    output:'4.0' },
+
+  /* 11) طرق الاستيراد */
+  { type:'snippets', transition:'zoom', badge:'لاحظي واكتشفي', title:'📥 ثلاث طرق لاستيراد النموذج',
+    lead:'اختاري طريقة… ثم اضغطي ▶ تشغيل', file:'import.py',
+    items:[
+      { label:'import math', desc:'⭐ استيراد النموذج (الأفضل)', code:'import math\n\nprint(math.sqrt(25))\nprint(math.pi)', output:'5.0\n3.141592653589793',
+        note:'⭐ أفضل طريقة: نكتب <b>اسم النموذج</b> ثم نقطة ثم <b>اسم الدالة</b> <span class="mono">math.sqrt()</span>' },
+      { label:'from math import *', desc:'استيراد الكل', code:'from math import *\n\nprint(sqrt(25))\nprint(pi)', output:'5.0\n3.141592653589793',
+        note:'✅ يوفّر الكتابة فنستدعي الدالة باسمها مباشرة<br>⚠️ لكنه يزيد حجم البرنامج وأعباء الصيانة والأمن' },
+      { label:'from math import sqrt, pow', desc:'استيراد دوال محددة', code:'from math import sqrt, pow\n\nprint(sqrt(25))\nprint(pow(2, 3))', output:'5.0\n8.0',
+        note:'نستورد <b>فقط</b> الدوال التي سنحتاجها في مقطعنا البرمجي' },
+      { label:'print(math.sqrt(25))', desc:'⚠️ نسيتُ import!', code:'print(math.sqrt(25))', output:"NameError: name 'math' is not defined", error:true,
+        note:'يجب استيراد النموذج أولًا بسطر في <b>أعلى</b> البرنامج' },
+    ] },
+
+  /* 12) فكر – زاوج – شارك */
+  { type:'tps', transition:'slide', badge:'فكّري – زاوجي – شاركي', title:'🤝 ما ناتج تنفيذ هذا المقطع؟',
+    phases:TPS,
+    question:'انتبهي لطريقة الاستيراد! ماذا سيظهر؟',
+    code:'from math import sqrt\nprint(sqrt(49))\nprint(math.pi)',
+    output:"7.0\nNameError: name 'math' is not defined", error:true },
+
+  /* 13) sys و os */
+  { type:'snippets', transition:'slide', badge:'لاحظي واكتشفي', title:'🖥️ النموذجان sys و os: اعرفي جهازك',
+    lead:'نماذج تتعامل مع النظام وملفات الجهاز', file:'system.py',
+    items:[
+      { label:'sys.version', desc:'نسخة بايثون', code:'import sys\nprint(sys.version)', output:'3.7.0 (v3.7.0:c2f86d86e6, Oct 19 2019,\n10:49:36) [MSC v.1500 32 bit (Intel)]',
+        note:'<span class="mono">sys</span> يساعد المطوّر على معرفة نظام الجهاز ومشغّل بايثون المثبّت' },
+      { label:'sys.platform', desc:'نظام التشغيل', code:'import sys\nprint(sys.platform)', output:'win32', note:'<span class="mono">win32</span> تعني أن الجهاز يعمل بنظام Windows' },
+      { label:'os.getcwd()', desc:'مجلد العمل الحالي', code:'import os\nprint(os.getcwd())', output:'C:\\Users\\BL\\AppData\\Local\\Programs\\Python\\Python37-32',
+        note:'<span class="mono">getcwd</span> = get current working directory' },
+      { label:'os.chdir()', desc:'تغيير المسار', code:'import os\nos.chdir("C:/Users/BL/Desktop")\nprint(os.getcwd())\nos.chdir("..")\nprint(os.getcwd())', output:'C:\\Users\\BL\\Desktop\nC:\\Users\\BL',
+        note:'<span class="mono">".."</span> ترجعنا مجلدًا واحدًا إلى الخلف' },
+      { label:'os.listdir()', desc:'محتويات المجلد', code:'import os\nprint(os.listdir())', output:"['DLLs', 'Doc', 'include', 'Lib', 'libs',\n 'LICENSE.txt', 'python.exe', 'Scripts',\n 'tcl', 'Tools']",
+        note:'تُرجع <b>قائمة</b> بأسماء ملفات المجلد الحالي 📋' },
+      { label:'dir(os)', desc:'ماذا يحتوي النموذج؟', code:'import os\nprint(dir(os))', output:"['F_OK', 'O_APPEND', ..., 'chdir', 'chmod',\n 'getcwd', 'listdir', 'mkdir', 'remove',\n 'rename', 'rmdir', 'walk', 'write']",
+        note:'<span class="mono">dir</span> تعرض كل دوال النموذج، وتعمل مع أي كائن في بايثون' },
+    ] },
+
+  /* 14) math */
+  { type:'snippets', transition:'zoom', badge:'لاحظي واكتشفي', title:'🧮 النموذج math: آلة حاسبة عملاقة', cols:3,
+    file:'math.py',
+    items:[
+      { label:'pi • e', desc:'الثوابت', code:'import math\nprint(math.pi)\nprint(math.e)', output:'3.141592653589793\n2.718281828459045', note:'الثوابت الرياضية مُعرَّفة داخل النموذج' },
+      { label:'radians', desc:'ستيني ⇄ دائري', code:'import math\nprint(math.radians(60))\nprint(math.degrees(1.0471975511965976))', output:'1.0471975511965976\n60.0', note:'الزوايا في بايثون يجب أن تكون <b>بالتقدير الدائري</b>' },
+      { label:'sin cos tan', desc:'الدوال المثلثية', code:'import math\nprint(math.sin(math.radians(60)))\nprint(math.cos(math.radians(60)))\nprint(math.tan(math.radians(60)))', output:'0.8660254037844386\n0.5000000000000001\n1.7320508075688767', note:'نحوّل الزاوية 60° للتقدير الدائري أولًا' },
+      { label:'log • pow • sqrt', desc:'حسابات معقدة', code:'import math\nprint(math.log(10))\nprint(math.log10(10))\nprint(math.pow(2, 8))\nprint(math.sqrt(20))', output:'2.302585092994046\n1.0\n256.0\n4.47213595499958', note:'<span class="mono">pow(a, b)</span> = a<sup>b</sup> ← العدد الأول مرفوع للثاني' },
+      { label:'ceil • floor', desc:'التقريب', code:'import math\nprint(math.ceil(10.1657))\nprint(math.floor(10.1657))\nprint(math.floor(-10.1657))', output:'11\n10\n-11', note:'<span class="mono">ceil</span> للأعلى ⬆️ و <span class="mono">floor</span> للأسفل ⬇️ — انتبهي مع الأعداد السالبة!' },
+      { label:'ceil(-3.4)', desc:'جرّبي بنفسك', code:'import math\nprint(math.ceil(-3.4))\nprint(math.floor(-3.4))', output:'-3\n-4', note:'«للأعلى» في السالب تعني الاقتراب من الصفر: ‎-3.4 ⬆️ ‎-3' },
+    ] },
+
+  /* 15) time و datetime */
+  { type:'snippets', transition:'slide', badge:'تعلّم بالتجربة', title:'📅 time و datetime: الوقت الآن… حقيقي!',
+    lead:'هذه المخرجات تُحسب من ساعة جهازك الآن ⏰', file:'clock.py',
+    items:[
+      { label:'time.strftime', desc:'الوقت واليوم', code:'import time\nprint(time.strftime("%H:%M"), time.strftime("%A %p"))', output:nowTime,
+        note:'<span class="mono">%H:%M</span> الساعة والدقيقة بنظام 24 ساعة، و <span class="mono">%A %p</span> اليوم وصباحًا/مساءً' },
+      { label:'date.today()', desc:'تاريخ اليوم', code:'import datetime\nprint(datetime.date.today())', output:()=>ymd(new Date()), note:'الترتيب: السنة - الشهر - اليوم' },
+      { label:'.day .month .year', desc:'سمات التاريخ', code:'import datetime\nprint(datetime.date.today().day)\nprint(datetime.date.today().month)\nprint(datetime.date.today().year)',
+        output:()=>{ const d=new Date(); return `${d.getDate()}\n${d.getMonth()+1}\n${d.getFullYear()}`; }, note:'الصيغة: <span class="mono">module.function().attribute</span>' },
+      { label:'minute', desc:'الدقيقة الحالية', code:'from datetime import datetime\nprint(datetime.today().minute)', output:()=>String(new Date().getMinutes()), note:'سنستخدمها في تحدي المجموعات 😉' },
+    ] },
+
+  /* 16) ربط بالوطن: يوم التأسيس */
+  { type:'link', transition:'zoom', theme:'home', badge:'ربط بالوطن', title:'🇸🇦 كم يومًا بقي على يوم التأسيس؟',
+    quoteLabel:'🇸🇦 يوم بدينا',
+    quote:'22 فبراير 1727م… ذكرى تأسيس الدولة السعودية 💚',
+    source:'على يد الإمام محمد بن سعود رحمه الله',
+    link:'باستخدام النموذج <b class="mono">datetime</b> نحسب الأيام المتبقية على ذكرى يوم التأسيس من تاريخ اليوم الحقيقي 📅',
+    name:'today', open:'', close:'',
+    chips:[
+      { en:'today.year',  ar:'السنة', code:'print(today.year)',  out:()=>String(new Date().getFullYear()) },
+      { en:'today.month', ar:'الشهر', code:'print(today.month)', out:()=>String(new Date().getMonth()+1) },
+      { en:'today.day',   ar:'اليوم', code:'print(today.day)',   out:()=>String(new Date().getDate()) },
+    ],
+    file:'foundation.py',
+    code:'from datetime import date\ntoday = date.today()',
+    actions:[
+      { label:'▶ تاريخ اليوم', code:'print("Today is:", today)', output:()=>`Today is: ${ymd(new Date())}` },
+      { label:'🇸🇦 الأيام المتبقية', code:'foundationDay = date(today.year, 2, 22)\nprint("Today is:", today)\nprint("The Foundation day is on", foundationDay)\nif foundationDay < today:\n    nextYear = today.year + 1\n    foundationDay = foundationDay.replace(year=nextYear)\ndays = (foundationDay - today).days\nprint("Days left for the Foundation Day:", days)',
+        output:foundation, win:'يوم بدينا 💚🇸🇦' },
+    ] },
+
+  /* 17) ربط بالرياضيات */
+  { type:'link', transition:'zoom', theme:'math', badge:'ربط بالرياضيات', title:'📐 حساب المثلثات… بسطر واحد!',
+    quoteLabel:'📐 من الرياضيات',
+    quote:'جا 60° = √3 ÷ 2 ≈ 0.866',
+    source:'والزاوية بالتقدير الدائري: 60° = π ÷ 3 ≈ 1.047',
+    link:'ما نحسبه في الرياضيات بالجداول نحسبه في بايثون بالنموذج <b class="mono">math</b>: نحوّل الزاوية بـ <b class="mono">radians</b> ثم نستخدم <b class="mono">sin</b> و <b class="mono">cos</b>',
+    name:'math', open:'', close:'',
+    chips:[
+      { en:'math.pi', ar:'π', code:'print(math.pi)', out:'3.141592653589793' },
+      { en:'radians(60)', ar:'60° دائري', code:'print(math.radians(60))', out:'1.0471975511965976' },
+      { en:'sqrt(3) / 2', ar:'√3 ÷ 2', code:'print(math.sqrt(3) / 2)', out:'0.8660254037844386' },
+    ],
+    file:'trig.py',
+    code:'import math',
+    actions:[
+      { label:'▶ sin(60°)', code:'print(math.sin(math.radians(60)))', output:'0.8660254037844386', win:'نفس ناتج الرياضيات تمامًا! 🧮👏' },
+      { label:'▶ cos(60°)', code:'print(math.cos(math.radians(60)))', output:'0.5000000000000001' },
+      { label:'▶ 2⁸', code:'print(math.pow(2, 8))', output:'256.0' },
+    ] },
+
+  /* 18) ربط بالدين */
+  { type:'link', transition:'zoom', theme:'rel', badge:'ربط بالدين', title:'🕌 المكتبات المفتوحة… علمٌ يُنتفع به', smallQuote:true,
+    quoteLabel:'📖 قال رسول الله ﷺ',
+    quote:'«إذا مات الإنسانُ انقطع عنه عملُه إلا من ثلاثة: صدقةٍ جارية، أو علمٍ يُنتفع به، أو ولدٍ صالحٍ يدعو له»',
+    source:'رواه مسلم',
+    link:'المبرمجون الذين كتبوا المكتبات ونشروها مجانًا نشروا <b>علمًا يُنتفع به</b>… وكل مقطع نافع تكتبينه وتشاركينه قد يكون أجرًا يبقى لكِ 💚',
+    name:'deeds', open:'(', close:')',
+    chips:[{en:'Sadaqah',ar:'صدقة جارية'},{en:'Knowledge',ar:'علم يُنتفع به'},{en:'Child',ar:'ولد صالح'}],
+    file:'deeds.py',
+    code:'deeds = ("Sadaqah", "Knowledge", "Child")',
+    actions:[
+      { label:'▶ print(len(deeds))', code:'print(len(deeds))', output:'3' },
+      { label:'▶ print(deeds[1])', code:'print(deeds[1])', output:'Knowledge', mark:1, win:'علمٌ يُنتفع به 💚' },
+    ] },
+
+  /* 19) مدير الحزم */
+  { type:'code', transition:'slide', badge:'استراتيجية الفهم القرائي', title:'🎮 مكتبات خارجية ومدير الحزم PIP',
+    points:['مدير الحزم <b>PIP</b> يثبّت حزمًا غير موجودة في المكتبة القياسية.','يبحث عنها في فهرس حزم بايثون <b class="mono">PyPI</b>.','في PyCharm: <b>Python Packages</b> ← ابحثي عن <span class="mono">pygame</span> ← <b>Install</b>.','بعد التثبيت نستوردها بـ <span class="mono">import</span> مثل أي مكتبة.'],
+    note:'<span class="mono">pygame</span> مكتبة مفتوحة المصدر لإنشاء تطبيقات الوسائط المتعددة مثل الألعاب 🎮',
+    file:'Terminal',
+    code:'pip install pygame',
+    output:'Collecting pygame\nInstalling collected packages: pygame\nSuccessfully installed pygame-2.1.2' },
+
+  /* 20) pygame */
+  { type:'canvas', transition:'zoom', badge:'تعلّم بالتجربة', title:'🎨 أول رسوماتي بـ pygame', file:'game.py',
+    note:'نعرّف الألوان بنظام <b>RGB</b> ثم نرسم على الشاشة <span class="mono">screen</span>، و <span class="mono">display.update()</span> تعرض الرسم',
+    items:[
+      { label:'🟥 مستطيل', title:'pygame window',
+        code:'import pygame\nimport time\npygame.init()\ndarkBlue = (0, 0, 128)\nred = (255, 0, 0)\nscreen = pygame.display.set_mode((400, 300))\nscreen.fill(darkBlue)\npygame.draw.rect(screen, red, pygame.Rect(30, 30, 60, 60))\npygame.display.update()\ntime.sleep(5)\npygame.quit()',
+        ops:[BG(400,300,rgb(0,0,128)), RC([30,30,90,90],{fill:rgb(255,0,0),width:0})] },
+      { label:'✨ خطوط بحلقة for', title:'pygame window',
+        code:'import pygame\nimport time\npygame.init()\ndarkBlue = (0, 0, 128)\npink = (255, 200, 200)\nscreen = pygame.display.set_mode((500, 400))\nscreen.fill(darkBlue)\nfor i in range(0, 500, 10):\n    pygame.draw.lines(screen, pink, False,\n                      [(i, 10), (250, 350)], 1)\npygame.display.update()\ntime.sleep(5)\npygame.quit()',
+        ops:[BG(500,400,rgb(0,0,128)), ...Array.from({length:50},(_,k)=>LN([k*10,10,250,350],{fill:rgb(255,200,200),width:1}))], win:'لوحة فنية بسطرين برمجيين! 🎨' },
+    ] },
+
+  /* 21) مقارنة */
+  { type:'compare', transition:'zoom', badge:'التعلم التعاوني', title:'⚖️ مكتبات قياسية أم خارجية؟',
+    heads:['📚 القياسية Standard','🌍 الخارجية External'],
+    rows:[
+      ['التثبيت','مثبّتة تلقائيًا مع بايثون','نثبّتها بمدير الحزم <span class="mono">PIP</span>'],
+      ['المصدر','جزء أساسي من لغة بايثون','مجتمعات المطورين حول العالم <span class="mono">PyPI</span>'],
+      ['أمثلة','<span class="mono">math • os • sys • datetime</span>','<span class="mono">pygame • openpyxl</span>'],
+      ['الاستخدام','<span class="mono">import</span> مباشرة','تثبيت أولًا ثم <span class="mono">import</span>'],
+    ],
+    tip:'ناقشي مجموعتك قبل كشف كل صف 👭' },
+
+  /* 22–26) أسئلة */
+  { type:'mcq', transition:'zoom', badge:'التقييم الفوري', title:'❓ اختاري الإجابة الصحيحة',
+    q:'الترتيب الصحيح من الأكبر إلى الأصغر:',
+    options:[{ icon:'أ', t:'المكتبة ← النموذج ← الدالة' },{ icon:'ب', t:'الدالة ← النموذج ← المكتبة' },{ icon:'ج', t:'النموذج ← المكتبة ← الدالة' }],
+    answer:0, explain:'الدالة جزء من النموذج، والنموذج جزء من المكتبة القياسية' },
+
+  { type:'mcq', transition:'zoom', badge:'التقييم الفوري', title:'❓ اختاري الإجابة الصحيحة',
+    q:'أفضل طريقة لاستيراد النموذج math:',
+    options:[{ icon:'⭐', t:'import math', code:1 },{ icon:'🌀', t:'from math import *', code:1 },{ icon:'❌', t:'math import', code:1 }],
+    answer:0, explain:'import math ثم نكتب math.sqrt() — واضحة وتمنع تداخل الأسماء' },
+
+  { type:'mcq', transition:'zoom', badge:'التقييم الفوري', title:'❓ ما ناتج تنفيذ المقطع؟',
+    q:'ماذا سيُطبع على الشاشة؟',
+    code:'import math\nprint(math.floor(10.7))',
+    options:[{ icon:'أ', t:'11', code:1 },{ icon:'ب', t:'10', code:1 },{ icon:'ج', t:'10.7', code:1 }],
+    answer:1, explain:'floor تقرّب للأسفل دائمًا ⬇️' },
+
+  { type:'mcq', transition:'zoom', badge:'التقييم الفوري', title:'❓ اختاري الإجابة الصحيحة',
+    q:'الدالة التي تعرض مسار مجلد العمل الحالي:',
+    options:[{ icon:'📂', t:'os.getcwd()', code:1 },{ icon:'📋', t:'os.listdir()', code:1 },{ icon:'💻', t:'sys.platform', code:1 }],
+    answer:0, explain:'getcwd = get current working directory' },
+
+  { type:'mcq', transition:'zoom', badge:'التقييم الفوري', title:'❓ اختاري الإجابة الصحيحة',
+    q:'لتثبيت مكتبة خارجية مثل pygame نستخدم:',
+    options:[{ icon:'📦', t:'مدير الحزم PIP' },{ icon:'📥', t:'import pygame فقط' },{ icon:'🔍', t:'الدالة dir()' }],
+    answer:0, explain:'المكتبات الخارجية تُثبَّت أولًا بمدير الحزم ثم تُستورد' },
+
+  /* 27) صح أم خطأ */
+  { type:'tf', transition:'slide', badge:'صح أم خطأ', title:'✔️✖️ صح أم خطأ؟',
+    items:[
+      { s:'مكتبة بايثون القياسية تُثبَّت تلقائيًا مع بايثون.', a:true, why:'صحيح ✔ وفيها أكثر من 200 نموذج.' },
+      { s:'يجب أن أفهم التفاصيل الداخلية للمكتبة كي أستخدمها.', a:false, why:'خطأ ✖ يكفي معرفة وظيفتها فقط.' },
+      { s:'ناتج <span class="mono">math.ceil(10.1)</span> هو 11.', a:true, why:'صحيح ✔ ceil تقرّب للأعلى.' },
+      { s:'نُدخل الزوايا للدالة <span class="mono">math.sin</span> بالتقدير الستيني.', a:false, why:'خطأ ✖ بالتقدير الدائري، لذا نستخدم radians.' },
+      { s:'استيراد الكل <span class="mono">import *</span> يزيد أعباء الصيانة والأمن.', a:true, why:'صحيح ✔ لأنه يستورد دوالًا قد لا نحتاجها.' },
+    ] },
+
+  /* 28) تحدي الدقيقة */
+  { type:'challenge', transition:'zoom', badge:'تحدي الدقيقة', title:'⏱️ تحدي الدقيقة: احسبي مثل بايثون!',
+    seconds:60, listCode:'import math',
+    note:'💡 فكّري في نوع الناتج: هل هو عدد صحيح أم عشري؟',
+    rows:[
+      { c:'print(math.sqrt(81))', r:'9.0' },
+      { c:'print(math.pow(3, 2))', r:'9.0' },
+      { c:'print(math.ceil(4.2))', r:'5' },
+      { c:'print(math.floor(4.9))', r:'4' },
+      { c:'print(math.floor(-4.2))', r:'-5' },
+      { c:'print(math.ceil(-4.2))', r:'-4' },
+      { c:'print(math.log10(100))', r:'2.0' },
+      { c:'print(math.degrees(math.pi))', r:'180.0' },
+    ] },
+
+  /* 29) التعلم التعاوني (تدريب 1) */
+  { type:'task', transition:'slide', badge:'التعلم التعاوني', title:'👩‍💻 تحدي المجموعات: هل الدقيقة فردية؟',
+    seconds:180, roles:ROLES, file:'odd_minute.py',
+    steps:[
+      'استوردي <span class="mono">datetime</span> من النموذج <span class="mono">datetime</span>.',
+      'أنشئي قائمة <span class="mono">odds</span> بالأرقام الفردية من 1 إلى 59.',
+      'احفظي الدقيقة الحالية في <span class="mono">right_this_minute</span>.',
+      'إذا كانت الدقيقة داخل <span class="mono">odds</span> اطبعي <span class="mono">This minute is odd.</span>',
+      'وإلا اطبعي <span class="mono">Not odd.</span> — ثم حدّدي المكتبة والنموذج والدالة!',
+    ],
+    solution:[
+      'from datetime import datetime',
+      '',
+      'odds = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19,',
+      '        21, 23, 25, 27, 29, 31, 33, 35, 37, 39,',
+      '        41, 43, 45, 47, 49, 51, 53, 55, 57, 59]',
+      'right_this_minute = datetime.today().minute',
+      'if right_this_minute in odds:',
+      '    print("This minute is odd.")',
+      'else:',
+      '    print("Not odd.")',
+    ] },
+
+  /* 30) مراجعة */
+  { type:'flip', transition:'zoom', badge:'مراجعة', title:'🧩 خلاصة الدرس في 6 بطاقات', cols:3,
+    hint:'اقلبي البطاقة',
+    cards:[
+      { icon:'📚', q:'المكتبة البرمجية', a:'تعليمات مدمجة سابقًا نعيد استخدامها' },
+      { icon:'🧩', q:'المكتبة ← النموذج ← الدالة', a:'الدالة داخل النموذج، والنموذج داخل المكتبة' },
+      { icon:'📥', q:'طرق الاستيراد', a:'<span class="mono">import m</span><br><span class="mono">from m import *</span><br><span class="mono">from m import f</span>' },
+      { icon:'🖥️', q:'sys و os', a:'معلومات النظام والمجلدات<br><span class="mono">getcwd • listdir • chdir</span>' },
+      { icon:'🧮', q:'math', a:'<span class="mono">pi • sqrt • pow • sin<br>ceil • floor</span>' },
+      { icon:'🎮', q:'المكتبات الخارجية', a:'نثبّتها بـ <span class="mono">PIP</span> مثل <span class="mono">pygame</span>' },
+    ] },
+
+  /* 31) التقييم الذاتي */
+  { type:'rating', transition:'fade', badge:'التقييم الفوري', title:'🌡️ كيف تقيّمين فهمك اليوم؟',
+    options:RATING,
+    exit:'اذكري الفرق بين المكتبات القياسية والمكتبات الخارجية مع مثال لكل منهما.' },
+
+  /* 32) الختام */
+  { type:'closing', transition:'zoom', deco:['import','📚'],
+    title:'أنتِ مبرمجة المستقبل 💜',
+    text:'اليوم تعلّمتِ ألّا تبدئي من الصفر… بل تبنين على علمٍ نافع سبقكِ إليه الآخرون 📚',
+    code:'import math\nskills = ["import", "math", "os", "datetime"]\nprint("I mastered:", len(skills), "modules ✅")',
+    homework:'الواجب: تدريب 3 • صفحة 170' },
+];
+
+/* =====================================================================
+   🚫 لا حاجة لتعديل ما بعد هذا السطر — محرّك العرض
+   ===================================================================== */
+
+/* ---------- أدوات مساعدة ---------- */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+const val = v => typeof v === 'function' ? v() : v;
+const head = d => `<header class="s-head anim">${d.badge?`<span class="badge">${d.badge}</span>`:''}<h2>${d.title}</h2></header>`;
+const pickBtn = (cls='ghost sm') => `<button class="btn ${cls}" data-a="pick">🎯 من تجيب؟</button>`;
+const isNum = v => typeof v === 'number';
+/* تمثيل القيم كما يكتبها/يطبعها بايثون */
+const pyStr = s => { s = String(s).replace(/\\/g,'\\\\').replace(/\n/g,'\\n'); return s.includes("'") && !s.includes('"') ? `"${s}"` : `'${s.replace(/'/g,"\\'")}'`; };
+const pyRepr = v => Array.isArray(v) ? `[${v.map(pyRepr).join(', ')}]` : isNum(v) ? String(v) : pyStr(v);
+const pyLit  = v => Array.isArray(v) ? `[${v.map(pyLit).join(', ')}]` : isNum(v) ? String(v) : `"${v}"`;
+const pyPrint = v => Array.isArray(v) ? pyRepr(v) : String(v);
+
+/* تلوين كود بايثون */
+const PY_KW = new Set(['for','in','if','else','elif','while','def','return','and','or','not','True','False','None','import','from','as','del','with','is','break','pass']);
+const PY_FN = new Set(['print','input','len','sum','max','min','range','append','remove','count','sort','reverse','clear','int','str','float','list','dict','tuple','round','get','update','keys','values','open','read','write','close','readline','readlines','replace','sqrt','pow','sin','cos','tan','log','log10','ceil','floor','radians','degrees','getcwd','chdir','listdir','dir','strftime','today','date','Tk','Canvas','pack','mainloop','title','geometry','create_line','create_rectangle','create_oval','create_polygon','bind','choice','init','fill','Rect','rect','lines','set_mode','sleep','quit','focus_set']);
+function hl(code){
+  const re = /(#[^\n]*)|("[^"\n]*"|'[^'\n]*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(code))){
+    out += esc(code.slice(last, m.index));
+    if (m[1]) out += `<span class="c-com">${esc(m[1])}</span>`;
+    else if (m[2]) out += `<span class="c-str">${esc(m[2])}</span>`;
+    else if (m[3]) out += `<span class="c-num">${m[3]}</span>`;
+    else { const w = m[4]; out += PY_KW.has(w) ? `<span class="c-kw">${w}</span>` : PY_FN.has(w) ? `<span class="c-fn">${w}</span>` : w; }
+    last = re.lastIndex;
+  }
+  return out + esc(code.slice(last));
+}
+const codeBlock = (code, file='main.py', cls='') =>
+  `<div class="code ${cls}"><div class="bar"><i></i><i></i><i></i><span class="fn">${file}</span><span class="lang">🐍 Python</span></div><pre><code>${hl(code)}</code></pre></div>`;
+const setCode = (root, code) => { const c = $('code', root); if (c) c.innerHTML = hl(code); };
+const setFile = (root, f) => { const c = $('.fn', root); if (c) c.textContent = f; };
+const terminal = () => `<div class="term"><div class="term-bar">▸ Output</div><pre class="term-body"><span class="cursor">▍</span></pre></div>`;
+const termReset = t => { clearInterval(t._t); t.classList.remove('err'); t.innerHTML = '<span class="cursor">▍</span>'; };
+
+/* كتابة المخرجات حرفًا حرفًا */
+function typeOut(el, text, isErr=false){
+  text = String(val(text) ?? '');
+  clearInterval(el._t);
+  el.classList.toggle('err', !!isErr);
+  el.textContent = '';
+  let i = 0;
+  const step = Math.max(1, Math.ceil(text.length / 45));
+  el._t = setInterval(() => {
+    i += step; el.textContent = text.slice(0, i);
+    if (i >= text.length){ clearInterval(el._t); isErr ? Sound.wrong() : Sound.pop(); }
+  }, 22);
+}
+
+/* =====================================================================
+   🔊 الأصوات (Web Audio API — بدون ملفات خارجية)
+   ===================================================================== */
+const Sound = {
+  ctx:null, buf:null,
+  c(){
+    try{
+      if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      return this.ctx;
+    }catch(e){ return null; }
+  },
+  noise(c){
+    if (this.buf) return this.buf;
+    const b = c.createBuffer(1, c.sampleRate, c.sampleRate), d = b.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+    return (this.buf = b);
+  },
+  tone(f, t, dur, type='sine', vol=.2, f2){
+    const c = this.c(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t+dur);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+.015);
+    g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.05);
+  },
+  clap(){
+    const c = this.c(); if (!c) return;
+    const now = c.currentTime, buf = this.noise(c), dur = 1.6;
+    const master = c.createGain(); master.gain.value = .9; master.connect(c.destination);
+    for (let k=0;k<46;k++){
+      const t = now + Math.pow(Math.random(), 1.25) * dur;
+      const src = c.createBufferSource(); src.buffer = buf;
+      const hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 600;
+      const bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value = 900 + Math.random()*1700; bp.Q.value = .8 + Math.random();
+      const g = c.createGain();
+      const fade = Math.max(.15, 1 - (t-now)/dur*.85), peak = (.35 + Math.random()*.45) * fade;
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t+.003);
+      g.gain.exponentialRampToValueAtTime(.0001, t+.06+Math.random()*.08);
+      src.connect(hp); hp.connect(bp); bp.connect(g); g.connect(master);
+      src.start(t, Math.random()*.5, .2);
+    }
+  },
+  success(){ const c=this.c(); if(!c) return; const n=c.currentTime;
+    [523.25,659.25,783.99,1046.5].forEach((f,k)=>this.tone(f, n+k*.09, .3, 'triangle', .22));
+    this.tone(1318.5, n+.38, .45, 'sine', .12); },
+  wrong(){ const c=this.c(); if(!c) return; const n=c.currentTime;
+    this.tone(330, n, .18, 'sine', .16); this.tone(247, n+.16, .32, 'sine', .16); },
+  pop(){ const c=this.c(); if(!c) return; this.tone(620, c.currentTime, .1, 'sine', .12, 980); },
+  tick(){ const c=this.c(); if(!c) return; this.tone(1250, c.currentTime, .05, 'square', .04); },
+  timeUp(){ const c=this.c(); if(!c) return; const n=c.currentTime;
+    [0,.22,.44].forEach(d=>this.tone(880, n+d, .16, 'square', .07)); },
+};
+
+/* =====================================================================
+   ✨ التأثيرات البصرية
+   ===================================================================== */
+const Fx = {
+  layer: $('#fx'),
+  toast(msg, kind=''){
+    const t = $('#toast'); t.textContent = msg; t.className = 'show ' + kind;
+    clearTimeout(t._h); t._h = setTimeout(() => t.className = kind, 1800);
+  },
+  claps(){
+    for (let k=0;k<18;k++){
+      const s = document.createElement('span');
+      s.className = 'clap-fly'; s.textContent = '👏';
+      s.style.left = (15 + Math.random()*70) + '%';
+      s.style.setProperty('--dx', (Math.random()*260-130) + 'px');
+      s.style.setProperty('--r', (Math.random()*80-40) + 'deg');
+      s.style.setProperty('--d', (1.6 + Math.random()*1.2) + 's');
+      s.style.setProperty('--s', (32 + Math.random()*34) + 'px');
+      s.style.animationDelay = (Math.random()*.6) + 's';
+      this.layer.appendChild(s);
+      setTimeout(() => s.remove(), 3600);
+    }
+  },
+  shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'), 520); },
+  confetti(amount=150){
+    const cv = $('#confetti'), ctx = cv.getContext('2d');
+    cv.width = innerWidth; cv.height = innerHeight;
+    const colors = ['#8B5CF6','#60A5FA','#F59E0B','#EC4899','#10B981','#C4B5FD'];
+    const P = (this._p = (this._p || []));
+    for (let i=0;i<amount;i++) P.push({
+      x: innerWidth/2 + (Math.random()-.5)*innerWidth*.5, y: innerHeight*.35,
+      vx: (Math.random()-.5)*16, vy: -Math.random()*16-6, s: 6+Math.random()*8,
+      r: Math.random()*6, vr: (Math.random()-.5)*.3, c: colors[i%colors.length], life: 160+Math.random()*60 });
+    if (this._run) return;
+    this._run = true;
+    const loop = () => {
+      ctx.clearRect(0,0,cv.width,cv.height);
+      for (let i=P.length-1;i>=0;i--){
+        const p = P[i]; p.vy += .42; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.min(1, p.life/40);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s/2, -p.s/3, p.s, p.s*.66); ctx.restore();
+        if (p.life <= 0 || p.y > cv.height+40) P.splice(i,1);
+      }
+      if (P.length) requestAnimationFrame(loop); else { this._run = false; ctx.clearRect(0,0,cv.width,cv.height); }
+    };
+    loop();
+  },
+};
+function doClap(){ Sound.clap(); Fx.claps(); }
+function celebrate(msg='أحسنتِ! 👏 إجابة صحيحة'){ Sound.success(); Fx.confetti(); Fx.toast(msg,'ok'); }
+function tryAgain(msg='حاولي مرة أخرى 💜'){ Sound.wrong(); Fx.toast(msg,'no'); }
+
+/* =====================================================================
+   ⏱️ المؤقت
+   ===================================================================== */
+const timerHTML = sec => `<div class="timer anim" data-sec="${sec}">
+  <div class="tm-ring"><svg viewBox="0 0 120 120"><circle class="tm-bg" cx="60" cy="60" r="52"/><circle class="tm-fg" cx="60" cy="60" r="52"/></svg><div class="tm-txt">${fmt(sec)}</div></div>
+  <div class="tm-btns"><button class="btn sm" data-t="go">▶ ابدئي</button><button class="btn sm ghost" data-t="reset">↺</button></div></div>`;
+function makeTimer(root){
+  const C = 2*Math.PI*52, fg = $('.tm-fg',root), txt = $('.tm-txt',root), go = $('[data-t=go]',root);
+  let total = +root.dataset.sec || 60, left = total, id = null;
+  fg.style.strokeDasharray = C;
+  const draw = () => { txt.textContent = fmt(left); fg.style.strokeDashoffset = C*(1-left/total); root.classList.toggle('warn', left<=10 && left>0); };
+  const stop = () => { clearInterval(id); id = null; go.textContent = '▶ ابدئي'; };
+  const start = () => {
+    if (id || total<=0) return;
+    if (left<=0) left = total;
+    root.classList.remove('done'); go.textContent = '⏸ إيقاف';
+    id = setInterval(() => {
+      left--; draw();
+      if (left<=5 && left>0) Sound.tick();
+      if (left<=0){ stop(); root.classList.add('done'); Sound.timeUp(); Fx.toast('⏰ انتهى الوقت!'); }
+    }, 1000);
+  };
+  const api = {
+    start, stop,
+    reset(){ stop(); left = total; root.classList.remove('done','warn'); draw(); },
+    set(sec){ stop(); total = sec; left = sec; root.classList.remove('done','warn'); draw(); },
+  };
+  go.onclick = () => id ? stop() : start();
+  $('[data-t=reset]',root).onclick = api.reset;
+  draw(); root._timer = api; return api;
+}
+
+/* =====================================================================
+   🖌️ رسم أوامر tkinter / pygame على لوحة حقيقية
+   ===================================================================== */
+function tkPaint(ctx, o){
+  ctx.save(); ctx.setLineDash([]); ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
+  const p = o.p || [];
+  if (o.t === 'bg'){ ctx.fillStyle = o.c || '#fff'; ctx.fillRect(0, 0, o.w, o.h); }
+  else if (o.t === 'line'){
+    ctx.beginPath(); ctx.moveTo(p[0], p[1]); for (let k=2;k<p.length;k+=2) ctx.lineTo(p[k], p[k+1]);
+    ctx.lineWidth = o.width ?? 1; ctx.strokeStyle = o.fill || 'black';
+    if (o.dash) ctx.setLineDash([Math.max(3,o.dash), Math.max(3,o.dash)]);
+    ctx.stroke();
+  }
+  else if (o.t === 'rect' || o.t === 'oval'){
+    const [x1,y1,x2,y2] = p;
+    ctx.beginPath();
+    if (o.t === 'rect') ctx.rect(x1, y1, x2-x1, y2-y1);
+    else ctx.ellipse((x1+x2)/2, (y1+y2)/2, Math.abs(x2-x1)/2, Math.abs(y2-y1)/2, 0, 0, Math.PI*2);
+    if (o.fill){ ctx.fillStyle = o.fill; ctx.fill(); }
+    const w = o.width ?? 1; if (w > 0 && o.outline !== ''){ ctx.lineWidth = w; ctx.strokeStyle = o.outline || 'black'; ctx.stroke(); }
+  }
+  else if (o.t === 'poly'){
+    ctx.beginPath(); ctx.moveTo(p[0], p[1]); for (let k=2;k<p.length;k+=2) ctx.lineTo(p[k], p[k+1]); ctx.closePath();
+    ctx.fillStyle = o.fill ?? 'black'; ctx.fill();
+    if (o.outline){ ctx.lineWidth = o.width ?? 1; ctx.strokeStyle = o.outline; ctx.stroke(); }
+  }
+  ctx.restore();
+}
+
+/* =====================================================================
+   🧱 أنواع الشرائح (render = الشكل، init = التفاعل)
+   ===================================================================== */
+const T = {
+
+  /* ---------- التحضير: الشعب والأسماء من لوحة الإدارة ---------- */
+  attendance:{
+    render:d=>`${head(d)}<div class="rs-host" style="flex:1;min-height:0"></div>`,
+    init(el){ Roster.attendance($('.rs-host',el), LESSON_GRADE); }
+  },
+
+  /* ---------- العنوان ---------- */
+  title:{
+    render:d=>{
+      const deco = d.deco || [['[ ]','top:9%;left:5%'],['( )','top:66%;left:8%'],['0 1 2','top:13%;right:7%'],['[0]','bottom:20%;right:9%'],['01','top:40%;left:24%;font-size:70px'],['10','top:44%;right:22%;font-size:70px']];
+      return `<div class="deco-code">${deco.map(x=>`<span style="${x[0].length>4&&!/font-size/.test(x[1])?'font-size:68px;':''}${x[1]}">${x[0]}</span>`).join('')}</div>
+    <div class="center-col">
+      <div class="anim pills"><span class="pill">💻 ${LESSON.subject}</span><span class="pill">🎓 ${LESSON.grade}</span><span class="pill">🐍 ${LESSON.unit}</span>${LESSON.lessonNo?`<span class="pill">📘 ${LESSON.lessonNo}</span>`:''}</div>
+      <div class="anim kicker">${d.kicker}</div>
+      <h1 class="anim hero" style="font-size:${d.heroSize||118}px">${LESSON.title}</h1>
+      <div class="anim hero-sub" dir="ltr">${d.subtitle}</div>
+      <div class="anim title-code">${codeBlock(d.code,'welcome.py')}</div>
+      <div class="anim meta">👩‍🏫 ${LESSON.teacher} &nbsp;•&nbsp; 🏫 ${LESSON.school}</div>
+    </div>`; }
+  },
+
+  /* ---------- بطاقات قابلة للقلب ---------- */
+  flip:{
+    render:d=>`${head(d)}<div class="s-body col">
+      ${d.hint?`<div class="row gap anim"><p class="hint">👆 ${d.hint}</p>${d.pick===false?'':pickBtn()}</div>`:''}
+      <div class="flip-grid cols-${d.cols||Math.min(d.cards.length,4)}">
+      ${d.cards.map(c=>`<div class="flip-card anim" role="button" tabindex="0"><div class="fc-inner">
+        <div class="fc-front"><span class="fc-ico">${c.icon}</span><span class="fc-q">${c.q}</span><span class="fc-tap">🔄 اضغطي للكشف</span></div>
+        <div class="fc-back"><span class="fc-a">${c.a}</span></div></div></div>`).join('')}
+      </div></div>`,
+    init(el){ $$('.flip-card',el).forEach(c=>c.addEventListener('click',()=>{ c.classList.toggle('flipped'); Sound.pop(); })); }
+  },
+
+  /* ---------- الأهداف / القوانين ---------- */
+  goals:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="goals">${d.items.map((g,k)=>`<div class="goal anim"><span class="g-num">${k+1}</span><span class="g-ico">${g.icon}</span><span>${g.text}</span></div>`).join('')}</div>
+      <div class="goals-side anim"><div class="big-emoji float-ico">${d.emoji||'🎯'}</div>${codeBlock(d.code,d.file||'goals.py')}</div></div>`
+  },
+
+  /* ---------- جامع البيانات ---------- */
+  collector:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="data-src anim"><div class="ds-title">${d.srcTitle}</div>
+        <div class="packets">${d.packets.map((p,k)=>`<div class="packet" role="button" tabindex="0" data-k="${k}"><span class="pe">${p.e}</span><span class="pv">${esc(p.v)}</span><span class="pt t-${p.t}">${p.tl}</span></div>`).join('')}</div>
+        <button class="btn ghost sm" data-a="reset" style="align-self:center">↺ إعادة</button>
+      </div>
+      <div class="data-side">
+        <div class="mem anim"><div class="mem-head"><span>🧠 الذاكرة: المتغيّر <span class="mono">${d.varName}</span></span><span class="cnt">len = 0</span></div><div class="mem-items"></div></div>
+        <div class="anim live-code">${codeBlock(`${d.varName} = [ ]`,'data.py')}</div>
+        <div class="predict anim"><div class="pq">🤔 ${d.question}</div><button class="btn blue sm" data-a="ans">💡 اكشفي الإجابة</button><div class="pa">${d.answer}</div></div>
+      </div></div>`,
+    init(el,d){
+      let box=[]; const items=$('.mem-items',el), cnt=$('.cnt',el), lc=$('.live-code',el);
+      const draw=()=>{
+        items.innerHTML = box.length ? box.map((k,i)=>`<div class="mchip" data-i="${i}"><small>${i}</small><span>${esc(d.packets[k].r)}</span></div>`).join('') : `<div class="mem-empty">الذاكرة فارغة… اضغطي على بيانات لتخزينها</div>`;
+        cnt.textContent = `len = ${box.length}`;
+        setCode(lc, `${d.varName} = [${box.map(k=>d.packets[k].py).join(', ')}]`);
+        $$('.packet',el).forEach(p=>p.classList.toggle('used', box.includes(+p.dataset.k)));
+      };
+      $$('.packet',el).forEach(p=>p.addEventListener('click',()=>{ box.push(+p.dataset.k); Sound.pop(); draw(); }));
+      items.addEventListener('click',e=>{ const c=e.target.closest('.mchip'); if(!c) return; box.splice(+c.dataset.i,1); Sound.pop(); draw(); });
+      $('[data-a=reset]',el).onclick=()=>{ box=[]; draw(); };
+      $('[data-a=ans]',el).onclick=()=>{ $('.pa',el).classList.add('show'); Sound.success(); };
+      draw();
+    }
+  },
+
+  /* ---------- العصف الذهني ---------- */
+  brainstorm:{
+    render:d=>`${head(d)}<div class="s-body col">
+      <div class="bs-area anim"><div class="bs-center">${d.center}<span class="mono">${d.centerCode}</span></div></div>
+      <div class="bs-tools anim"><button class="btn" data-a="next">💡 فكرة جديدة</button>
+        <input class="bs-in" type="text" placeholder="✍️ اكتبي فكرة طالبة هنا ثم Enter" maxlength="34">
+        <button class="btn blue" data-a="add">➕ أضيفي</button>${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺</button></div></div>`,
+    init(el,d){
+      const area=$('.bs-area',el), inp=$('.bs-in',el), SL=10, cols=['#8B5CF6','#3B82F6','#EC4899','#10B981','#F59E0B'];
+      let used=0, idx=0;
+      const pos=k=>{ const a=(-90 + k*(360/SL))*Math.PI/180; return { x:50+Math.cos(a)*36, y:50+Math.sin(a)*40 }; };
+      const add=(txt,mine)=>{
+        if (used>=SL){ Fx.toast('🌟 امتلأت اللوحة بالأفكار!'); return; }
+        const p=pos(used), b=document.createElement('div');
+        b.className='bs-idea'+(mine?' mine':''); b.style.left=p.x+'%'; b.style.top=p.y+'%';
+        b.style.setProperty('--c', cols[used%cols.length]); b.textContent=txt; area.appendChild(b); used++; Sound.pop();
+      };
+      $('[data-a=next]',el).onclick=()=>{ if(idx<d.ideas.length) add(d.ideas[idx++]); else Fx.toast('✍️ أضيفي أفكار الطالبات الآن'); };
+      const addMine=()=>{ const v=inp.value.trim(); if(!v) return; add(v,true); inp.value=''; };
+      $('[data-a=add]',el).onclick=addMine;
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addMine(); } });
+      $('[data-a=reset]',el).onclick=()=>{ $$('.bs-idea',area).forEach(b=>b.remove()); used=0; idx=0; };
+    }
+  },
+
+  /* ---------- مخطط هياكل البيانات ---------- */
+  tree:{
+    render:d=>{
+      const leaf=l=>`<div class="leaf ${l[2]?'star':''}">${l[2]?`<em>${typeof l[2]==='string'?l[2]:(d.star||'⭐ درس اليوم')}</em>`:''}<b>${l[0]}</b><span dir="ltr">${l[1]}</span></div>`;
+      const pr=d.primitive, np=d.nonPrimitive;
+      return `${head(d)}<div class="s-body col tree">
+        <div class="t-root anim" role="button" tabindex="0" data-open="lvl1"><span>🗂️</span><div><b>${d.root}</b><small dir="ltr">${d.rootEn}</small></div></div>
+        <p class="t-def anim">${d.def}</p>
+        <div class="t-lvl1 tz" data-g="lvl1">
+          <div class="t-branch">
+            <div class="t-head" role="button" tabindex="0" data-open="pr"><b>${pr.label}</b><small dir="ltr">${pr.en}</small></div>
+            <div class="tz" data-g="pr"><p class="t-note">${pr.note}</p><div class="leaves two">${pr.leaves.map(leaf).join('')}</div></div>
+          </div>
+          <div class="t-branch wide">
+            <div class="t-head" role="button" tabindex="0" data-open="np"><b>${np.label}</b><small dir="ltr">${np.en}</small></div>
+            <div class="tz" data-g="np"><p class="t-note">${np.note}</p><div class="t-sub">
+              ${np.groups.map((g,k)=>`<div class="t-group"><div class="t-head small" role="button" tabindex="0" data-open="g${k}"><b>${g.label}</b><small dir="ltr">${g.en}</small></div>
+                <div class="tz" data-g="g${k}"><p class="t-note">${g.note}</p><div class="leaves ${g.leaves.length>2?'two':''}">${g.leaves.map(leaf).join('')}</div></div></div>`).join('')}
+            </div></div>
+          </div>
+        </div>
+        <div class="row gap anim"><button class="btn ghost sm" data-a="all">👁️ اعرضي المخطط كاملًا</button><button class="btn ghost sm" data-a="reset">↺</button></div></div>`;
+    },
+    init(el){
+      const open=k=>{ const t=$(`.tz[data-g="${k}"]`,el); if(t && !t.classList.contains('show')){ t.classList.add('show'); Sound.pop(); } };
+      $$('[data-open]',el).forEach(b=>b.addEventListener('click',()=>open(b.dataset.open)));
+      $('[data-a=all]',el).onclick=()=>$$('.tz',el).forEach((t,k)=>setTimeout(()=>t.classList.add('show'),k*150));
+      $('[data-a=reset]',el).onclick=()=>$$('.tz',el).forEach(t=>t.classList.remove('show'));
+    }
+  },
+
+  /* ---------- مخطط هرمي عام (مكتبة ← نموذج ← دالة) ---------- */
+  hier:{
+    render:d=>`${head(d)}<div class="s-body col tree hier">
+      <div class="t-root anim" role="button" tabindex="0" data-open="lvl1"><span>${d.icon||'📚'}</span><div><b>${d.root}</b><small dir="ltr">${d.rootEn||''}</small></div></div>
+      <p class="t-def anim">${d.def}</p>
+      <div class="t-lvl1 tz" data-g="lvl1">${d.branches.map((b,k)=>`<div class="t-branch">
+        <div class="t-head" role="button" tabindex="0" data-open="b${k}"><b>${b.label}</b><small dir="ltr">${b.en||''}</small></div>
+        <div class="tz" data-g="b${k}">${b.note?`<p class="t-note">${b.note}</p>`:''}<div class="leaves">${b.leaves.map(l=>`<div class="leaf"><b>${l[0]}</b>${l[1]?`<span>${l[1]}</span>`:''}</div>`).join('')}</div></div>
+      </div>`).join('')}</div>
+      <div class="row gap anim"><button class="btn ghost sm" data-a="all">👁️ اعرضي المخطط كاملًا</button><button class="btn ghost sm" data-a="reset">↺</button></div></div>`,
+    init(el){ T.tree.init(el); }
+  },
+
+  /* ---------- شرح + كود + تشغيل ---------- */
+  code:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text">
+        ${d.points?`<ul class="points ${d.points.length>4?'sm':''}">${d.points.map(p=>`<li class="anim">${p}</li>`).join('')}</ul>`:''}
+        ${d.syntax?`<div class="anim"><div class="hint" style="text-align:right;margin-bottom:8px">📐 الصيغة العامة:</div>${codeBlock(d.syntax,'syntax','sm')}</div>`:''}
+        ${d.predict?`<div class="predict-box anim">💭 ${d.predict}</div>`:''}
+        ${d.note?`<div class="note anim">💡 ${d.note}</div>`:''}
+      </div>
+      <div class="col-code">
+        <div class="anim main-code">${codeBlock(d.code,d.file||'main.py',d.small?'sm':'')}</div>
+        <div class="anim row gap" style="justify-content:flex-start"><button class="btn run" data-a="run">▶ تشغيل Run</button>${d.alt?`<button class="btn ghost" data-a="alt">${d.alt.label}</button>`:''}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const t=$('.term-body',el), mc=$('.main-code',el);
+      $('[data-a=run]',el).onclick=()=>{ setCode(mc,d.code); typeOut(t,d.output,!!d.error); };
+      if (d.alt) $('[data-a=alt]',el).onclick=()=>{ setCode(mc,d.alt.code); typeOut(t,d.alt.output,d.alt.error!==false); };
+    }
+  },
+
+  /* ---------- مشغّل مقاطع متعددة (تبويبات) ---------- */
+  snippets:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text" style="flex:${d.flex||.95}">
+        ${d.lead?`<p class="lead anim" style="text-align:right;font-size:30px">${d.lead}</p>`:''}
+        <div class="snip-tabs anim" style="grid-template-columns:repeat(${d.cols||2},1fr)">${d.items.map((it,k)=>`<button class="snip" data-k="${k}"><b>${esc(it.label)}</b>${it.desc?`<small>${it.desc}</small>`:''}</button>`).join('')}</div>
+        <div class="note snip-note anim"></div>
+      </div>
+      <div class="col-code">
+        <div class="anim scode">${codeBlock(d.items[0].code,d.items[0].file||d.file||'main.py')}</div>
+        <div class="anim row gap" style="justify-content:flex-start"><button class="btn run" data-a="run">▶ تشغيل Run</button></div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      let cur=0; const tabs=$$('.snip',el), term=$('.term-body',el), note=$('.snip-note',el), sc=$('.scode',el);
+      const pick=(k,quiet)=>{ cur=k; tabs.forEach((t,i)=>t.classList.toggle('on',i===k)); const it=d.items[k];
+        setCode(sc,it.code); setFile(sc,it.file||d.file||'main.py'); termReset(term);
+        const n=it.note||d.tip; note.style.visibility=n?'visible':'hidden'; note.innerHTML='💡 '+(n||''); if(!quiet) Sound.pop(); };
+      tabs.forEach((t,k)=>t.onclick=()=>pick(k));
+      $('[data-a=run]',el).onclick=()=>{ const it=d.items[cur]; typeOut(term, it.output, !!it.error); if(it.win) setTimeout(()=>celebrate(it.win),700); };
+      pick(0,true);
+    }
+  },
+
+  /* ---------- محاكي نافذة tkinter / pygame ---------- */
+  canvas:{
+    render:d=>`${head(d)}<div class="s-body" style="align-items:stretch">
+      <div class="col-text" style="flex:1.1;justify-content:center">
+        ${d.note?`<div class="note anim" style="font-size:25px;padding:14px 22px">💡 ${d.note}</div>`:''}
+        ${d.items.length>1?`<div class="snip-tabs anim" style="grid-template-columns:repeat(${d.cols||Math.min(d.items.length,4)},1fr)">${d.items.map((it,k)=>`<button class="snip" data-k="${k}"><b style="font-family:var(--font)">${it.label}</b>${it.desc?`<small>${it.desc}</small>`:''}</button>`).join('')}</div>`:''}
+        <div class="tkwin anim"><div class="tkbar"><span>🪶</span><span class="tk-title">tk</span><span class="tk-x">—  ☐  ✕</span></div><canvas class="tkc"></canvas></div>
+        <p class="hint tk-hint anim"></p>
+      </div>
+      <div class="col-code" style="justify-content:center">
+        <div class="anim kcode">${codeBlock(d.items[0].code,d.file||'draw.py')}</div>
+        <div class="anim row gap" style="justify-content:flex-start"><button class="btn run" data-a="run">▶ تشغيل Run</button><button class="btn ghost sm" data-a="clr">🧽 مسح</button></div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const cv=$('.tkc',el), ctx=cv.getContext('2d'), term=$('.term-body',el), ttl=$('.tk-title',el), hint=$('.tk-hint',el), tabs=$$('.snip',el), kc=$('.kcode',el);
+      const MW=d.maxW||(d.note?640:700), MH=d.maxH||(d.note?(d.items.length>1?330:400):(d.items.length>1?420:520));
+      let cur=0, shown=false, tids=[], last=null;
+      const it=()=>d.items[cur];
+      const bgOf=()=>it().ops.find(o=>o.t==='bg')||BG(400,300,'#fff');
+      const size=(w,h)=>{ cv.width=w; cv.height=h; const s=Math.min(MW/w, MH/h, 1.3); cv.style.width=Math.round(w*s)+'px'; cv.style.height=Math.round(h*s)+'px'; };
+      const stop=()=>{ tids.forEach(clearTimeout); tids=[]; };
+      const placeholder=()=>{ const b=bgOf(); size(b.w,b.h); ctx.fillStyle='#E2E8F0'; ctx.fillRect(0,0,b.w,b.h);
+        ctx.fillStyle='#64748B'; ctx.font=`800 ${Math.max(16,Math.round(b.w/20))}px Tajawal, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.direction='rtl';
+        ctx.fillText('▶ اضغطي «تشغيل» لرؤية النافذة', b.w/2, b.h/2); };
+      const paintAll=()=>{ const b=bgOf(); size(b.w,b.h); it().ops.forEach(o=>tkPaint(ctx,o)); };
+      const HINT={ log:'👆 اضغطي داخل النافذة لتري الإحداثيات', dbl:'👆👆 اضغطي ضغطًا مزدوجًا داخل النافذة', lines:'👆 اضغطي في أي مكان لرسم خط بلون جديد', coords:'👆 اضغطي في أي نقطة لتعرفي إحداثياتها (x , y)' };
+      const pick=(k,quiet)=>{ stop(); cur=k; shown=false; last=null; tabs.forEach((t,i)=>t.classList.toggle('on',i===k));
+        setCode(kc,it().code); ttl.textContent=it().title||'tk'; termReset(term); placeholder();
+        hint.textContent=it().click?HINT[it().click]:(it().hint||''); hint.style.visibility=hint.textContent?'visible':'hidden'; if(!quiet) Sound.pop(); };
+      const run=()=>{ stop(); shown=true; last=null; const ops=it().ops, b=bgOf(); size(b.w,b.h); tkPaint(ctx,b);
+        const rest=ops.filter(o=>o!==b), dl=Math.min(80, 1600/Math.max(1,rest.length));
+        rest.forEach((o,k)=>tids.push(setTimeout(()=>tkPaint(ctx,o),(k+1)*dl)));
+        ttl.textContent=it().title||'tk';
+        if (it().output!==undefined) typeOut(term,it().output,!!it().error); else termReset(term);
+        if (it().win) tids.push(setTimeout(()=>celebrate(it().win),(rest.length+1)*dl+300)); else Sound.pop();
+      };
+      const log=s=>{ clearInterval(term._t); term.classList.remove('err'); const L=term.textContent.replace('▍','').split('\n').filter(Boolean); L.push(s); term.textContent=L.slice(-4).join('\n'); };
+      const at=e=>{ const r=cv.getBoundingClientRect(); return [Math.round((e.clientX-r.left)*cv.width/r.width), Math.round((e.clientY-r.top)*cv.height/r.height)]; };
+      const dot=(x,y,c='#FBBF24')=>{ ctx.beginPath(); ctx.arc(x,y,Math.max(4,cv.width/110),0,Math.PI*2); ctx.fillStyle=c; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle='#fff'; ctx.stroke(); };
+      const COLORS=['red','gold','cyan','lime','orange','violet','white','deeppink'];
+      const onClick=(e,dbl)=>{
+        const m=it().click; if(!m) return;
+        if(!shown){ run(); return; }
+        if((m==='dbl')!==dbl) return;
+        const [x,y]=at(e);
+        if (m==='log'||m==='dbl'){ dot(x,y); log(`clicked at ${x} ${y}`); Sound.pop(); }
+        else if (m==='lines'){ const c=COLORS[Math.floor(Math.random()*COLORS.length)]; tkPaint(ctx,LN([cv.width/2,cv.height/2,x,y],{width:4,fill:c})); log(`line → (${x}, ${y})  fill="${c}"`); Sound.pop(); }
+        else if (m==='coords'){ paintAll(); ctx.save(); ctx.setLineDash([10,8]); ctx.lineWidth=3; ctx.strokeStyle='#FBBF24';
+          ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,y); ctx.moveTo(0,y); ctx.lineTo(x,y); ctx.stroke(); ctx.restore(); dot(x,y);
+          ctx.save(); ctx.font=`800 ${Math.round(cv.width/26)}px JetBrains Mono, monospace`; ctx.fillStyle='#fff'; ctx.textBaseline='bottom';
+          const lbl=`(${x}, ${y})`, tw=ctx.measureText(lbl).width; ctx.fillText(lbl, Math.min(x+10, cv.width-tw-6), Math.max(y-8, 30)); ctx.restore();
+          log(`x = ${x}   y = ${y}`); Sound.pop(); }
+      };
+      cv.addEventListener('click',e=>onClick(e,false));
+      cv.addEventListener('dblclick',e=>onClick(e,true));
+      tabs.forEach((t,k)=>t.onclick=()=>pick(k));
+      $('[data-a=run]',el).onclick=run;
+      $('[data-a=clr]',el).onclick=()=>{ stop(); shown=false; termReset(term); placeholder(); };
+      pick(0,true);
+    }
+  },
+
+  /* ---------- خلّاط الألوان RGB ---------- */
+  rgb:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text">
+        ${d.note?`<div class="note anim" style="font-size:26px">💡 ${d.note}</div>`:''}
+        ${[['R','#EF4444',0],['G','#22C55E',1],['B','#3B82F6',2]].map(([n,c,k])=>`<div class="rgb-row anim" style="--c:${c}"><b>${n}</b><input type="range" min="0" max="255" value="${d.start[k]}" data-k="${k}"><span class="rv">${d.start[k]}</span></div>`).join('')}
+        <div class="swatches anim">${d.swatches.map(s=>`<button class="sw" data-n="${s[0]}"><i style="background:rgb(${s[1]},${s[2]},${s[3]})"></i>${s[0]}</button>`).join('')}</div>
+      </div>
+      <div class="col-code">
+        <div class="tkwin anim" style="align-self:stretch"><div class="tkbar"><span>🪶</span><span>tk</span><span class="tk-x">—  ☐  ✕</span></div><div class="rgb-prev"></div></div>
+        <div class="anim rcode">${codeBlock('','colors.py','sm')}</div>
+      </div></div>`,
+    init(el,d){
+      const rs=$$('input[type=range]',el), vs=$$('.rv',el), prev=$('.rgb-prev',el), rc=$('.rcode',el);
+      const hex=n=>n.toString(16).padStart(2,'0').toUpperCase();
+      const upd=()=>{ const [r,g,b]=rs.map(x=>+x.value); vs.forEach((v,k)=>v.textContent=rs[k].value); prev.style.background=`rgb(${r},${g},${b})`;
+        const named=d.swatches.find(s=>s[1]===r&&s[2]===g&&s[3]===b);
+        setCode(rc, `# (${r}, ${g}, ${b}) = ${named?named[0]:'لون بدون اسم'}\n${named?`canvas = Canvas(bg="${named[0]}")\n`:''}canvas = Canvas(bg="#${hex(r)}${hex(g)}${hex(b)}")`); };
+      rs.forEach(x=>x.addEventListener('input',upd));
+      $$('.sw',el).forEach(b=>b.onclick=()=>{ const s=d.swatches.find(x=>x[0]===b.dataset.n); rs.forEach((x,k)=>x.value=s[k+1]); upd(); Sound.pop(); });
+      upd();
+    }
+  },
+
+  /* ---------- الفهرسة ---------- */
+  indexing:{
+    render:d=>{ const n=d.items.length; return `${head(d)}<div class="s-body col">
+      <div class="idx-wrap anim">
+        <div class="idx-line"><span class="idx-tag">فهرس موجب ➜</span>${d.items.map((_,k)=>`<button class="ib" data-i="${k}">${k}</button>`).join('')}</div>
+        <div class="idx-line"><span class="idx-tag mono" style="font-size:26px;color:var(--ink)">${d.name} =</span>${d.items.map((_,k)=>`<div class="ibox" data-k="${k}"><span class="ie"></span><span class="iv"></span></div>`).join('')}</div>
+        <div class="idx-line"><span class="idx-tag">فهرس سالب ➜</span>${d.items.map((_,k)=>`<button class="ib neg" data-i="${k-n}">${k-n}</button>`).join('')}</div>
+      </div>
+      <div class="idx-quiz anim"><button class="btn blue sm" data-a="quiz">🎲 سؤال عشوائي</button><span class="iq-text">👆 اضغطي على أي فهرس لتري العنصر</span>
+        <button class="btn ghost sm" data-a="edit">✏️ <span class="mono" dir="ltr">${d.name}[${d.edit.index}] = "${d.edit.value}"</span></button>${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺</button></div>
+      <div class="idx-bottom anim"><div class="idx-code">${codeBlock(`${d.name}[0]`,'index.py')}</div>${terminal()}</div></div>`; },
+    init(el,d){
+      let arr=[...d.items], q=null; const n=arr.length, boxes=$$('.ibox',el), ibs=$$('.ib',el), term=$('.term-body',el), cb=$('.idx-code',el), qt=$('.iq-text',el);
+      const lst=()=>`[${arr.map(v=>`"${v}"`).join(', ')}]`, rep=()=>`[${arr.map(v=>`'${v}'`).join(', ')}]`;
+      const draw=()=>boxes.forEach((b,k)=>{ $('.ie',b).textContent=d.emojis[arr[k]]||'📦'; $('.iv',b).textContent=`"${arr[k]}"`; });
+      const clear=()=>{ boxes.forEach(b=>b.classList.remove('hl','good')); ibs.forEach(b=>b.classList.remove('on')); };
+      const show=i=>{ q=null; clear(); const k=i<0?n+i:i; boxes[k].classList.add('hl'); ibs.forEach(b=>{ if(+b.dataset.i===i) b.classList.add('on'); });
+        setCode(cb,`${d.name} = ${lst()}\nprint(${d.name}[${i}])`); typeOut(term,arr[k]); qt.innerHTML=`<span class="mono">${d.name}[${i}]</span> ← العنصر رقم ${k+1} في الترتيب`; };
+      ibs.forEach(b=>b.addEventListener('click',()=>show(+b.dataset.i)));
+      boxes.forEach((b,k)=>b.addEventListener('click',()=>{
+        if (q===null){ show(k); return; }
+        const want=q<0?n+q:q;
+        if (k===want){ b.classList.add('good'); celebrate(); qt.innerHTML=`✅ صحيح! <span class="mono">${d.name}[${q}]</span> = "${arr[k]}"`; q=null; }
+        else { Fx.shake(b); tryAgain(); }
+      }));
+      $('[data-a=quiz]',el).onclick=()=>{ clear(); q=Math.floor(Math.random()*2*n)-n; qt.innerHTML=`🎯 أين العنصر <span class="mono">${d.name}[${q}]</span>؟ اضغطي على صندوقه`; Sound.pop(); };
+      $('[data-a=edit]',el).onclick=()=>{ q=null; clear(); arr[d.edit.index]=d.edit.value; draw(); const b=boxes[d.edit.index]; b.classList.add('hl'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+        setCode(cb,`${d.name}[${d.edit.index}] = "${d.edit.value}"\nprint(${d.name})`); typeOut(term,rep()); qt.innerHTML='✏️ القائمة <b>قابلة للتعديل</b>!'; };
+      $('[data-a=reset]',el).onclick=()=>{ arr=[...d.items]; q=null; clear(); draw(); setCode(cb,`${d.name} = ${lst()}`); term.textContent=''; qt.textContent='👆 اضغطي على أي فهرس لتري العنصر'; };
+      draw(); setCode(cb,`${d.name} = ${lst()}`);
+    }
+  },
+
+  /* ---------- القائمة المتداخلة ---------- */
+  nested:{
+    render:d=>`${head(d)}<div class="s-body col">
+      <div class="nest-wrap anim"><span class="par">[</span>${d.items.map((it,i)=>`<div class="ngrp" data-i="${i}"><button class="nidx" data-i="${i}">[${i}]</button>
+        <div class="nin">${Array.isArray(it)?`<span class="ip">[</span>${it.map((v,j)=>`<button class="nchip" data-i="${i}" data-j="${j}"><small>[${j}]</small>${esc(pyLit(v))}</button>`).join('')}<span class="ip">]</span>`
+          :`<button class="nchip solo" data-i="${i}">${esc(pyLit(it))}</button>`}</div></div>`).join('<span class="comma">,</span>')}<span class="par">]</span></div>
+      <div class="idx-quiz anim"><button class="btn blue sm" data-a="quiz">🎲 سؤال عشوائي</button><span class="iq-text">👆 اضغطي على فهرس خارجي أو على عنصر داخلي</span>
+        <button class="btn ghost sm" data-a="len">📏 len()</button>${d.loop?'<button class="btn ghost sm" data-a="loop">🔁 for داخل for</button>':''}${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺</button></div>
+      <div class="idx-bottom anim"><div class="ncode">${codeBlock('', 'nested.py')}</div>${terminal()}</div></div>`,
+    init(el,d){
+      const N=d.name, A=d.items, term=$('.term-body',el), nc=$('.ncode',el), qt=$('.iq-text',el), grps=$$('.ngrp',el), chips=$$('.nchip',el), idxs=$$('.nidx',el);
+      const base=`${N} = ${pyLit(A)}`; let q=null, tids=[];
+      const stop=()=>{ tids.forEach(clearTimeout); tids=[]; };
+      const clear=()=>{ grps.forEach(g=>g.classList.remove('hl')); chips.forEach(c=>c.classList.remove('hl','good')); idxs.forEach(b=>b.classList.remove('on')); };
+      const outer=i=>{ stop(); q=null; clear(); grps[i].classList.add('hl'); idxs[i].classList.add('on'); setCode(nc,`${base}\nprint(${N}[${i}])`); typeOut(term,pyPrint(A[i]));
+        qt.innerHTML=`<span class="mono">${N}[${i}]</span> ← ${Array.isArray(A[i])?'قائمة داخلية كاملة 📦':'عنصر عادي'}`; };
+      const inner=(i,j)=>{ stop(); clear(); const c=chips.find(x=>+x.dataset.i===i&&+x.dataset.j===j); c.classList.add('hl'); grps[i].classList.add('hl');
+        setCode(nc,`${base}\nprint(${N}[${i}][${j}])`); typeOut(term,pyPrint(A[i][j])); qt.innerHTML=`<span class="mono">${N}[${i}][${j}]</span> ← القائمة ${i} ثم العنصر ${j} بداخلها`; };
+      idxs.forEach(b=>b.onclick=()=>outer(+b.dataset.i));
+      chips.forEach(c=>c.onclick=()=>{
+        const i=+c.dataset.i, j=c.dataset.j===undefined?null:+c.dataset.j;
+        if (q){ if(q[0]===i&&q[1]===j){ c.classList.add('good'); celebrate(); qt.innerHTML=`✅ صحيح! <span class="mono">${N}[${i}][${j}]</span> = ${esc(pyLit(A[i][j]))}`; q=null; } else { Fx.shake(c); tryAgain(); } return; }
+        j===null?outer(i):inner(i,j);
+      });
+      $('[data-a=quiz]',el).onclick=()=>{ stop(); clear(); const L=A.map((x,i)=>i).filter(i=>Array.isArray(A[i])&&A[i].length); const i=L[Math.floor(Math.random()*L.length)], j=Math.floor(Math.random()*A[i].length); q=[i,j];
+        qt.innerHTML=`🎯 أين العنصر <span class="mono">${N}[${i}][${j}]</span>؟ اضغطي عليه`; Sound.pop(); };
+      $('[data-a=len]',el).onclick=()=>{ stop(); q=null; clear(); grps.forEach(g=>g.classList.add('hl')); setCode(nc,`${base}\nprint(len(${N}))`); typeOut(term,String(A.length)); qt.innerHTML=`القائمة الداخلية تُحسب <b>عنصرًا واحدًا</b> فقط 📏`; };
+      if (d.loop) $('[data-a=loop]',el).onclick=()=>{ stop(); q=null; clear(); clearInterval(term._t); term.classList.remove('err'); term.textContent='';
+        setCode(nc,`${base}\nfor i in ${N}:\n    print(i)\n    for j in i:\n        print(j)`); qt.innerHTML='🔁 الحلقة الخارجية تمر على القوائم… والداخلية على عناصر كل قائمة';
+        let t=0; const out=[]; const say=s=>{ out.push(s); term.textContent=out.slice(-6).join('\n'); Sound.pop(); };
+        A.forEach((g,i)=>{ tids.push(setTimeout(()=>{ clear(); grps[i].classList.add('hl'); idxs[i].classList.add('on'); say(pyPrint(g)); }, t+=700));
+          (Array.isArray(g)?g:[]).forEach((v,j)=>tids.push(setTimeout(()=>{ chips.forEach(c=>c.classList.remove('hl')); chips.find(x=>+x.dataset.i===i&&+x.dataset.j===j).classList.add('hl'); say(pyPrint(v)); }, t+=550))); });
+        tids.push(setTimeout(()=>{ clear(); Fx.toast('✅ انتهت الحلقتان!','ok'); }, t+700)); };
+      $('[data-a=reset]',el).onclick=()=>{ stop(); q=null; clear(); setCode(nc,base); termReset(term); qt.textContent='👆 اضغطي على فهرس خارجي أو على عنصر داخلي'; };
+      setCode(nc,base);
+    }
+  },
+
+  /* ---------- الدوال الجاهزة ---------- */
+  funcs:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text" style="flex:1.1">
+        <div class="bars anim">${d.list.map((v,k)=>`<div class="bar-w"><div class="gbar" style="--h:${Math.round(v/100*400)}px"><span class="crown">👑</span><span class="bv">${v}</span><span class="bc"></span></div><div class="bi">[${k}]</div></div>`).join('')}</div>
+        <div class="sum-badge anim"></div>
+      </div>
+      <div class="col-code">
+        <div class="fbtns anim">${d.funcs.map((f,k)=>`<button class="fbtn" data-k="${k}"><b>${f.f}( )</b><small>${f.desc}</small></button>`).join('')}</div>
+        <div class="anim fcode">${codeBlock(`${d.name} = [${d.list.join(', ')}]`,'functions.py','sm')}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const bars=$$('.gbar',el), fb=$$('.fbtn',el), term=$('.term-body',el), sb=$('.sum-badge',el), L=d.list; let tids=[];
+      const calc={ len:L.length, sum:L.reduce((a,b)=>a+b,0), max:Math.max(...L), min:Math.min(...L) };
+      const clear=()=>{ tids.forEach(clearTimeout); tids=[]; bars.forEach(b=>{ b.className='gbar'; $('.bc',b).textContent=''; }); sb.textContent=''; };
+      fb.forEach(b=>b.addEventListener('click',()=>{
+        clear(); fb.forEach(x=>x.classList.remove('on')); b.classList.add('on');
+        const f=d.funcs[+b.dataset.k], v=calc[f.f];
+        setCode($('.fcode',el),`${d.name} = [${L.join(', ')}]\n${f.code}`);
+        if (f.f==='len') bars.forEach((x,k)=>tids.push(setTimeout(()=>{ $('.bc',x).textContent=k+1; x.classList.add('counted'); Sound.pop(); },k*350)));
+        if (f.f==='sum'){ let run=0; bars.forEach((x,k)=>tids.push(setTimeout(()=>{ run+=L[k]; x.classList.add('sumglow'); sb.textContent=`Σ = ${run}`; Sound.pop(); },k*350))); }
+        if (f.f==='max') bars.forEach(x=>x.classList.add(+$('.bv',x).textContent===v?'top':'dim'));
+        if (f.f==='min') bars.forEach(x=>x.classList.add(+$('.bv',x).textContent===v?'low':'dim'));
+        const delay=(f.f==='len'||f.f==='sum')?L.length*350:100;
+        tids.push(setTimeout(()=>typeOut(term,f.out.replace('{v}',v)),delay));
+      }));
+    }
+  },
+
+  /* ---------- مختبر القائمة ---------- */
+  lab:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text" style="flex:1.1">
+        <div class="lab-list anim"></div>
+        <div class="lab-in-row anim"><label>القيمة x:</label><input class="lab-in" type="text" placeholder="100"><span class="hint" style="font-size:22px">اكتبي رقمًا أو كلمة</span></div>
+        <div class="lab-ops anim">
+          <button class="lop" data-op="append">append(x)<small>إضافة للنهاية</small></button>
+          <button class="lop" data-op="remove">remove(x)<small>حذف عنصر</small></button>
+          <button class="lop" data-op="count">count(x)<small>عدد مرات الظهور</small></button>
+          <button class="lop" data-op="sort">sort()<small>ترتيب تصاعدي</small></button>
+          <button class="lop" data-op="reverse">reverse()<small>عكس الترتيب</small></button>
+          <button class="lop" data-op="clear">clear()<small>حذف الكل</small></button>
+          <button class="lop reset" data-op="reset" style="grid-column:span 2">↺ <small style="display:inline">إعادة القائمة الأصلية</small></button>
+        </div>
+      </div>
+      <div class="col-code lab-right" style="flex:.9">
+        <div class="anim lcode">${codeBlock('','lab.py')}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      let arr=[...d.start], log=[]; const box=$('.lab-list',el), inp=$('.lab-in',el), term=$('.term-body',el), N=d.name;
+      const parse=s=>{ s=s.trim(); if(!s) return null; return /^-?\d+(\.\d+)?$/.test(s)?Number(s):s.replace(/^["']|["']$/g,''); };
+      const lit=v=>typeof v==='number'?String(v):`"${v}"`, rep=v=>typeof v==='number'?String(v):`'${v}'`;
+      const repr=()=>`[${arr.map(rep).join(', ')}]`;
+      const draw=(flash=-1,match)=>{ box.innerHTML = arr.length ? arr.map((v,k)=>`<div class="lchip ${k===flash?'new':''} ${match!==undefined&&v===match?'match':''}"><small>${k}</small><span>${esc(rep(v))}</span></div>`).join('') : `<div class="lempty">القائمة فارغة</div>`; };
+      const code=()=>setCode($('.lcode',el),[`${N} = [${d.start.map(lit).join(', ')}]`,...log].join('\n'));
+      const run=(line,out,err)=>{ log.push(line); if(log.length>6) log.shift(); code(); typeOut(term,out,err); };
+      const val=def=>{ const v=parse(inp.value); return v===null?def:v; };
+      const ops={
+        append(){ const v=val(100); arr.push(v); draw(arr.length-1); run(`${N}.append(${lit(v)})`,repr()); },
+        remove(){ const v=val(88), k=arr.findIndex(x=>x===v);
+          if (k<0){ run(`${N}.remove(${lit(v)})`,'ValueError: list.remove(x):\nx not in list',true); Fx.shake(box); return; }
+          arr.splice(k,1); draw(); run(`${N}.remove(${lit(v)})`,repr()); },
+        count(){ const v=val(88), c=arr.filter(x=>x===v).length; draw(-1,v); run(`print(${N}.count(${lit(v)}))`,String(c)); },
+        sort(){ const types=new Set(arr.map(x=>typeof x));
+          if (types.size>1){ run(`${N}.sort()`,"TypeError: '<' not supported between\ninstances of 'str' and 'int'",true); Fx.shake(box); return; }
+          arr.sort((a,b)=>typeof a==='number'?a-b:(a<b?-1:a>b?1:0)); draw(); run(`${N}.sort()`,repr()); },
+        reverse(){ arr.reverse(); draw(); run(`${N}.reverse()`,repr()); },
+        clear(){ arr=[]; draw(); run(`${N}.clear()`,'[]'); },
+        reset(){ arr=[...d.start]; log=[]; draw(); code(); term.textContent=''; },
+      };
+      $$('.lop',el).forEach(b=>b.addEventListener('click',()=>{ ops[b.dataset.op](); if(b.dataset.op!=='reset') Sound.pop(); }));
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); ops.append(); } });
+      draw(); code();
+    }
+  },
+
+  /* ---------- مختبر القاموس ---------- */
+  dictlab:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text" style="flex:1.15">
+        <div class="dict-box anim"></div>
+        <div class="lab-in-row anim"><label>🔑 المفتاح:</label><input class="lab-in dk" type="text" placeholder="${esc(pyLit(d.sample.k))}"><label>📦 القيمة:</label><input class="lab-in dv" type="text" style="width:320px" placeholder="${esc(pyLit(d.sample.v))}"></div>
+        <div class="lab-ops anim">
+          <button class="lop" data-op="access">d[key]<small>الوصول بالمفتاح</small></button>
+          <button class="lop" data-op="get">get(key)<small>الوصول الآمن</small></button>
+          <button class="lop" data-op="set">d[key] = v<small>إضافة / تعديل</small></button>
+          <button class="lop" data-op="update">update()<small>إضافة / تحديث</small></button>
+          <button class="lop" data-op="del">del d[key]<small>حذف عنصر</small></button>
+          <button class="lop" data-op="keys">keys()<small>كل المفاتيح</small></button>
+          <button class="lop" data-op="values">values()<small>كل القيم</small></button>
+          <button class="lop" data-op="clear">clear()<small>حذف الكل</small></button>
+          <button class="lop reset" data-op="reset" style="grid-column:1/-1">↺ <small style="display:inline">إعادة القاموس الأصلي</small></button>
+        </div>
+      </div>
+      <div class="col-code lab-right" style="flex:.85">
+        <div class="anim dcode">${codeBlock('','dictionary.py')}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const N=d.name, box=$('.dict-box',el), ik=$('.dk',el), iv=$('.dv',el), term=$('.term-body',el);
+      let D=d.start.map(p=>[...p]), log=[];
+      const parse=s=>{ s=s.trim(); if(!s) return null; return /^-?\d+(\.\d+)?$/.test(s)?Number(s):s.replace(/^["']|["']$/g,''); };
+      const repr=()=>`{${D.map(([k,v])=>`${pyRepr(k)}: ${pyRepr(v)}`).join(', ')}}`;
+      const find=k=>D.findIndex(p=>p[0]===k);
+      const draw=(hk,isNew)=>{ box.innerHTML = D.length ? D.map(([k,v])=>`<div class="dcard ${k===hk?'hl':''} ${k===hk&&isNew?'new':''}" data-k="${esc(String(k))}"><span class="k">${esc(pyLit(k))}</span><span class="v">${esc(pyLit(v))}</span></div>`).join('') : '<div class="lempty">{ } القاموس فارغ</div>';
+        $$('.dcard',box).forEach((c,i)=>c.onclick=()=>{ ik.value=String(D[i][0]); ops.access(); Sound.pop(); }); };
+      const start=()=>`${N} = {\n${d.start.map(([k,v])=>`    ${pyLit(k)}: ${pyLit(v)}`).join(',\n')}\n}`;
+      const code=()=>setCode($('.dcode',el),[start(),...log].join('\n'));
+      const run=(lines,out,err)=>{ log.push(...lines.split('\n')); while(log.length>6) log.shift(); code(); typeOut(term,out,err); if(err) Fx.shake(box); };
+      const key=def=>{ const v=parse(ik.value); return v===null?def:v; };
+      const firstKey=()=>D.length?D[0][0]:d.sample.k;
+      const value=()=>{ const v=parse(iv.value); return v===null?d.sample.v:v; };
+      const ops={
+        access(){ const k=key(firstKey()), i=find(k); draw(k);
+          if(i<0) return run(`print(${N}[${pyLit(k)}])`,`KeyError: ${pyRepr(k)}`,true);
+          run(`print(${N}[${pyLit(k)}])`,pyPrint(D[i][1])); },
+        get(){ const k=key(firstKey()), i=find(k); draw(k); run(`print(${N}.get(${pyLit(k)}))`, i<0?'None':pyPrint(D[i][1])); },
+        set(){ const k=key(d.sample.k), v=value(), i=find(k); i<0?D.push([k,v]):D[i][1]=v; draw(k,i<0); run(`${N}[${pyLit(k)}] = ${pyLit(v)}\nprint(${N})`,repr()); },
+        update(){ const k=key(d.sample.k), v=value(), i=find(k); i<0?D.push([k,v]):D[i][1]=v; draw(k,i<0); run(`${N}.update({${pyLit(k)}: ${pyLit(v)}})\nprint(${N})`,repr()); },
+        del(){ const k=key(firstKey()), i=find(k);
+          if(i<0){ draw(); return run(`del ${N}[${pyLit(k)}]`,`KeyError: ${pyRepr(k)}`,true); }
+          D.splice(i,1); draw(); run(`del ${N}[${pyLit(k)}]\nprint(${N})`,repr()); },
+        keys(){ draw(); $$('.dcard .k',box).forEach(x=>x.parentNode.classList.add('hl')); run(`print(${N}.keys())`,`dict_keys([${D.map(p=>pyRepr(p[0])).join(', ')}])`); },
+        values(){ draw(); run(`print(${N}.values())`,`dict_values([${D.map(p=>pyRepr(p[1])).join(', ')}])`); },
+        clear(){ D=[]; draw(); run(`${N}.clear()\nprint(${N})`,'{}'); },
+        reset(){ D=d.start.map(p=>[...p]); log=[]; draw(); code(); termReset(term); },
+      };
+      $$('.lop',el).forEach(b=>b.addEventListener('click',()=>{ ops[b.dataset.op](); if(b.dataset.op!=='reset') Sound.pop(); }));
+      draw(); code();
+    }
+  },
+
+  /* ---------- مختبر الملفات (المفكرة) ---------- */
+  filelab:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text" style="flex:1.05">
+        <div class="np anim"><div class="np-bar">📄 <span>${d.file} - Notepad</span><span class="np-mode"></span></div><div class="np-menu">File Edit Format View Help</div><div class="np-body"></div></div>
+        <div class="lab-in-row anim"><label>✍️ النص:</label><input class="lab-in ftxt" type="text" style="width:560px;text-align:left" placeholder="${esc(d.appendText)}"></div>
+        <div class="lab-ops anim" style="grid-template-columns:repeat(3,1fr)">
+          <button class="lop" data-op="read">read()<small>قراءة الملف كاملًا</small></button>
+          <button class="lop" data-op="readline">readline()<small>قراءة سطر واحد</small></button>
+          <button class="lop" data-op="readlines">readlines()<small>كل الأسطر في قائمة</small></button>
+          <button class="lop" data-op="write">open(…, "w")<small>كتابة (يمسح القديم ⚠️)</small></button>
+          <button class="lop" data-op="append">open(…, "a")<small>إلحاق بنهاية الملف</small></button>
+          <button class="lop reset" data-op="reset">↺<small>إعادة الملف الأصلي</small></button>
+        </div>
+      </div>
+      <div class="col-code lab-right" style="flex:.95">
+        <div class="anim fcode">${codeBlock('','files.py')}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const F=d.file, np=$('.np',el), body=$('.np-body',el), mode=$('.np-mode',el), inp=$('.ftxt',el), term=$('.term-body',el), fc=$('.fcode',el);
+      let text=d.start, ptr=0;
+      const lines=()=>text.split('\n');
+      const draw=(cur=-1)=>{ body.innerHTML = text.length ? lines().map((l,k)=>`<div class="np-ln ${k===cur?'cur':''} ${cur>=0&&k<cur?'done':''}">${esc(l)||' '}</div>`).join('') : '<div class="np-empty">(الملف فارغ)</div>'; };
+      const setMode=m=>{ mode.textContent=m?`mode = "${m}"`:''; mode.classList.toggle('on',!!m); };
+      const flash=()=>{ np.classList.remove('flash'); void np.offsetWidth; np.classList.add('flash'); };
+      const open=m=>`f = open("${F}", "${m}")`;
+      const ops={
+        read(){ ptr=0; setMode('r'); draw(); setCode(fc,`${open('r')}\nprint(f.read())\nf.close()`); typeOut(term,text); },
+        readline(){ setMode('r'); const L=lines();
+          if (ptr>=L.length){ Fx.toast('📄 انتهى الملف: readline تُرجع نصًا فارغًا'); Sound.wrong(); return; }
+          ptr++; draw(ptr-1); setCode(fc,`${open('r')}\n${Array(Math.min(ptr,5)).fill('print(f.readline())').join('\n')}\nf.close()`); typeOut(term,L.slice(0,ptr).join('\n')); },
+        readlines(){ ptr=0; setMode('r'); draw(); const L=lines(); setCode(fc,`${open('r')}\nprint(f.readlines())\nf.close()`);
+          typeOut(term,`[${L.map((l,k)=>pyStr(k<L.length-1?l+'\n':l)).join(', ')}]`); },
+        write(){ ptr=0; const t=inp.value.trim()||d.writeText; text=t; setMode('w'); draw(); flash();
+          setCode(fc,`${open('w')}\nf.write("${t}")\nf.close()\n\n${open('r')}\nprint(f.read())\nf.close()`); typeOut(term,text); Fx.toast('⚠️ الوضع w مسح المحتوى القديم','no'); },
+        append(){ ptr=0; const t=inp.value.trim()||d.appendText; text=text+'\n'+t; setMode('a'); draw(lines().length-1); flash();
+          setCode(fc,`${open('a')}\nf.write("\\n${t}")\nf.close()\n\n${open('r')}\nprint(f.read())\nf.close()`); typeOut(term,text); },
+        reset(){ text=d.start; ptr=0; setMode(''); draw(); setCode(fc,`# ${F}`); termReset(term); inp.value=''; },
+      };
+      $$('.lop',el).forEach(b=>b.addEventListener('click',()=>{ ops[b.dataset.op](); if(b.dataset.op!=='reset') Sound.pop(); }));
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); ops.append(); } });
+      ops.reset();
+    }
+  },
+
+  /* ---------- فكر – زاوج – شارك ---------- */
+  tps:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text">
+        <div class="phases">${d.phases.map((p,k)=>`<div class="phase anim" role="button" tabindex="0" data-k="${k}"><span class="ph-ico">${p.icon}</span><div><b>${p.n}</b><small>${p.txt}</small></div><span class="ph-t">${p.sec?fmt(p.sec):'🎤'}</span></div>`).join('')}</div>
+        <div class="tps-timer">${timerHTML(d.phases[0].sec)}</div>
+      </div>
+      <div class="col-code">
+        <div class="pq anim">❓ ${d.question}</div>
+        <div class="anim">${codeBlock(d.code,d.file||'think.py',d.small?'sm':'')}</div>
+        <div class="anim row gap" style="justify-content:flex-start"><button class="btn blue" data-a="rev">👀 اكشفي الإجابة</button>${pickBtn('pick')}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const tm=$('.timer',el)._timer, ph=$$('.phase',el);
+      ph.forEach(p=>p.addEventListener('click',()=>{ ph.forEach(x=>x.classList.remove('on')); p.classList.add('on'); const s=d.phases[+p.dataset.k].sec; Sound.pop();
+        if (s){ tm.set(s); tm.start(); } else { tm.stop(); Fx.toast('📢 حان وقت المشاركة!'); } }));
+      $('[data-a=rev]',el).onclick=()=>typeOut($('.term-body',el),d.output,!!d.error);
+    }
+  },
+
+  /* ---------- الصف Tuple ---------- */
+  tuple:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text"><ul class="points">${d.points.map(p=>`<li class="anim">${p}</li>`).join('')}</ul>
+        <div class="predict-box anim">💭 ماذا تتوقعين أن يحدث لو حاولنا تغيير الاسم؟</div></div>
+      <div class="col-code">
+        <div class="tup-row anim"><span class="par">(</span>${d.items.map((v,k)=>`<div class="tchip"><span class="lk">🔒</span><small>[${k}]</small>${esc(v)}</div>`).join('')}<span class="par">)</span></div>
+        <div class="anim tcode">${codeBlock(`${d.name} = (${d.items.join(', ')})`,'tuple.py','sm')}</div>
+        <div class="anim row gap" style="justify-content:flex-start"><button class="btn run sm" data-a="print">▶ print(${d.name})</button><button class="btn ghost sm" data-a="try">✏️ <span class="mono" dir="ltr">${esc(d.tryCode)}</span></button></div>
+        <div class="anim">${terminal()}</div>
+        <div class="err-call">🔒 الصف لا يقبل تعديل عناصره!</div>
+      </div></div>`,
+    init(el,d){
+      const term=$('.term-body',el), row=$('.tup-row',el), base=`${d.name} = (${d.items.join(', ')})`;
+      $('[data-a=print]',el).onclick=()=>{ row.classList.remove('denied'); $('.err-call',el).classList.remove('show'); setCode($('.tcode',el),`${base}\nprint(${d.name})`); typeOut(term,d.repr); };
+      $('[data-a=try]',el).onclick=()=>{ setCode($('.tcode',el),`${base}\n${d.tryCode}`); row.classList.add('denied'); Fx.shake(row); typeOut(term,d.error,true); $('.err-call',el).classList.add('show'); };
+    }
+  },
+
+  /* ---------- المقارنة ---------- */
+  compare:{
+    render:d=>{ const H=d.heads||['📋 القائمة List','🔒 الصف Tuple'], cols=`1fr repeat(${H.length},1.3fr)`;
+      return `${head(d)}<div class="s-body col">
+      <div class="cmp anim" style="--cols:${cols}"><div class="cmp-row cmp-h"><div>${d.k0||'وجه المقارنة'}</div>${H.map(h=>`<div>${h}</div>`).join('')}</div>
+        ${d.rows.map(r=>`<div class="cmp-row hide" role="button" tabindex="0"><div class="cmp-k">${r[0]}</div>${r.slice(1).map(c=>`<div class="cmp-v">${c}</div>`).join('')}</div>`).join('')}</div>
+      <div class="row gap anim"><button class="btn" data-a="next">➕ أظهري الفرق التالي</button>${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺</button></div>
+      ${d.tip?`<p class="hint anim">💡 ${d.tip}</p>`:''}</div>`; },
+    init(el){
+      const rows=$$('.cmp-row.hide',el), open=r=>{ if(r.classList.contains('hide')){ r.classList.remove('hide'); Sound.pop(); } };
+      rows.forEach(r=>r.addEventListener('click',()=>open(r)));
+      $('[data-a=next]',el).onclick=()=>{ const r=rows.find(x=>x.classList.contains('hide')); r?open(r):Fx.toast('✅ اكتملت المقارنة!','ok'); };
+      $('[data-a=reset]',el).onclick=()=>rows.forEach(r=>r.classList.add('hide'));
+    }
+  },
+
+  /* ---------- شرائح الربط (رياضيات / دين / وطن / المادة 34) ---------- */
+  link:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text">
+        <div class="lk-quote anim ${d.theme||''} ${d.smallQuote?'small':''}" role="button" tabindex="0">
+          <div class="lq-label">${d.quoteLabel}</div>
+          <div class="lq-text">${d.quote}</div>
+          ${d.source?`<div class="lq-src">${d.source}</div>`:''}
+          <span class="vc-tap">👆 اضغطي للكشف</span>
+        </div>
+        <div class="lk-link anim">🔗 <b>الربط:</b> ${d.link}</div>
+      </div>
+      <div class="col-code">
+        <div class="lk-chips anim ${d.many?'many':''}" dir="ltr">${d.open?`<span class="par">${d.open}</span>`:''}${d.chips.map((c,k)=>`<div class="lkc" data-i="${k}">${c.code?'':`<small>[${c.k!==undefined?esc(pyLit(c.k)):k}]</small>`}<b>${esc(c.en)}</b>${c.ar?`<span>${c.ar}</span>`:''}</div>`).join('')}${d.close?`<span class="par">${d.close}</span>`:''}</div>
+        <div class="anim lcode">${codeBlock(d.code,d.file||'main.py')}</div>
+        <div class="anim row gap lk-acts">${d.actions.map((a,k)=>`<button class="btn ${a.error?'ghost':'run'} sm" data-k="${k}">${a.label}</button>`).join('')}</div>
+        <div class="anim">${terminal()}</div>
+      </div></div>`,
+    init(el,d){
+      const q=$('.lk-quote',el), chips=$$('.lkc',el), box=$('.lk-chips',el), term=$('.term-body',el), lc=$('.lcode',el);
+      q.addEventListener('click',()=>{ if(!q.classList.contains('open')){ q.classList.add('open'); Sound.success(); } });
+      const mark=i=>{ chips.forEach(c=>c.classList.toggle('on', +c.dataset.i===i)); };
+      chips.forEach(c=>c.addEventListener('click',()=>{ const i=+c.dataset.i, ch=d.chips[i]; box.classList.remove('denied'); mark(i);
+        const line = ch.code || `print(${d.name}[${ch.k!==undefined?pyLit(ch.k):i}])`;
+        setCode(lc,`${d.code}\n${line}`); typeOut(term, ch.out!==undefined?ch.out:ch.en); }));
+      $$('.lk-acts .btn',el).forEach(b=>b.addEventListener('click',()=>{
+        const a=d.actions[+b.dataset.k]; box.classList.remove('denied'); mark(a.mark===undefined?-1:a.mark);
+        setCode(lc,`${d.code}\n${a.code}`); typeOut(term,a.output,!!a.error);
+        if (a.error){ box.classList.add('denied'); Fx.shake(box); if(a.msg) setTimeout(()=>Fx.toast(a.msg,'ok'),500); }
+        else if (a.win) setTimeout(()=>celebrate(a.win),600);
+      }));
+    }
+  },
+
+  /* ---------- اختيار من متعدد ---------- */
+  mcq:{
+    render:d=>`${head(d)}<div class="s-body col">
+      <div class="q-card anim"><span class="q-num">سؤال ${d._n} من ${d._of}</span><div class="q-text">${d.q}</div>${d.code?codeBlock(d.code,'quiz.py'):''}</div>
+      <div class="opts cols-${d.options.length===4?4:d.options.length}">${d.options.map((o,k)=>`<button class="opt anim" data-k="${k}"><span class="o-ico">${o.icon}</span><span class="o-t ${o.code?'mono':''}">${esc(o.t)}</span></button>`).join('')}</div>
+      <div class="feedback"></div><div class="explain">💡 ${d.explain||''}</div>
+      <div class="row gap anim">${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺ إعادة السؤال</button></div></div>`,
+    init(el,d){
+      const opts=$$('.opt',el), fb=$('.feedback',el), ex=$('.explain',el);
+      opts.forEach(o=>o.addEventListener('click',()=>{
+        if (+o.dataset.k===d.answer){ o.classList.add('correct'); opts.forEach(x=>x.disabled=true); fb.className='feedback ok'; fb.textContent='أحسنتِ! 👏 إجابة صحيحة'; ex.classList.add('show'); celebrate(); }
+        else { o.classList.add('wrong'); o.disabled=true; Fx.shake(o); fb.className='feedback no'; fb.textContent='حاولي مرة أخرى 💜'; tryAgain(); }
+      }));
+      $('[data-a=reset]',el).onclick=()=>{ opts.forEach(x=>{ x.disabled=false; x.classList.remove('correct','wrong'); }); fb.textContent=''; ex.classList.remove('show'); };
+    }
+  },
+
+  /* ---------- صح أم خطأ ---------- */
+  tf:{
+    render:d=>`${head(d)}<div class="s-body col">
+      <div class="tf-list">${d.items.map((s,k)=>`<div class="tf-row anim" data-k="${k}"><span class="tf-s">${k+1}. ${s.s}</span><div class="tf-btns"><button class="tfb t" data-v="1">✔ صح</button><button class="tfb f" data-v="0">✖ خطأ</button></div><div class="tf-why">${s.why}</div></div>`).join('')}</div>
+      <div class="row gap anim"><span class="tf-score">النتيجة: <b>0</b> / ${d.items.length}</span>${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺</button></div></div>`,
+    init(el,d){
+      const rows=$$('.tf-row',el), sc=$('.tf-score b',el);
+      const score=()=>{ const n=rows.filter(r=>r.classList.contains('ok')).length; sc.textContent=n; return n; };
+      rows.forEach(r=>$$('.tfb',r).forEach(b=>b.addEventListener('click',()=>{
+        if (r.classList.contains('ok')) return;
+        $$('.tfb',r).forEach(x=>x.classList.remove('sel')); b.classList.add('sel');
+        if ((b.dataset.v==='1')===d.items[+r.dataset.k].a){ r.classList.remove('no'); r.classList.add('ok');
+          if (score()===rows.length) celebrate('🏆 رائع! جميع الإجابات صحيحة'); else { Sound.success(); Fx.toast('أحسنتِ! 👏 إجابة صحيحة','ok'); } }
+        else { r.classList.add('no'); Fx.shake(r); tryAgain(); }
+      })));
+      $('[data-a=reset]',el).onclick=()=>{ rows.forEach(r=>{ r.classList.remove('ok','no'); $$('.tfb',r).forEach(x=>x.classList.remove('sel')); }); score(); };
+    }
+  },
+
+  /* ---------- تحدي الدقيقة ---------- */
+  challenge:{
+    render:d=>`${head(d)}<div class="s-body col" style="gap:18px">
+      <div class="ch-top anim">${codeBlock(d.listCode,d.file||'challenge.py')}${timerHTML(d.seconds)}</div>
+      ${d.note?`<p class="hint anim" style="font-size:24px">${d.note}</p>`:''}
+      <div class="ch-grid">${d.rows.map(r=>`<div class="ch-cell anim"><pre class="mini">${hl(r.c)}</pre><div class="ch-res" role="button" tabindex="0"><span class="q">؟ اضغطي للكشف</span><span class="a ${/[\u0600-\u06FF]/.test(r.r)?'ar':''}" dir="${/[\u0600-\u06FF]/.test(r.r)?'rtl':'ltr'}">${esc(r.r)}</span></div></div>`).join('')}</div>
+      <div class="row gap anim">${pickBtn('pick sm')}<button class="btn ghost sm" data-a="all">👁️ كل الإجابات</button><button class="btn ghost sm" data-a="reset">↺</button></div></div>`,
+    init(el){
+      const rs=$$('.ch-res',el), open=r=>{ if(!r.classList.contains('open')){ r.classList.add('open'); Sound.pop(); } };
+      rs.forEach(r=>r.addEventListener('click',()=>open(r)));
+      $('[data-a=all]',el).onclick=()=>rs.forEach((r,k)=>setTimeout(()=>open(r),k*150));
+      $('[data-a=reset]',el).onclick=()=>{ rs.forEach(r=>r.classList.remove('open')); $('.timer',el)._timer.reset(); };
+    }
+  },
+
+  /* ---------- التعلم التعاوني ---------- */
+  task:{
+    render:d=>`${head(d)}<div class="s-body">
+      <div class="col-text">
+        <div class="roles anim">${d.roles.map(r=>`<div class="role"><span>${r.i}</span><b>${r.n}</b></div>`).join('')}</div>
+        <ol class="steps">${d.steps.map(s=>`<li class="anim">${s}</li>`).join('')}</ol>
+      </div>
+      <div class="col-code">
+        <div class="task-top">${timerHTML(d.seconds)}${pickBtn('pick sm')}</div>
+        <div class="anim sol ${d.solution.length>8?'long':''}"><div class="code"><div class="bar"><i></i><i></i><i></i><span class="fn">${d.file||'solution.py'}</span><span class="lang">🐍 Python</span></div><pre><code>${d.solution.map(l=>`<span class="ln hid">${hl(l)}</span>`).join('\n')}</code></pre></div></div>
+        <div class="anim row gap" style="justify-content:flex-start"><button class="btn" data-a="line">👀 أظهري السطر التالي</button><button class="btn ghost sm" data-a="reset">↺</button></div>
+      </div></div>`,
+    init(el){
+      const ls=$$('.ln',el);
+      $('[data-a=line]',el).onclick=()=>{ const l=ls.find(x=>x.classList.contains('hid')); if(l){ l.classList.remove('hid'); Sound.pop(); if(!ls.some(x=>x.classList.contains('hid'))) celebrate('🎉 اكتمل الحل! صفّقن للمجموعات'); } };
+      $('[data-a=reset]',el).onclick=()=>ls.forEach(l=>l.classList.add('hid'));
+    }
+  },
+
+  /* ---------- التقييم الذاتي ---------- */
+  rating:{
+    render:d=>`${head(d)}<div class="s-body col">
+      ${d.question?`<p class="lead anim">${d.question}</p>`:''}
+      <div class="rates">${d.options.map(o=>`<div class="rate anim" role="button" tabindex="0"><span class="re">${o.e}</span><b>${o.t}</b><span class="rc">0</span></div>`).join('')}</div>
+      <div class="exit anim">🎟️ <b>بطاقة الخروج:</b> ${d.exit}</div>
+      <div class="row gap anim">${pickBtn('pick sm')}<button class="btn ghost sm" data-a="reset">↺ تصفير</button></div></div>`,
+    init(el){
+      $$('.rate',el).forEach(r=>r.addEventListener('click',()=>{ const c=$('.rc',r); c.textContent=+c.textContent+1; r.classList.remove('bump'); void r.offsetWidth; r.classList.add('bump'); Sound.pop(); }));
+      $('[data-a=reset]',el).onclick=()=>$$('.rc',el).forEach(c=>c.textContent=0);
+    }
+  },
+
+  /* ---------- الختام ---------- */
+  closing:{
+    render:d=>`<div class="deco-code"><span style="top:10%;left:6%">${d.deco?.[0]||'[ ]'}</span><span style="top:70%;left:7%">${d.deco?.[1]||'( )'}</span><span style="top:12%;right:8%">💜</span><span style="bottom:22%;right:8%">01</span></div>
+    <div class="center-col">
+      <div class="anim float-ico huge">🚀</div>
+      <h1 class="anim hero" style="font-size:96px">${d.title}</h1>
+      <p class="anim hero-sub2">${d.text}</p>
+      <div class="anim close-code">${codeBlock(d.code,'future.py')}</div>
+      <div class="anim row gap"><button class="btn clapbig" data-a="clap">👏 صفّقن لأنفسكن</button><div class="hw">📝 ${d.homework}</div></div>
+      <div class="anim meta">👩‍🏫 ${LESSON.teacher} &nbsp;•&nbsp; 🏫 ${LESSON.school}</div>
+    </div>`,
+    init(el){ $('[data-a=clap]',el).onclick=()=>{ doClap(); Fx.confetti(200); }; }
+  },
+};
+
+/* =====================================================================
+   🎬 بناء العرض والتنقل
+   ===================================================================== */
+const stage = $('#stage');
+const mcqs = SLIDES.filter(s=>s.type==='mcq'); mcqs.forEach((s,k)=>{ s._n=k+1; s._of=mcqs.length; });
+const slides = SLIDES.map(d => {
+  const s = document.createElement('section');
+  s.className = `slide t-${d.transition||'fade'} type-${d.type}`;
+  if (!T[d.type]){ s.innerHTML = `<div class="center-col"><h2>نوع شريحة غير معروف: ${d.type}</h2></div>`; stage.appendChild(s); return s; }
+  s.innerHTML = T[d.type].render(d);
+  stage.appendChild(s);
+  $$('.anim',s).forEach((a,k)=>a.style.setProperty('--i',k));
+  $$('.timer',s).forEach(makeTimer);
+  if (T[d.type].init) T[d.type].init(s,d);
+  return s;
+});
+/* 🎯 أزرار «من تجيب؟» في كل الشرائح ← قرعة من الحاضرات */
+stage.addEventListener('click', e => { if (e.target.closest('[data-a=pick]')) Roster.draw.show(); });
+
+const N = slides.length;
+let cur = 0;
+const hashN = parseInt(location.hash.slice(1),10);
+if (hashN>=1 && hashN<=N) cur = hashN-1;
+slides[cur].classList.add('active');
+
+function updateUI(){
+  $('#counter').textContent = `${cur+1} / ${N}`;
+  $('#progress').style.width = ((cur+1)/N*100) + '%';
+  $('#btnPrev').disabled = cur===0;
+  $('#btnNext').disabled = cur===N-1;
+  try{ history.replaceState(null,'','#'+(cur+1)); }catch(e){}
+}
+function go(i){
+  if (i<0 || i>=N || i===cur) return;
+  const old = slides[cur], nw = slides[i];
+  stage.style.setProperty('--dx', i>cur ? '-140px' : '140px');   /* RTL: التالية تأتي من اليسار */
+  old.classList.remove('active'); old.classList.add('leave');
+  setTimeout(()=>old.classList.remove('leave'), 750);
+  nw.classList.add('enter'); void nw.offsetWidth;
+  nw.classList.remove('enter'); nw.classList.add('active');
+  cur = i; updateUI();
+}
+const next = () => go(cur+1), prev = () => go(cur-1);
+
+$('#btnNext').onclick = next;
+$('#btnPrev').onclick = prev;
+$('#btnClap').onclick = doClap;
+$('#btnFull').onclick = () => {
+  if (!document.fullscreenElement) (document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen||function(){}).call(document.documentElement);
+  else (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+};
+/* زر 🎯 قرعة الأسماء بجانب زر التصفيق (اختصار: ق) */
+Roster.drawButton($('#btnClap'));
+
+/* لوحة المفاتيح */
+const isTyping = t => t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.isContentEditable);
+document.addEventListener('keydown', e => {
+  if (isTyping(e.target)){ if (e.key==='Escape') e.target.blur(); return; }
+  if (e.key==='ArrowRight' || e.key===' ' || e.code==='Space' || e.key==='PageDown'){ e.preventDefault(); next(); }
+  else if (e.key==='ArrowLeft' || e.key==='PageUp' || e.key==='Backspace'){ e.preventDefault(); prev(); }
+  else if (e.key==='ArrowUp' || e.key==='ArrowDown'){ e.preventDefault(); }
+  else if (e.key==='Home'){ e.preventDefault(); go(0); }
+  else if (e.key==='End'){ e.preventDefault(); go(N-1); }
+  else if (e.key==='ت' || e.key==='f' || e.key==='F'){ e.preventDefault(); doClap(); }
+  else if (e.key==='Enter' && e.target.getAttribute && e.target.getAttribute('role')==='button'){ e.preventDefault(); e.target.click(); }
+});
+document.addEventListener('keyup', e => { if ((e.code==='Space'||e.key===' ') && !isTyping(e.target)) e.preventDefault(); });
+document.addEventListener('click', e => { const b = e.target.closest('button,[role=button]'); if (b) setTimeout(()=>b.blur(), 0); });
+addEventListener('wheel', e => { if (!e.ctrlKey && !e.target.closest('.scroll')) e.preventDefault(); }, { passive:false });
+
+let idleT;
+function wake(){
+  document.body.classList.remove('idle'); clearTimeout(idleT);
+  idleT = setTimeout(()=>{ if (!$('#controls').matches(':hover')) document.body.classList.add('idle'); }, 2600);
+}
+['mousemove','pointerdown','touchstart'].forEach(ev => addEventListener(ev, wake, { passive:true }));
+
+function fit(){
+  const s = Math.min(innerWidth/1920, innerHeight/1080);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize', fit);
+fit(); updateUI(); wake();
+</script>
+</body>
+</html>
