@@ -13,6 +13,13 @@ const Roster = (() => {
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const read = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
 
+  /* صيغة الطلاب: بنات (الافتراضي) أو بنين — نسخة البنين تستدعي Roster.boys() قبل Roster.use() */
+  const G = {
+    f: { p: 'حاضرة', a: 'غائبة', l: 'متأخرة', stu: 'الطالبة', none: 'طالبات', them: 'أضيفيهن', abs: 'الغائبات', late: 'المتأخرات', who: 'من ستجيب الآن؟', one: 'طالبة حاضرة', zero: 'لا توجد طالبات حاضرات' },
+    m: { p: 'حاضر', a: 'غائب', l: 'متأخر', stu: 'الطالب', none: 'طلاب', them: 'أضيفيهم', abs: 'الغائبون', late: 'المتأخرون', who: 'من سيجيب الآن؟', one: 'طالب حاضر', zero: 'لا يوجد طلاب حاضرون' }
+  };
+  let T = G.f;
+
   /* { 'الثاني متوسط أ': ['اسم', ...] } — شعب صف الدرس، أو كل الشعب إن لم يوجد صف بهذا الاسم */
   function load(grade) {
     let db = null;
@@ -104,10 +111,10 @@ const Roster = (() => {
   }
   function paint(host) {
     const today = new Date().toLocaleDateString('ar-SA', { weekday: 'long', day: 'numeric', month: 'long' });
-    const LBL = { p: '✅ حاضرة', a: '❌ غائبة', l: '⏰ متأخرة' }, NEXT = { p: 'a', a: 'l', l: 'p' };
+    const LBL = { p: '✅ ' + T.p, a: '❌ ' + T.a, l: '⏰ ' + T.l }, NEXT = { p: 'a', a: 'l', l: 'p' };
     const names = Object.keys(st.classes);
     if (!names.length) {
-      host.innerHTML = `<div class="rs"><div class="rs-empty"><div>📋 لا توجد أسماء طالبات بعد<br><a href="${ADMIN_URL}" target="_blank">أضيفيها من لوحة الإدارة ←</a></div></div></div>`;
+      host.innerHTML = `<div class="rs"><div class="rs-empty"><div>📋 لا توجد أسماء ${T.none} بعد<br><a href="${ADMIN_URL}" target="_blank">أضيفيها من لوحة الإدارة ←</a></div></div></div>`;
       return;
     }
     host.innerHTML = `<div class="rs">
@@ -118,20 +125,20 @@ const Roster = (() => {
         <span class="rs-tag ok"></span><span class="rs-tag late"></span><span class="rs-tag bad"></span>
         <span class="sp"></span>
         <button class="rs-btn" data-act="all">✅ تحضير الكل</button>
-        <button class="rs-btn" data-act="copy">📋 نسخ الغائبات</button>
+        <button class="rs-btn" data-act="copy">📋 نسخ ${T.abs}</button>
         <button class="rs-btn pri" data-act="draw">🎯 قرعة</button>
       </div>
       <div class="rs-grid scroll">${st.students.map((n, k) => `<button class="rs-stu" data-k="${k}"><span class="av">${esc(n.replace(/^ال/, '')[0] || '؟')}</span><span class="nm">${esc(n)}</span><span class="s"></span></button>`).join('')}</div>
-      <p class="rs-tip">👆 اضغطي على اسم الطالبة لتغيير حالتها: حاضرة ← غائبة ← متأخرة</p>`
-      : `<div class="rs-empty"><div>لا توجد طالبات في هذه الشعبة بعد<br><a href="${ADMIN_URL}" target="_blank">أضيفيهن من لوحة الإدارة ←</a></div></div>`}
+      <p class="rs-tip">👆 اضغطي على اسم ${T.stu} لتغيير حالته${T === G.f ? 'ا' : ''}: ${T.p} ← ${T.a} ← ${T.l}</p>`
+      : `<div class="rs-empty"><div>لا توجد ${T.none} في هذه الشعبة بعد<br><a href="${ADMIN_URL}" target="_blank">${T.them} من لوحة الإدارة ←</a></div></div>`}
     </div>`;
     const q = s => host.querySelector(s), qa = s => [...host.querySelectorAll(s)];
     const update = () => {
       qa('.rs-stu').forEach((b, k) => { b.dataset.s = st.att[k]; b.querySelector('.s').textContent = LBL[st.att[k]]; });
       const n = v => st.att.filter(x => x === v).length;
-      q('.rs-tag.ok').textContent = '✅ حاضرة: ' + n('p');
-      q('.rs-tag.late').textContent = '⏰ متأخرة: ' + n('l');
-      q('.rs-tag.bad').textContent = '❌ غائبة: ' + n('a');
+      q('.rs-tag.ok').textContent = '✅ ' + T.p + ': ' + n('p');
+      q('.rs-tag.late').textContent = '⏰ ' + T.l + ': ' + n('l');
+      q('.rs-tag.bad').textContent = '❌ ' + T.a + ': ' + n('a');
     };
     qa('.rs-sw button').forEach(b => b.onclick = () => select(b.dataset.c));
     if (!st.students.length) return;
@@ -141,7 +148,7 @@ const Roster = (() => {
     q('[data-act=copy]').onclick = e => {
       const pick = v => st.students.filter((n, k) => st.att[k] === v);
       const abs = pick('a'), late = pick('l');
-      const txt = `التحضير — ${st.cur} — ${today}\nالغائبات (${abs.length}): ${abs.join('، ') || 'لا يوجد'}\nالمتأخرات (${late.length}): ${late.join('، ') || 'لا يوجد'}`;
+      const txt = `التحضير — ${st.cur} — ${today}\n${T.abs} (${abs.length}): ${abs.join('، ') || 'لا يوجد'}\n${T.late} (${late.length}): ${late.join('، ') || 'لا يوجد'}`;
       try { navigator.clipboard.writeText(txt); } catch (err) {}
       const b = e.currentTarget, old = b.textContent; b.textContent = '✔️ تم النسخ'; setTimeout(() => b.textContent = old, 1600);
     };
@@ -156,7 +163,7 @@ const Roster = (() => {
       if (this.el) return;
       style();
       this.el = document.createElement('div'); this.el.id = 'rsDraw';
-      this.el.innerHTML = `<div class="card"><h3></h3><div class="info"></div><div class="name">من ستجيب الآن؟ 🤔</div><div class="picked"></div>
+      this.el.innerHTML = `<div class="card"><h3></h3><div class="info"></div><div class="name">${T.who} 🤔</div><div class="picked"></div>
         <div class="acts"><button class="pri" data-a="spin">🎲 اسحبي اسمًا</button><button data-a="reset">↺ جولة جديدة</button><button data-a="hide">✕ إغلاق</button></div>
         <small class="k">Space = سحب &nbsp;|&nbsp; Esc = إغلاق</small></div>`;
       this.el.onclick = e => { const a = e.target.dataset.a; if (a) this[a](); else if (e.target === this.el) this.hide(); };
@@ -166,7 +173,7 @@ const Roster = (() => {
       const av = this.avail();
       this.el.querySelector('h3').textContent = '🎯 قرعة الأسماء' + (st.cur ? ' — ' + st.cur : '');
       this.el.querySelector('.info').textContent = !st.students.length ? 'لا توجد أسماء — أضيفيها من لوحة الإدارة'
-        : av.length ? `اختيرت ${this.picked.filter(n => av.includes(n)).length} من ${av.length} طالبة حاضرة` : 'لا توجد طالبات حاضرات — راجعي التحضير';
+        : av.length ? `اختيرت ${this.picked.filter(n => av.includes(n)).length} من ${av.length} ${T.one}` : T.zero + ' — راجعي التحضير';
       this.el.querySelector('.picked').innerHTML = this.picked.map(n => `<span>${esc(n)}</span>`).join('');
     },
     show() { if (!st.grade) return; this.mount(); this.el.classList.add('on'); this.open = true; this.info(); },
@@ -221,7 +228,7 @@ const Roster = (() => {
   watch(() => { if (!st.grade) return; const keep = st.cur; useGrade(st.grade); if (st.classes[keep]) { st.cur = keep; loadAtt(); } draw.picked = []; hosts.forEach(paint); changed(); });
 
   return {
-    KEY, load, watch, attendance, draw, drawButton, use: useGrade, select,
+    KEY, load, watch, attendance, boys: () => { T = G.m; }, draw, drawButton, use: useGrade, select,
     current: () => st.cur, sections: () => Object.keys(st.classes), present: () => draw.avail(),
     onChange: fn => listeners.push(fn), customDraw: fn => { opener = fn; }
   };
