@@ -519,8 +519,10 @@ button{font-family:inherit}
 #bar button:active{transform:scale(.93)}
 #bar button.main{background:var(--p600);color:#fff}
 #bar button.main:hover{background:var(--p700)}
-#bar button.sim{background:#217346;color:#fff}
-#bar button.sim:hover{background:#185c37}
+#bar{width:max-content;max-width:96vw}
+#bar button{white-space:nowrap}
+#bar button.simbtn{background:#217346;color:#fff}
+#bar button.simbtn:hover{background:#185c37}
 #bar button.icon{font-size:1.35em;padding:.3em .6em;background:transparent}
 #bar button.icon:hover{background:var(--p100)}
 #count{font-weight:900;color:var(--p800);min-width:4.2em;text-align:center}
@@ -607,7 +609,7 @@ body.idle #hint{opacity:0}
     <button id="bPrev" title="السابق (←)">← السابق</button>
     <div id="count"><span id="cur">1</span> / <span id="tot">1</span></div>
     <button id="bNext" class="main" title="التالي (→ أو Space)">التالي →</button>
-    <button id="bSim" class="sim" title="افتحي محاكي إكسل في نافذة جديدة" onclick="window.open('excel-db-sim.html','_blank')">🖥️ المحاكي</button>
+    <button id="bSim" class="simbtn" title="افتحي محاكي إكسل في نافذة جديدة" onclick="window.open('excel-db-sim.html','_blank')">🖥️ المحاكي</button>
   </div>
   <span class="vsep"></span>
   <button id="bClap" class="icon" title="تصفيق (ت)">👏</button>
