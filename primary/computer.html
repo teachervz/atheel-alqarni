@@ -80,6 +80,7 @@ body.idle{cursor:none}
 .bot .ant{animation:antb 1.6s ease-in-out infinite}
 @keyframes antb{50%{fill:#FF7EB6}}
 .bot .mouth{transform-box:fill-box;transform-origin:center}
+body.talking .bot .mouth{animation:talk .22s ease-in-out infinite alternate}
 @keyframes talk{to{transform:scaleY(1.7)}}
 .bob{animation:bob 3s ease-in-out infinite}
 @keyframes bob{50%{translate:0 -14px}}
@@ -88,6 +89,9 @@ body.idle{cursor:none}
 .bubble{position:relative;background:#fff;border-radius:30px;padding:16px 26px;font:700 30px/1.5 var(--fb);box-shadow:var(--shadow);
   display:flex;gap:16px;align-items:center;margin-bottom:40px}
 .bubble::after{content:"";position:absolute;right:-24px;bottom:26px;border:14px solid transparent;border-left:16px solid #fff}
+.spk{width:64px;height:64px;border-radius:50%;background:var(--yellow-l);font-size:32px;flex-shrink:0;transition:transform .15s;box-shadow:inset 0 0 0 3px #FFE38A}
+.spk:active{transform:scale(.9)}
+body.talking .spk.now{animation:pulse .6s infinite alternate}
 @keyframes pulse{to{box-shadow:inset 0 0 0 3px #FFE38A,0 0 0 10px rgba(255,201,60,.35)}}
 
 /* ---------- عام: البطاقات والتغذية الراجعة ---------- */
@@ -321,6 +325,7 @@ body.idle{cursor:none}
 .rid .face.f .qi{font-size:90px}
 .rid .face.b .ic{font-size:150px}
 .rid .face.b b{font:800 46px var(--fh)}
+.rid .spk{position:relative;z-index:2}
 
 /* =====================================================================
    14) البطلة الذكية (العادات الصحيحة)
@@ -429,6 +434,9 @@ body.idle #controls{opacity:0;transform:translate(-50%,30px)}
     <button class="cbtn primary" id="nextBtn" title="التالي (→ أو Space)">التالي →</button>
   </div>
   <span class="sep"></span>
+  <button class="cbtn icon" id="readBtn" title="اقرئي الشريحة بصوت عالٍ">🔊</button>
+  <button class="cbtn" id="autoBtn" title="قراءة كل شريحة تلقائيًا عند فتحها">🗣️ قراءة تلقائية</button>
+  <button class="cbtn icon" id="muteBtn" title="إيقاف كل الأصوات">🔈</button>
   <button class="cbtn icon clap" id="clapBtn" title="تصفيق (ت)">👏</button>
   <button class="cbtn icon" id="fsBtn" title="ملء الشاشة">⛶</button>
 </div>
@@ -438,10 +446,11 @@ body.idle #controls{opacity:0;transform:translate(-50%,30px)}
 <div id="fx"></div>
 
 <script src="../shared/roster.js"></script>
+<script src="audio/manifest.js"></script>
 <script>
 /* #####################################################################
    ⚙️ إعدادات الدرس — عدّلي من هنا
-   • say : نص الإرشاد (يظهر في فقاعة حاسوبي بشريحة الخلاصة فقط — الدرس بدون أصوات)
+   • say : النص الذي يقرؤه حاسوبي بصوت عالٍ (زر 🔊)
    • لإضافة شريحة انسخي واحدة من SLIDES، ولحذفها احذفي القوس { ... } الخاص بها
    ##################################################################### */
 /* اسم الصف في لوحة الإدارة (لشعب التحضير والقرعة). إن لم يوجد صف بهذا الاسم تظهر كل الشعب */
@@ -558,8 +567,8 @@ const SLIDES = [
       { ic: SCANNER, name: 'الماسح الضوئي', k: 'in' }, { ic: '📽️', name: 'جهاز العرض', k: 'out' }
     ] },
 
-  { type: 'riddles', tag: '🕵️‍♀️ ألغاز', title: 'مَن <em>أنا</em>؟ اقرئي اللغز ثم اكشفي',
-    say: 'اقرئي اللغز، ثم اضغطي على البطاقة لتعرفي الإجابة.',
+  { type: 'riddles', tag: '🕵️‍♀️ ألغاز', title: 'مَن <em>أنا</em>؟ اسمعي اللغز ثم اكشفي',
+    say: 'اضغطي على زر الصوت لتسمعي اللغز، ثم اضغطي على البطاقة لتعرفي الإجابة.',
     cards: [
       { q: 'لي أزرار كثيرة عليها حروف وأرقام… مَن أنا؟', ic: '⌨️', name: 'لوحة المفاتيح', c: '#3B82F6' },
       { q: 'اسمي مثل حيوان صغير، وأتحرّك على الطاولة… مَن أنا؟', ic: '🖱️', name: 'الفأرة', c: '#22B8A0' },
@@ -610,11 +619,87 @@ const popEl = el => retrigger(el, 'pop');
 let toastT;
 function toast(m, ms = 2600) { const t = $('#toast'); t.innerHTML = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms); }
 
-/* ---------- 🔇 الدرس بدون أصوات نهائيًا ----------
-   كل استدعاءات الصوت (Sound.* و say) لا تفعل شيئًا */
-const Sound = new Proxy({}, { get: () => () => {} });
-const Voice = { say() {}, stop() {} };
-const say = () => {};
+/* ---------- 🔇 بدون أصوات: يوقف صوت حاسوبي والمؤثرات كلها (زر 🔈 في الشريط) ---------- */
+let MUTED = false;
+try { MUTED = localStorage.getItem('pc-mute') === '1'; } catch (e) {}
+
+/* ---------- الأصوات (بدون ملفات) ---------- */
+const Sound = (() => {
+  let ctx, out, nb;
+  const ac = () => { if (!ctx) { ctx = new (window.AudioContext || window.webkitAudioContext)(); out = ctx.createGain(); out.gain.value = .9; out.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+  function tone(f, s, d, type = 'sine', v = .2) {
+    if (MUTED) return;
+    const c = ac(), t = c.currentTime + s, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(out); o.start(t); o.stop(t + d + .05);
+  }
+  function noise() { const c = ac(); if (!nb) { nb = c.createBuffer(1, c.sampleRate, c.sampleRate); const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } return nb; }
+  function clap1(t, v, f) {
+    if (MUTED) return;
+    const c = ac(), s = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(), len = .06 + Math.random() * .05;
+    s.buffer = noise(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.1;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .003); g.gain.exponentialRampToValueAtTime(.0008, t + len);
+    s.connect(bp).connect(g).connect(out); s.start(t, Math.random() * .8, len + .02);
+  }
+  return {
+    ac,
+    pop() { tone(880, 0, .12, 'triangle', .15); tone(1320, .05, .12, 'triangle', .1); },
+    ok() { [660, 880, 1175].forEach((f, i) => tone(f, i * .08, .25, 'triangle', .18)); },
+    no() { tone(330, 0, .2, 'sine', .18); tone(247, .15, .3, 'sine', .18); },
+    flip() { tone(620, 0, .08, 'triangle', .08); },
+    star() { [1046, 1318, 1568, 2093].forEach((f, i) => tone(f, i * .06, .3, 'sine', .12)); },
+    key() { tone(1200 + Math.random() * 300, 0, .05, 'square', .04); },
+    tune() { [523, 659, 784, 659, 523, 784].forEach((f, i) => tone(f, i * .18, .3, 'triangle', .16)); },
+    whir() { [200, 260, 320, 380].forEach((f, i) => tone(f, i * .12, .2, 'sawtooth', .04)); },
+    applause() {
+      const c = ac(), now = c.currentTime + .02, dur = 1.9;
+      for (let p = 0; p < 11; p++) {
+        let t = now + Math.random() * .12; const rate = .12 + Math.random() * .07, f = 1000 + Math.random() * 1600;
+        while (t < now + dur) { const fade = Math.max(.05, 1 - Math.pow((t - now) / dur, 2)); clap1(t, (.22 + Math.random() * .22) * fade, f); t += rate * (.85 + Math.random() * .3); }
+      }
+    }
+  };
+})();
+
+/* ---------- 🔊 حاسوبي يتكلّم ----------
+   • أولًا: ملفات صوت ElevenLabs الجاهزة (صوت نورة) في مجلد audio/
+   • إن لم يوجد ملف للنص (مثل الاسم الذي تكتبه الطالبة) يُقرأ بصوت المتصفح العربي
+   ⚠️ إذا غيّرتِ نص say في الإعدادات فلن يجد له ملفًا، وسيُقرأ بصوت المتصفح حتى تُعاد توليد الأصوات */
+const Voice = (() => {
+  const ok = 'speechSynthesis' in window, CLIPS = window.VOICE_CLIPS || {};
+  let voice = null, warned = false, btn = null, audio = null;
+  const pick = () => { const vs = speechSynthesis.getVoices(); voice = vs.find(v => /^ar[-_]SA/i.test(v.lang)) || vs.find(v => /^ar/i.test(v.lang)) || null; };
+  if (ok) { pick(); speechSynthesis.onvoiceschanged = pick; }
+  const clean = t => String(t).replace(/<[^>]+>/g, ' ').replace(/[\u{1F000}-\u{1FFFF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const done = () => { document.body.classList.remove('talking'); btn && btn.classList.remove('now'); };
+  function stop() { if (audio) { audio.onended = audio.onerror = null; audio.pause(); audio = null; } if (ok) speechSynthesis.cancel(); done(); }
+  function say(text, from) {
+    stop(); const t = clean(text); if (!t) return;
+    if (MUTED) { if (from) toast('🔇 الأصوات متوقفة — اضغطي 🔈 لتشغيلها'); return; }
+    if (CLIPS[t]) {
+      const a = audio = new Audio('audio/' + CLIPS[t]);
+      btn = from || null; btn && btn.classList.add('now');
+      a.onplaying = () => document.body.classList.add('talking');
+      a.onended = () => { if (audio === a) { audio = null; done(); } };
+      a.onerror = () => { if (audio === a) { audio = null; done(); speak(t, from); } };
+      a.play().catch(() => { if (audio === a) { audio = null; done(); speak(t, from); } });
+      return;
+    }
+    speak(t, from);
+  }
+  function speak(t, from) {
+    if (!ok) { if (!warned) { warned = true; toast('هذا المتصفح لا يدعم القراءة بالصوت 🔇'); } return; }
+    if (!voice && speechSynthesis.getVoices().length && !warned) { warned = true; toast('لا يوجد صوت عربي في هذا الجهاز 🔇 جرّبي متصفح Edge أو Chrome'); }
+    const u = new SpeechSynthesisUtterance(t); u.lang = 'ar-SA'; if (voice) u.voice = voice; u.rate = .88; u.pitch = 1.15;
+    btn = from || null; btn && btn.classList.add('now');
+    u.onstart = () => document.body.classList.add('talking');
+    u.onend = u.onerror = () => { document.body.classList.remove('talking'); btn && btn.classList.remove('now'); };
+    speechSynthesis.speak(u);
+  }
+  return { say, stop };
+})();
+const say = (t, b) => Voice.say(t, b);
 
 /* ---------- حاسوبي: الشخصية المرسومة ---------- */
 function bot(mood = 'happy', wave = false) {
@@ -640,7 +725,7 @@ function bot(mood = 'happy', wave = false) {
 }
 const setMood = (host, mood, wave) => { if (host) host.innerHTML = bot(mood, wave); };
 /* حاسوبي وفقاعة كلامه مع زر 🔊 */
-const guide = (text, mood = 'happy') => `<div class="guide rv"><div class="bot bob">${bot(mood)}</div><div class="bubble"><span>${text}</span></div></div>`;
+const guide = (text, mood = 'happy') => `<div class="guide rv"><div class="bot bob">${bot(mood)}</div><div class="bubble"><span>${text}</span><button class="spk" data-say="${encodeURIComponent(text)}" title="اسمعي">🔊</button></div></div>`;
 const head = s => `<div class="hd">${s.tag ? `<span class="tag rv">${s.tag}</span>` : ''}${s.title ? `<h2 class="t rv">${s.title}</h2>` : ''}</div>`;
 
 /* ---------- ⭐ نجوم الفصل ---------- */
@@ -743,7 +828,7 @@ const R = {
     $$('.part', el).forEach(p => p.addEventListener('click', () => {
       const k = p.dataset.k, d = P[k];
       $$('.part', el).forEach(x => x.classList.toggle('on', x === p));
-      card.innerHTML = `<div class="ic">${d.ic}</div><b>${d.name}</b><p>${d.text}</p>`;
+      card.innerHTML = `<div class="ic">${d.ic}</div><b>${d.name}</b><p>${d.text}</p><button class="spk" data-say="${encodeURIComponent(d.name + '. ' + d.text)}">🔊</button>`;
       const svg = $('.ic svg', card); if (svg) svg.style.width = '110px';
       popEl(card); Sound.pop(); say(d.name + '. ' + d.text);
       if (!seen.has(k)) { seen.add(k); $(`[data-f="${k}"]`, el).classList.add('ok'); if (seen.size === keys.length) setTimeout(() => { addStar(card); confetti(120); toast('🎉 رائع! تعرّفتِ على كل أجزاء الحاسب'); }, 600); }
@@ -851,7 +936,7 @@ const R = {
         <div class="row"><button class="key m" data-k="⌫">⌫ حذف</button><button class="key w" data-k=" ">مسافة</button><button class="key m" data-k="clr">🧹 مسح</button></div></div></div>
       <div class="side rv"><div class="modes"><button class="on" data-m="type">⌨️ أكتب</button><button data-m="draw">🖱️ أرسم</button></div>
         <div class="colors hidden">${['#3B82F6', '#FF6B6B', '#22B8A0', '#FFC93C', '#8B5CF6', '#22305E'].map((c, i) => `<button style="--c:${c}" data-c="${c}" class="${i ? '' : 'on'}"></button>`).join('')}</div>
-        <div class="outb"><button class="btn o" data-o="print">🖨️ اطبعي</button></div>
+        <div class="outb"><button class="btn o" data-o="speak">🔊 اسمعي</button><button class="btn" data-o="print">🖨️ اطبعي</button></div>
         <div class="printer"><span class="lbl out">🖨️ الطابعة = إخراج</span><div class="paper"></div><div class="pr-body">🖨️</div></div></div></div>`;
     const txt = $('.txt', el), cv = $('canvas', el), g = cv.getContext('2d'), paper = $('.paper', el);
     let mode = 'type', color = '#3B82F6', drawn = false;
@@ -882,6 +967,11 @@ const R = {
       g.beginPath(); g.moveTo(...last); g.lineTo(...p); g.stroke(); last = p; drawn = true;
     });
     ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => (last = null)));
+    $('[data-o="speak"]', el).onclick = () => {
+      const t = txt.textContent.trim();
+      if (mode === 'draw') return say(drawn ? 'رسمتكِ جميلة جدًا!' : 'ارسمي شيئًا أولًا!');
+      say(t ? t : 'اكتبي حروفًا أولًا!'); Sound.pop();
+    };
     $('[data-o="print"]', el).onclick = () => {
       if (mode === 'type' && !txt.textContent.trim()) return toast('اكتبي حروفًا أولًا ⌨️');
       if (mode === 'draw' && !drawn) return toast('ارسمي شيئًا أولًا 🖱️');
@@ -952,10 +1042,11 @@ const R = {
 
   riddles(s, el) {
     el.innerHTML = head(s) + `<div class="rid">${s.cards.map((c, i) => `<div class="flip rv" data-i="${i}" role="button"><div class="flip-in">
-      <div class="face f"><span class="qi">❓</span><span class="q">${c.q}</span></div>
+      <div class="face f"><span class="qi">❓</span><span class="q">${c.q}</span><button class="spk" data-say="${encodeURIComponent(c.q)}" title="اسمعي اللغز">🔊</button></div>
       <div class="face b" style="--c:${c.c}"><span class="ic">${c.ic}</span><b>${c.name}</b></div></div></div>`).join('')}</div>`;
     const seen = new Set();
     $$('.flip', el).forEach(f => f.onclick = e => {
+      if (e.target.closest('.spk')) return;
       f.classList.toggle('on'); Sound.flip(); const c = s.cards[f.dataset.i];
       if (f.classList.contains('on')) { say('أنا ' + c.name + '!'); seen.add(f.dataset.i); if (seen.size === s.cards.length && !el._starred) { el._starred = true; setTimeout(() => { addStar(f); confetti(); }, 700); } }
     });
@@ -977,12 +1068,13 @@ const R = {
 
   quiz(s, el) {
     el.innerHTML = head(s) + `<div class="quiz"><div class="dots rv">${s.qs.map(() => '<i></i>').join('')}</div>
-      <div class="qq rv"><span></span></div><div class="qo rv"></div><div class="fb rv"></div>
+      <div class="qq rv"><button class="spk" title="اسمعي السؤال">🔊</button><span></span></div><div class="qo rv"></div><div class="fb rv"></div>
       <button class="btn w hidden" data-again>🔄 العبي من جديد</button></div>`;
     const dots = $$('.dots i', el), qo = $('.qo', el), fb = $('.fb', el), qt = $('.qq span', el);
     let i = 0, lock = false;
     function show() {
       lock = false; const q = s.qs[i]; qt.textContent = q.q; fb.textContent = ''; dots.forEach((d, k) => d.classList.toggle('now', k === i));
+      $('.qq .spk', el).dataset.say = encodeURIComponent(q.q);
       qo.innerHTML = q.o.map((o, k) => `<button class="qb" data-k="${k}"><span class="ic">${o[0]}</span>${o[1]}</button>`).join('');
       $$('.qb .ic svg', qo).forEach(x => x.style.width = '120px');
       popEl(qo);
@@ -1044,7 +1136,8 @@ const stripTags = t => String(t).replace(/<[^>]+>/g, '');
    🎬 محرك العرض
    ##################################################################### */
 const stage = $('#stage'), slides = [];
-let current = -1;
+let current = -1, auto = false;
+try { auto = localStorage.getItem('pc-auto') === '1'; } catch (e) {}
 
 function build() {
   SLIDES.forEach((s, i) => {
@@ -1062,7 +1155,9 @@ function go(n) {
   if (old) { old._leave && old._leave(); old.classList.remove('active'); old.classList.toggle('back', fwd); }
   neu.classList.remove('back'); if (!fwd) neu.classList.add('back'); void neu.offsetWidth; neu.classList.remove('back');
   neu.classList.add('active'); current = n;
+  if (old) Sound.flip();                       // صوت التنقل بين الشرائح
   neu._enter && neu._enter();
+  if (auto && SLIDES[n].say) setTimeout(() => current === n && say(SLIDES[n].say), 700);
   $('#cur').textContent = n + 1;
   $('#progress span').style.width = ((n + 1) / slides.length * 100) + '%';
   $('#prevBtn').disabled = n === 0; $('#nextBtn').disabled = n === slides.length - 1;
@@ -1088,10 +1183,17 @@ document.addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (b) setTimeout(() => b.blur(), 0);
   Sound.ac();
+  const sp = e.target.closest('[data-say]'); if (sp) { e.stopPropagation(); say(decodeURIComponent(sp.dataset.say), sp); }
   if (e.target.closest('[data-act="next"]')) next();
 }, true);
 $('#nextBtn').onclick = next; $('#prevBtn').onclick = prev; $('#clapBtn').onclick = clap;
 Roster.drawButton($('#clapBtn'));
+$('#readBtn').onclick = () => { const s = SLIDES[current]; s.say ? say(s.say, $('#readBtn')) : toast('لا يوجد نص لهذه الشريحة'); };
+const autoUI = () => $('#autoBtn').classList.toggle('on', auto);
+const muteUI = () => { const b = $('#muteBtn'); b.textContent = MUTED ? '🔇' : '🔈'; b.classList.toggle('on', MUTED); b.title = MUTED ? 'تشغيل الأصوات' : 'إيقاف كل الأصوات'; };
+$('#muteBtn').onclick = () => { MUTED = !MUTED; if (MUTED) Voice.stop(); muteUI(); try { localStorage.setItem('pc-mute', MUTED ? '1' : '0'); } catch (e) {} toast(MUTED ? '🔇 العرض الآن بدون أصوات' : '🔈 عادت الأصوات'); };
+muteUI();
+$('#autoBtn').onclick = () => { auto = !auto; autoUI(); try { localStorage.setItem('pc-auto', auto ? '1' : '0'); } catch (e) {} toast(auto ? '🗣️ سيقرأ حاسوبي كل شريحة تلقائيًا' : '🔇 القراءة التلقائية متوقفة'); };
 $('#fsBtn').onclick = () => { const d = document; if (!d.fullscreenElement) (d.documentElement.requestFullscreen || d.documentElement.webkitRequestFullscreen || (() => {})).call(d.documentElement); else (d.exitFullscreen || d.webkitExitFullscreen).call(d); };
 $('#stars').onclick = () => { if (confirm('تصفير نجوم الفصل؟')) { STARS = 0; $('#stars b').textContent = 0; } };
 
@@ -1101,7 +1203,7 @@ function wake() { document.body.classList.remove('idle'); clearTimeout(idleT); i
 addEventListener('wheel', e => e.preventDefault(), { passive: false });
 
 if (location.search.includes('static')) document.head.insertAdjacentHTML('beforeend', '<style>.slide .rv{opacity:1!important;animation:none!important}</style>');
-build(); fit();
+build(); fit(); autoUI();
 const startAt = parseInt((location.hash || '').slice(1), 10);
 go(Number.isFinite(startAt) ? startAt - 1 : 0);
 wake();

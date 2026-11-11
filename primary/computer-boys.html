@@ -429,6 +429,7 @@ body.idle #controls{opacity:0;transform:translate(-50%,30px)}
     <button class="cbtn primary" id="nextBtn" title="التالي (→ أو Space)">التالي →</button>
   </div>
   <span class="sep"></span>
+  <button class="cbtn icon" id="muteBtn" title="إيقاف كل الأصوات">🔈</button>
   <button class="cbtn icon clap" id="clapBtn" title="تصفيق (ت)">👏</button>
   <button class="cbtn icon" id="fsBtn" title="ملء الشاشة">⛶</button>
 </div>
@@ -611,9 +612,50 @@ const popEl = el => retrigger(el, 'pop');
 let toastT;
 function toast(m, ms = 2600) { const t = $('#toast'); t.innerHTML = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms); }
 
-/* ---------- 🔇 الدرس بدون أصوات نهائيًا ----------
-   كل استدعاءات الصوت (Sound.* و say) لا تفعل شيئًا */
-const Sound = new Proxy({}, { get: () => () => {} });
+/* ---------- 🔇 بدون أصوات: يوقف صوت حاسوبي والمؤثرات كلها (زر 🔈 في الشريط) ---------- */
+let MUTED = false;
+try { MUTED = localStorage.getItem('pc-mute') === '1'; } catch (e) {}
+
+/* ---------- الأصوات (بدون ملفات) ---------- */
+const Sound = (() => {
+  let ctx, out, nb;
+  const ac = () => { if (!ctx) { ctx = new (window.AudioContext || window.webkitAudioContext)(); out = ctx.createGain(); out.gain.value = .9; out.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+  function tone(f, s, d, type = 'sine', v = .2) {
+    if (MUTED) return;
+    const c = ac(), t = c.currentTime + s, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(out); o.start(t); o.stop(t + d + .05);
+  }
+  function noise() { const c = ac(); if (!nb) { nb = c.createBuffer(1, c.sampleRate, c.sampleRate); const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } return nb; }
+  function clap1(t, v, f) {
+    if (MUTED) return;
+    const c = ac(), s = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(), len = .06 + Math.random() * .05;
+    s.buffer = noise(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.1;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .003); g.gain.exponentialRampToValueAtTime(.0008, t + len);
+    s.connect(bp).connect(g).connect(out); s.start(t, Math.random() * .8, len + .02);
+  }
+  return {
+    ac,
+    pop() { tone(880, 0, .12, 'triangle', .15); tone(1320, .05, .12, 'triangle', .1); },
+    ok() { [660, 880, 1175].forEach((f, i) => tone(f, i * .08, .25, 'triangle', .18)); },
+    no() { tone(330, 0, .2, 'sine', .18); tone(247, .15, .3, 'sine', .18); },
+    flip() { tone(620, 0, .08, 'triangle', .08); },
+    star() { [1046, 1318, 1568, 2093].forEach((f, i) => tone(f, i * .06, .3, 'sine', .12)); },
+    key() { tone(1200 + Math.random() * 300, 0, .05, 'square', .04); },
+    tune() { [523, 659, 784, 659, 523, 784].forEach((f, i) => tone(f, i * .18, .3, 'triangle', .16)); },
+    whir() { [200, 260, 320, 380].forEach((f, i) => tone(f, i * .12, .2, 'sawtooth', .04)); },
+    applause() {
+      const c = ac(), now = c.currentTime + .02, dur = 1.9;
+      for (let p = 0; p < 11; p++) {
+        let t = now + Math.random() * .12; const rate = .12 + Math.random() * .07, f = 1000 + Math.random() * 1600;
+        while (t < now + dur) { const fade = Math.max(.05, 1 - Math.pow((t - now) / dur, 2)); clap1(t, (.22 + Math.random() * .22) * fade, f); t += rate * (.85 + Math.random() * .3); }
+      }
+    }
+  };
+})();
+
+/* ---------- صوت حاسوبي: مقاطع نورة مسجّلة بصيغة البنات، لذلك نسخة البنين بدون كلام (المؤثرات تعمل) ---------- */
 const Voice = { say() {}, stop() {} };
 const say = () => {};
 
@@ -1063,6 +1105,7 @@ function go(n) {
   if (old) { old._leave && old._leave(); old.classList.remove('active'); old.classList.toggle('back', fwd); }
   neu.classList.remove('back'); if (!fwd) neu.classList.add('back'); void neu.offsetWidth; neu.classList.remove('back');
   neu.classList.add('active'); current = n;
+  if (old) Sound.flip();                       // صوت التنقل بين الشرائح
   neu._enter && neu._enter();
   $('#cur').textContent = n + 1;
   $('#progress span').style.width = ((n + 1) / slides.length * 100) + '%';
@@ -1093,6 +1136,9 @@ document.addEventListener('click', e => {
 }, true);
 $('#nextBtn').onclick = next; $('#prevBtn').onclick = prev; $('#clapBtn').onclick = clap;
 Roster.drawButton($('#clapBtn'));
+const muteUI = () => { const b = $('#muteBtn'); b.textContent = MUTED ? '🔇' : '🔈'; b.classList.toggle('on', MUTED); b.title = MUTED ? 'تشغيل الأصوات' : 'إيقاف كل الأصوات'; };
+$('#muteBtn').onclick = () => { MUTED = !MUTED; if (MUTED) Voice.stop(); muteUI(); try { localStorage.setItem('pc-mute', MUTED ? '1' : '0'); } catch (e) {} toast(MUTED ? '🔇 العرض الآن بدون أصوات' : '🔈 عادت الأصوات'); };
+muteUI();
 $('#fsBtn').onclick = () => { const d = document; if (!d.fullscreenElement) (d.documentElement.requestFullscreen || d.documentElement.webkitRequestFullscreen || (() => {})).call(d.documentElement); else (d.exitFullscreen || d.webkitExitFullscreen).call(d); };
 $('#stars').onclick = () => { if (confirm('تصفير نجوم الفصل؟')) { STARS = 0; $('#stars b').textContent = 0; } };
 
