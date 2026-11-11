@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاكي إكسل — إنشاء قاعدة بيانات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   🎨 الألوان (نفس هوية الدرس) + ألوان إكسل
+   ========================================================= */
+:root{
+  --p900:#2c1659; --p800:#3c1e78; --p700:#5227a6; --p600:#6a3bd0; --p500:#7f55e0;
+  --p400:#a283ee; --p300:#c6b3f7; --p200:#e0d4fb; --p100:#f2ecff; --p50:#faf7ff;
+  --mint:#1fbf9f; --mint-l:#d8f7ef; --sun:#ffb93f; --sun-l:#fff2d8;
+  --rose:#ec5f93; --ok:#17a877; --ok-l:#ddf7ec; --bad:#e0517c; --bad-l:#ffe6ee;
+  --ink:#2a2140; --muted:#716a8a;
+  --xl:#217346; --xl-d:#185c37; --xl-l:#e9f4ee; --xl-sel:#d3ead9;
+  --grid:#d4d4d4; --hdr:#f3f3f3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:clamp(12px,.86vw,18px)}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Tajawal','Segoe UI',Tahoma,Arial,sans-serif;color:var(--ink);
+  background:radial-gradient(circle at 30% 20%,#2f1b5c,#150c2a);display:flex;flex-direction:column;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+
+/* ===== الشريط العلوي للمحاكي ===== */
+#top{display:flex;align-items:center;gap:.8rem;padding:.6rem 1rem;color:#fff;flex-shrink:0}
+#top .logo{width:2.6rem;height:2.6rem;border-radius:.7rem;background:var(--xl);display:grid;place-items:center;font-weight:900;font-size:1.4rem;box-shadow:0 6px 16px rgba(0,0,0,.3)}
+#top h1{font-size:1.45rem;font-weight:900;line-height:1.2}
+#top h1 small{display:block;font-size:.85rem;font-weight:500;opacity:.75}
+#top .sp{flex:1}
+.tbtn{border:none;border-radius:999px;padding:.5rem 1.1rem;font-weight:800;font-size:1rem;background:rgba(255,255,255,.12);color:#fff;transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem}
+.tbtn:hover{background:rgba(255,255,255,.22)}
+.keys{display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.08);padding:.3rem .5rem .3rem .8rem;border-radius:999px;font-size:.95rem;font-weight:700}
+.vkey{border:2px solid rgba(255,255,255,.35);background:#fff;color:var(--p800);font-weight:900;border-radius:.6rem;padding:.3rem .9rem;font-size:1rem;box-shadow:0 4px 0 #b9a8e6;transition:.1s}
+.vkey.on{background:var(--sun);border-color:#fff;transform:translateY(3px);box-shadow:0 1px 0 #b9a8e6}
+
+/* ===== التخطيط الرئيسي ===== */
+#main{flex:1;min-height:0;display:flex;gap:1rem;padding:0 1rem 1rem}
+
+/* ===== لوحة المهام ===== */
+#tasks{width:27rem;flex-shrink:0;background:var(--p50);border-radius:1.4rem;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px -20px rgba(0,0,0,.6)}
+.tk-head{padding:1rem 1.2rem .8rem;background:linear-gradient(135deg,var(--p700),var(--p500));color:#fff}
+.tk-head b{font-size:1.35rem;font-weight:900}
+.tk-head .pr{display:flex;align-items:center;gap:.6rem;margin-top:.5rem;font-weight:800}
+.tk-head .bar{flex:1;height:.6rem;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.tk-head .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sun),var(--mint));transition:width .5s;margin-inline-start:0}
+#tlist{flex:1;overflow:auto;padding:.8rem;display:flex;flex-direction:column;gap:.55rem}
+.task{background:#fff;border:2px solid var(--p200);border-radius:1rem;padding:.6rem .8rem;cursor:pointer;transition:.2s}
+.task:hover{border-color:var(--p300)}
+.task .tt{display:flex;align-items:center;gap:.6rem}
+.task .num{width:2rem;height:2rem;border-radius:50%;background:var(--p100);color:var(--p700);display:grid;place-items:center;font-weight:900;flex-shrink:0}
+.task .tt b{flex:1;font-size:1.08rem;font-weight:800}
+.task .st{font-size:1.1rem}
+.task.done{background:var(--ok-l);border-color:#9fe3c8}
+.task.done .num{background:var(--ok);color:#fff}
+.task.cur{border-color:var(--p600);box-shadow:0 10px 26px -12px rgba(82,39,166,.55);cursor:default}
+.task.cur .num{background:var(--p600);color:#fff}
+.task .body{display:none;margin-top:.55rem}
+.task.cur .body{display:block}
+.task .desc{font-size:.95rem;color:var(--muted);margin-bottom:.45rem;line-height:1.5}
+.steps{list-style:none;display:flex;flex-direction:column;gap:.3rem}
+.steps li{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:.6rem;font-size:1rem;line-height:1.4;font-weight:600;color:var(--muted)}
+.steps li .ck{width:1.4rem;height:1.4rem;border-radius:50%;border:2px solid var(--p300);flex-shrink:0;display:grid;place-items:center;font-size:.8rem;color:#fff}
+.steps li.ok{color:var(--ok);text-decoration:line-through;text-decoration-color:rgba(23,168,119,.4)}
+.steps li.ok .ck{background:var(--ok);border-color:var(--ok)}
+.steps li.ok .ck::after{content:"✔"}
+.steps li.now{background:var(--sun-l);color:var(--ink);font-weight:800}
+.steps li.now .ck{border-color:var(--sun);background:#fff;animation:pulse 1.2s infinite}
+.steps li span.tx{flex:1}
+.steps li .sh{border:none;background:transparent;font-size:1.1rem;opacity:.35;padding:.1rem .2rem;border-radius:.4rem}
+.steps li.now .sh{opacity:1}
+.steps li .sh:hover{background:var(--p100);opacity:1}
+.tact{display:flex;gap:.4rem;margin-top:.6rem}
+.btn{border:none;border-radius:999px;padding:.5rem 1rem;font-weight:800;font-size:1rem;background:var(--p100);color:var(--p700);transition:.15s}
+.btn:hover{background:var(--p200)}
+.btn.sun{background:var(--sun);color:#3d2700}
+.btn.sun:hover{filter:brightness(1.05)}
+.btn.pr{background:var(--p600);color:#fff}
+.btn.pr:hover{background:var(--p700)}
+.btn.mint{background:var(--mint);color:#fff}
+.tk-foot{padding:.7rem 1rem;border-top:2px dashed var(--p200);font-size:.95rem;font-weight:700;color:var(--p800);display:flex;flex-wrap:wrap;gap:.4rem .9rem;justify-content:center;background:#fff}
+
+/* ===== نافذة إكسل ===== */
+#xl{flex:1;min-width:0;background:#fff;border-radius:.9rem;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px -20px rgba(0,0,0,.6);font-family:'Segoe UI','Tajawal',Tahoma,sans-serif}
+.xl-title{background:var(--xl);color:#fff;display:flex;align-items:center;gap:.6rem;padding:.35rem .8rem;font-size:.95rem}
+.xl-title .qa{display:flex;gap:.2rem}
+.xl-title .qa button{background:transparent;border:none;color:#fff;font-size:1.05rem;padding:.1rem .45rem;border-radius:.3rem}
+.xl-title .qa button:hover{background:rgba(255,255,255,.18)}
+.xl-title .nm{flex:1;text-align:center;font-weight:600}
+.xl-title .win{display:flex;gap:1rem;opacity:.85;letter-spacing:.2rem}
+.xl-tabs{display:flex;background:var(--xl);padding:0 .5rem;gap:.1rem}
+.xl-tabs button{background:transparent;border:none;color:#fff;padding:.4rem .9rem;font-size:.95rem;border-radius:.3rem .3rem 0 0}
+.xl-tabs button:hover{background:rgba(255,255,255,.14)}
+.xl-tabs button.on{background:#f3f3f3;color:var(--xl);font-weight:700}
+.xl-tabs button.ctx{color:#c8f7d8;font-weight:700}
+.xl-tabs button.file{background:var(--xl-d)}
+.ribbon{background:#f3f3f3;border-bottom:1px solid #d6d6d6;display:flex;align-items:stretch;padding:.35rem .4rem 0;position:relative;min-height:6.8rem}
+.grp{display:flex;flex-direction:column;padding:0 .55rem;border-inline-end:1px solid #d6d6d6;position:relative}
+.grp .gi{flex:1;display:flex;align-items:center;gap:.25rem}
+.grp .gl{font-size:.78rem;color:#666;text-align:center;padding:.15rem 0 .2rem}
+.rb{background:transparent;border:1px solid transparent;border-radius:.25rem;padding:.25rem .4rem;font-size:.9rem;color:#333;display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:2rem;font-family:inherit}
+.rb:hover{background:#dcefe3;border-color:#b6d9c3}
+.rb.big{padding:.25rem .5rem;font-size:.82rem;line-height:1.2}
+.rb.big .ic{font-size:1.7rem;line-height:1}
+.rb.on{background:#c5e1cf;border-color:#8fc4a2}
+.rb.sm{flex-direction:row;font-weight:700;width:2rem;height:2rem;justify-content:center;font-size:1.05rem}
+.fontrow{display:flex;gap:.25rem;margin-bottom:.25rem}
+.fsel{border:1px solid #c6c6c6;background:#fff;padding:.2rem .4rem;font-size:.85rem;border-radius:.2rem;min-width:6.5rem;text-align:start}
+.fsz{min-width:2.8rem}
+.col2{display:flex;flex-direction:column;gap:.15rem}
+
+/* معرض أنماط الجدول */
+#gal{position:absolute;top:100%;inset-inline-start:0;z-index:30;background:#fff;border:1px solid #bdbdbd;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:.6rem;width:31rem;display:none}
+#gal.open{display:block}
+#gal h4{font-size:.85rem;color:#555;margin:.2rem 0 .3rem;font-weight:700;border-bottom:1px solid #eee;padding-bottom:.2rem}
+.gal-row{display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem;margin-bottom:.5rem}
+.gi-it{border:2px solid transparent;padding:.15rem;border-radius:.2rem;background:#fff;cursor:pointer}
+.gi-it:hover{border-color:#e8a33d;background:#fff7e6}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;height:2.6rem}
+.mini i{display:block}
+.gal-tip{font-size:.8rem;color:#666;margin-top:.2rem}
+
+/* شريط الصيغة */
+.fbar{display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-bottom:1px solid #d6d6d6;background:#fff}
+#nbox{width:6rem;border:1px solid #c6c6c6;padding:.25rem .4rem;font-size:.95rem;text-align:center;font-family:'Segoe UI',Tahoma,sans-serif}
+.fx{color:#777;font-style:italic;font-weight:700;padding:0 .4rem;border-inline-start:1px solid #ddd;border-inline-end:1px solid #ddd}
+#fx{flex:1;border:1px solid #c6c6c6;padding:.25rem .5rem;font-size:1rem;outline:none}
+#fx:focus{border-color:var(--xl)}
+
+/* الشبكة */
+.gwrap{flex:1;overflow:auto;background:#fff;position:relative}
+#grid{border-collapse:collapse;table-layout:fixed;font-size:1.05rem;touch-action:none;font-family:'Tajawal','Segoe UI',Tahoma,sans-serif}
+#grid th{background:var(--hdr);color:#555;font-weight:500;border:1px solid var(--grid);font-size:.92rem;cursor:pointer;font-family:'Segoe UI',Tahoma,sans-serif}
+#grid th.corner{width:3rem;cursor:pointer}
+#grid th.ch{height:1.7rem;width:9rem;cursor:s-resize}
+#grid th.rh{width:3rem;cursor:w-resize}
+#grid th.hsel{background:#d2d2d2;color:var(--xl-d);font-weight:700;border-bottom:2px solid var(--xl)}
+#grid th.rh.hsel{border-bottom:1px solid var(--grid);border-inline-start:2px solid var(--xl)}
+#grid th.hfull{background:var(--xl);color:#fff}
+#grid td{border:1px solid #e3e3e3;height:2.3rem;padding:0 .45rem;white-space:nowrap;overflow:hidden;position:relative;cursor:cell;background:#fff}
+#grid td .v{display:block;overflow:hidden;text-overflow:clip}
+#grid td.b .v{font-weight:800}
+#grid td.i .v{font-style:italic}
+#grid td.u .v{text-decoration:underline}
+#grid td.num .v{text-align:left;direction:ltr}
+#grid td.sel::after{content:"";position:absolute;inset:0;background:rgba(33,115,70,.2);pointer-events:none}
+#grid td.act{outline:2px solid var(--xl);outline-offset:-2px;z-index:2}
+#grid td .fa{display:none;position:absolute;inset-inline-end:.15rem;top:50%;transform:translateY(-50%);width:1.35rem;height:1.35rem;border:1px solid #9a9a9a;background:#fff;color:#444;font-size:.7rem;align-items:center;justify-content:center;border-radius:.15rem;cursor:pointer}
+#grid td.th .fa{display:flex}
+#grid td.th{padding-inline-end:1.7rem}
+#grid td.th .v{font-weight:800}
+#catcher{position:fixed;left:-200px;top:0;width:40px;opacity:0;pointer-events:none}
+.cell-ed{position:absolute;inset:0;border:2px solid var(--xl);outline:none;padding:0 .4rem;font:inherit;font-size:1.05rem;background:#fff;z-index:5;user-select:text;-webkit-user-select:text}
+.sheets{display:flex;align-items:center;gap:.3rem;background:#f3f3f3;border-top:1px solid #d6d6d6;padding:0 .6rem;font-size:.92rem}
+.sheets .stab{background:#fff;color:var(--xl);font-weight:700;padding:.35rem 1.2rem;border-bottom:3px solid var(--xl)}
+.sheets .plus{color:#666;padding:.2rem .5rem;font-size:1.1rem}
+.status{background:var(--xl);color:#fff;font-size:.85rem;padding:.2rem .9rem;display:flex;gap:1.4rem}
+.status .sp{flex:1}
+
+/* نافذة إنشاء جدول */
+.dlg-back{position:fixed;inset:0;background:rgba(0,0,0,.18);display:none;z-index:70;align-items:center;justify-content:center}
+.dlg-back.open{display:flex}
+.dlg{background:#fff;border:1px solid #888;box-shadow:0 20px 60px rgba(0,0,0,.35);width:24rem;font-family:'Segoe UI','Tajawal',Tahoma,sans-serif}
+.dlg .dh{display:flex;justify-content:space-between;align-items:center;padding:.45rem .7rem;font-size:1rem;border-bottom:1px solid #e5e5e5}
+.dlg .dh button{border:none;background:transparent;font-size:1rem;padding:.1rem .4rem}
+.dlg .dh button:hover{background:#e81123;color:#fff}
+.dlg .db{padding:1rem 1rem .6rem;display:flex;flex-direction:column;gap:.7rem;font-size:1rem}
+.dlg .rng{border:1px solid #9a9a9a;padding:.35rem .5rem;direction:ltr;text-align:left;font-family:Consolas,'Segoe UI',monospace;font-size:1rem}
+.dlg label{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.2rem .3rem;border-radius:.3rem;width:max-content}
+.dlg input[type=checkbox]{width:1.2rem;height:1.2rem;accent-color:var(--xl)}
+.dlg .df{display:flex;justify-content:flex-start;gap:.5rem;padding:.6rem 1rem 1rem;flex-direction:row-reverse}
+.dlg .df button{min-width:5.5rem;padding:.35rem .8rem;border:1px solid #adadad;background:#e1e1e1;font-size:.95rem}
+.dlg .df button.def{border:2px solid var(--xl)}
+.dlg .df button:hover{background:#e5f1fb;border-color:#0078d7}
+
+/* ===== التلميح ===== */
+.glow{animation:glow 1s ease-in-out infinite !important;position:relative;z-index:20 !important}
+#grid td.glow,#grid th.glow{animation:glowO 1s ease-in-out infinite !important;outline:4px solid var(--sun);outline-offset:-3px;z-index:20}
+@keyframes glowO{0%,100%{outline-color:var(--sun);background:#fff2d8}50%{outline-color:#ff8a00;background:#ffe0a8}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 3px var(--sun),0 0 0 7px rgba(255,185,63,.35)}50%{box-shadow:0 0 0 5px var(--sun),0 0 0 14px rgba(255,185,63,.15)}}
+#bubble{position:fixed;z-index:95;max-width:22rem;background:var(--p800);color:#fff;padding:.75rem 1rem;border-radius:1rem;font-size:1.1rem;font-weight:700;line-height:1.5;box-shadow:0 14px 40px rgba(20,8,50,.45);display:none;pointer-events:none}
+#bubble.show{display:block;animation:bIn .3s cubic-bezier(.2,.8,.2,1)}
+#bubble::before{content:"";position:absolute;left:var(--ax,50%);width:16px;height:16px;background:var(--p800);transform:translateX(-50%) rotate(45deg)}
+#bubble.below::before{top:-7px}
+#bubble.above::before{bottom:-7px}
+#bubble .bh{display:block;font-size:.85rem;color:var(--sun);font-weight:900;margin-bottom:.15rem}
+@keyframes bIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,185,63,.6)}50%{box-shadow:0 0 0 6px rgba(255,185,63,0)}}
+
+/* إشعار */
+#toast{position:fixed;bottom:1.4rem;left:50%;transform:translate(-50%,30px);background:#fff;color:var(--ink);font-weight:800;font-size:1.15rem;padding:.75rem 1.4rem;border-radius:999px;box-shadow:0 12px 40px rgba(20,8,50,.4);opacity:0;transition:.35s;z-index:96;pointer-events:none;border:3px solid var(--p200);max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.ok{border-color:#86e3bf;background:var(--ok-l)}
+#toast.warn{border-color:#ffc2d4;background:var(--bad-l)}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* نوافذ الترحيب والنهاية */
+.ov{position:fixed;inset:0;background:rgba(21,12,42,.72);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100}
+.ov.open{display:flex}
+.card{background:#fff;border-radius:1.6rem;padding:2rem 2.4rem;max-width:44rem;width:92vw;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.45);animation:bIn .4s}
+.card .em{font-size:4rem}
+.card h2{font-size:2.2rem;font-weight:900;color:var(--p800);margin:.4rem 0}
+.card p{font-size:1.2rem;color:var(--muted);line-height:1.7}
+.card ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:1rem 0;text-align:start}
+.card ul li{background:var(--p50);border:2px solid var(--p100);border-radius:.8rem;padding:.5rem .7rem;font-weight:700;font-size:1.05rem}
+.card .row{display:flex;gap:.6rem;justify-content:center;margin-top:1.2rem;flex-wrap:wrap}
+.card .btn{font-size:1.2rem;padding:.7rem 1.6rem}
+#fx-layer{position:fixed;inset:0;pointer-events:none;z-index:110;overflow:hidden}
+.cf{position:absolute;top:-20px;width:12px;height:18px;border-radius:3px;animation:fall var(--d) linear forwards}
+@keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
+
+@media (max-width:900px){
+  #main{flex-direction:column;overflow:auto}
+  #tasks{width:auto;max-height:45vh;flex-shrink:0}
+  #xl{min-height:70vh}
+  #top h1 small{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== الشريط العلوي ===== -->
+<header id="top">
+  <div class="logo">X</div>
+  <h1>محاكي إكسل: إنشاء قاعدة بيانات<small>المهارات الرقمية • الصف السادس</small></h1>
+  <div class="sp"></div>
+  <div class="keys" title="للسبورة الذكية: فعّلي المفتاح ثم اضغطي على رقم الصف">مفاتيح السبورة:
+    <button class="vkey" id="vShift">⇧ Shift</button>
+    <button class="vkey" id="vCtrl">Ctrl</button>
+  </div>
+  <button class="tbtn" id="bSound" title="الصوت">🔊</button>
+  <button class="tbtn" id="bReset" title="البدء من جديد">↺ من جديد</button>
+  <a class="tbtn" href="index-database.html">↩ العودة للدرس</a>
+</header>
+
+<div id="main">
+  <!-- ===== لوحة المهام ===== -->
+  <aside id="tasks">
+    <div class="tk-head">
+      <b>🎯 مهامّي</b>
+      <div class="pr"><span id="pcount">0 / 0</span><div class="bar"><i id="pbar"></i></div></div>
+    </div>
+    <div id="tlist"></div>
+    <div class="tk-foot"><span>📏 الحقل = عمود</span><span>📄 السجل = صف</span><span>⇥ Tab = الخلية المجاورة</span><span>👆 على السبورة: اضغطي الخلية مرتين للكتابة</span></div>
+  </aside>
+
+  <!-- ===== نافذة إكسل ===== -->
+  <section id="xl">
+    <div class="xl-title">
+      <div class="qa">
+        <button title="حفظ" id="qSave">💾</button>
+        <button title="تراجع (Ctrl+Z)" id="qUndo">↶</button>
+      </div>
+      <div class="nm">دفتر عناوين الطالبات.xlsx - Excel</div>
+      <div class="win">— ▢ ✕</div>
+    </div>
+    <div class="xl-tabs" id="xtabs">
+      <button class="file">ملف</button>
+      <button class="on">الصفحة الرئيسية</button>
+      <button>إدراج</button>
+      <button>تخطيط الصفحة</button>
+      <button>صيغ</button>
+      <button>بيانات</button>
+      <button>مراجعة</button>
+      <button>عرض</button>
+      <button class="ctx" id="tabDesign" hidden>تصميم الجدول</button>
+    </div>
+    <div class="ribbon" id="ribbon">
+      <div class="grp"><div class="gi">
+        <button class="rb big" data-nop><span class="ic">📋</span>لصق</button>
+        <div class="col2"><button class="rb sm" data-nop title="قص">✂️</button><button class="rb sm" data-nop title="نسخ">⧉</button></div>
+      </div><div class="gl">الحافظة</div></div>
+
+      <div class="grp"><div class="gi" style="flex-direction:column;justify-content:center;align-items:stretch">
+        <div class="fontrow"><span class="fsel">Calibri ▾</span><span class="fsel fsz">11 ▾</span></div>
+        <div class="fontrow">
+          <button class="rb sm" id="bBold" title="غامق (Ctrl+B)"><b>B</b></button>
+          <button class="rb sm" id="bItal" title="مائل (Ctrl+I)"><i style="font-family:serif">I</i></button>
+          <button class="rb sm" id="bUnd" title="تسطير (Ctrl+U)"><u>U</u></button>
+          <button class="rb sm" data-nop title="حدود">▦</button>
+          <button class="rb sm" data-nop title="لون التعبئة">🪣</button>
+          <button class="rb sm" data-nop title="لون الخط" style="color:#c00">A</button>
+        </div>
+      </div><div class="gl">الخط</div></div>
+
+      <div class="grp"><div class="gi">
+        <div class="col2"><button class="rb sm" data-nop>≡</button><button class="rb sm" data-nop>☰</button></div>
+        <button class="rb big" data-nop><span class="ic">↵</span>التفاف<br>النص</button>
+        <button class="rb big" data-nop><span class="ic">⇔</span>دمج<br>وتوسيط</button>
+      </div><div class="gl">المحاذاة</div></div>
+
+      <div class="grp"><div class="gi">
+        <button class="rb big" data-nop><span class="ic">123</span>عام ▾</button>
+      </div><div class="gl">رقم</div></div>
+
+      <div class="grp" id="gStyles"><div class="gi">
+        <button class="rb big" data-nop><span class="ic">▤</span>تنسيق<br>شرطي ▾</button>
+        <button class="rb big" id="bFmt"><span class="ic">🟩</span>التنسيق<br>كجدول ▾</button>
+        <button class="rb big" data-nop><span class="ic">🎨</span>أنماط<br>الخلايا ▾</button>
+      </div><div class="gl">أنماط</div>
+        <div id="gal"></div>
+      </div>
+
+      <div class="grp"><div class="gi">
+        <button class="rb big" data-nop><span class="ic">➕</span>إدراج</button>
+        <button class="rb big" data-nop><span class="ic">➖</span>حذف</button>
+      </div><div class="gl">الخلايا</div></div>
+
+      <div class="grp"><div class="gi">
+        <button class="rb big" data-nop><span class="ic">Σ</span>جمع<br>تلقائي</button>
+        <button class="rb big" data-nop><span class="ic">⇅</span>فرز<br>وتصفية</button>
+      </div><div class="gl">تحرير</div></div>
+    </div>
+    <div class="fbar">
+      <input id="nbox" readonly value="A1">
+      <span class="fx">fx</span>
+      <input id="fx" autocomplete="off">
+    </div>
+    <div class="gwrap" id="gwrap"><table id="grid"></table></div>
+    <input id="catcher" inputmode="none" autocomplete="off" aria-hidden="true" tabindex="-1">
+    <div class="sheets"><span class="stab">ورقة1</span><span class="plus">⊕</span></div>
+    <div class="status"><span id="stMode">جاهز</span><span class="sp"></span><span id="stCount"></span><span>100%</span></div>
+  </section>
+</div>
+
+<!-- نافذة إنشاء جدول -->
+<div class="dlg-back" id="dlgBack">
+  <div class="dlg" id="dlg">
+    <div class="dh"><span>إنشاء جدول</span><span><button title="تعليمات">?</button><button id="dX">✕</button></span></div>
+    <div class="db">
+      <div>أين توجد بيانات الجدول؟</div>
+      <div class="rng" id="dRng">=$A$1:$D$4</div>
+      <label id="hdrLbl"><input type="checkbox" id="hdrChk"> يحتوي الجدول على رؤوس</label>
+    </div>
+    <div class="df"><button id="dCancel">إلغاء الأمر</button><button class="def" id="dOk">موافق</button></div>
+  </div>
+</div>
+
+<!-- الترحيب -->
+<div class="ov open" id="ovStart">
+  <div class="card">
+    <div class="em">🗂️</div>
+    <h2>لنُنشئ قاعدة بيانات بأنفسنا!</h2>
+    <p>سنصنع معًا <b>دفتر عناوين طالبات الصف السادس</b> في إكسل. نفّذي المهام الموجودة في القائمة الجانبية خطوة بخطوة، وإذا احتجتِ مساعدة اضغطي <b>💡 تلميح</b>.</p>
+    <ul>
+      <li>✍️ إنشاء الحقول</li>
+      <li>➕ إضافة السجلات</li>
+      <li>🎨 التنسيق كجدول</li>
+      <li>🖱️ تحديد السجلات</li>
+    </ul>
+    <div class="row"><button class="btn pr" id="bStart">ابدئي الآن ✨</button></div>
+  </div>
+</div>
+
+<!-- النهاية -->
+<div class="ov" id="ovEnd">
+  <div class="card">
+    <div class="em">🏆</div>
+    <h2>أبدعتِ! أنجزتِ جميع المهام</h2>
+    <p>أنشأتِ قاعدة بيانات كاملة: حقول ✔ سجلات ✔ جدول منسّق ✔ تحديد السجلات ✔<br>أسهم 🔽 بجوار أسماء الحقول سنستخدمها في <b>الفرز والتصفية</b> في الدرس القادم.</p>
+    <div class="row"><button class="btn" id="bEndStay">استمري بالتجربة</button><button class="btn pr" id="bEndAgain">↺ من جديد</button><a class="btn mint" href="index-database.html" style="text-decoration:none">↩ العودة للدرس</a></div>
+  </div>
+</div>
+
+<div id="bubble"></div>
+<div id="toast"></div>
+<div id="fx-layer"></div>
+
+<script>
+/* =========================================================
+   أدوات مساعدة
+   ========================================================= */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const NC = 8, NR = 16, COLS = 'ABCDEFGH';
+const ref = (c, r) => COLS[c] + r;
+const FIELDS = ['الاسم','اسم العائلة','الصف','رقم الفصل'];
+const norm = s => (s||'').replace(/\s+/g,' ').trim().replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+
+/* ---------- الأصوات ---------- */
+const Sound = (() => {
+  let ac = null, on = true;
+  const ctx = () => (ac ||= new (window.AudioContext || window.webkitAudioContext)());
+  const tone = (f, d=.12, type='sine', delay=0, vol=.14) => {
+    if(!on) return;
+    try{
+      const c = ctx(), o = c.createOscillator(), g = c.createGain(), t = c.currentTime + delay;
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+    }catch(e){}
+  };
+  return {
+    unlock(){ try{ ctx().resume(); }catch(e){} },
+    toggle(){ on = !on; return on; },
+    step(){ tone(660,.1); tone(880,.14,'sine',.08); },
+    task(){ [523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',i*.09,.16)); },
+    bad(){ tone(220,.18,'square',0,.06); },
+    click(){ tone(1200,.03,'sine',0,.05); },
+    win(){ [523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.22,'triangle',i*.11,.16)); }
+  };
+})();
+
+/* ---------- الإشعارات ---------- */
+let toastT;
+function toast(msg, kind=''){
+  const t = $('#toast'); t.textContent = msg; t.className = 'show ' + kind;
+  clearTimeout(toastT); toastT = setTimeout(() => t.className = '', 2800);
+  if(kind === 'warn') Sound.bad();
+}
+
+/* =========================================================
+   حالة المحاكي
+   ========================================================= */
+let S, undoStack = [];
+const V_ = { shift:false, ctrl:false };      // مفاتيح السبورة الافتراضية
+const flags = {};                              // أحداث واجهة (فتح المعرض/النافذة) لكل مهمة
+
+function freshState(){
+  return {
+    cells:{},                          // 'A1' -> {v, b, i, u}
+    active:{c:2,r:3}, anchor:{c:2,r:3}, ext:null,
+    sel:[{c1:2,r1:3,c2:2,r2:3}],
+    rowAnchor:null, tabStart:null,
+    table:null,                        // {c1,r1,c2,r2,style}
+    editing:null, drag:null, pending:null
+  };
+}
+const cellD = k => (S.cells[k] ||= { v:'', b:false, i:false, u:false });
+const V = (c, r) => ((S.cells[ref(c,r)] || {}).v || '').trim();
+const filled = r => [0,1,2,3].every(c => V(c,r));
+function snapshot(){ undoStack.push(JSON.stringify({ cells:S.cells, table:S.table })); if(undoStack.length > 60) undoStack.shift(); }
+function undo(){
+  if(S.editing) return cancelEdit();
+  const s = undoStack.pop(); if(!s){ toast('لا يوجد ما يمكن التراجع عنه'); return; }
+  const o = JSON.parse(s); S.cells = o.cells; S.table = o.table; paint(); evaluate();
+}
+
+/* ---------- أدوات التحديد ---------- */
+const rng = (a, b) => ({ c1:Math.min(a.c,b.c), c2:Math.max(a.c,b.c), r1:Math.min(a.r,b.r), r2:Math.max(a.r,b.r) });
+const rowRng = (a, b) => ({ c1:0, c2:NC-1, r1:Math.min(a,b), r2:Math.max(a,b) });
+const isFullRow = g => g.c1 === 0 && g.c2 === NC-1;
+const inSel = (c, r) => S.sel.some(g => c>=g.c1 && c<=g.c2 && r>=g.r1 && r<=g.r2);
+function rowsOnly(){
+  if(!S.sel.length || !S.sel.every(isFullRow)) return null;
+  const s = new Set(); S.sel.forEach(g => { for(let r=g.r1;r<=g.r2;r++) s.add(r); }); return s;
+}
+const eqSet = (s, arr) => !!s && s.size === arr.length && arr.every(x => s.has(x));
+const inTable = (c, r) => S.table && c>=S.table.c1 && c<=S.table.c2 && r>=S.table.r1 && r<=S.table.r2;
+const rngTxt = g => `=$${COLS[g.c1]}$${g.r1}:$${COLS[g.c2]}$${g.r2}`;
+function lastDataRow(){ let m = 0; for(let r=1;r<=NR;r++) for(let c=0;c<NC;c++) if(V(c,r)) m = r; return m; }
+
+/* المنطقة الحالية (مثل إكسل: كتلة البيانات المتصلة حول الخلية) */
+function currentRegion(c, r){
+  let g = { c1:c, c2:c, r1:r, r2:r }, ch = true;
+  const any = (c1,c2,r1,r2) => { for(let y=Math.max(1,r1); y<=Math.min(NR,r2); y++) for(let x=Math.max(0,c1); x<=Math.min(NC-1,c2); x++) if(V(x,y)) return true; return false; };
+  while(ch){
+    ch = false;
+    if(g.r1>1    && any(g.c1-1,g.c2+1,g.r1-1,g.r1-1)){ g.r1--; ch=true; }
+    if(g.r2<NR   && any(g.c1-1,g.c2+1,g.r2+1,g.r2+1)){ g.r2++; ch=true; }
+    if(g.c1>0    && any(g.c1-1,g.c1-1,g.r1-1,g.r2+1)){ g.c1--; ch=true; }
+    if(g.c2<NC-1 && any(g.c2+1,g.c2+1,g.r1-1,g.r2+1)){ g.c2++; ch=true; }
+  }
+  return any(g.c1,g.c2,g.r1,g.r2) ? g : null;
+}
+
+/* =========================================================
+   أنماط الجدول
+   ========================================================= */
+const ACC = [['#404040','أسود'],['#4472C4','أزرق'],['#ED7D31','برتقالي'],['#A5A5A5','رمادي'],['#FFC000','ذهبي'],['#5B9BD5','أزرق فاتح'],['#70AD47','أخضر']];
+function mix(hex, p){ // نسبة p من اللون مع الأبيض
+  const n = parseInt(hex.slice(1),16), ch = [n>>16, n>>8&255, n&255].map(v => Math.round(v*p + 255*(1-p)));
+  return '#' + ch.map(v => v.toString(16).padStart(2,'0')).join('');
+}
+const STYLES = [
+  ...ACC.map((a,i) => ({ name:`نمط جدول فاتح ${8+i}`, color:a[1], a:a[0], band:mix(a[0],.16), kind:'فاتح' })),
+  ...ACC.map((a,i) => ({ name:`نمط جدول متوسط ${2+i}`, color:a[1], a:a[0], band:mix(a[0],.32), kind:'متوسط' }))
+];
+const SUGGEST = 6; // أخضر — نمط جدول فاتح 14
+
+function buildGallery(){
+  const mini = s => `<div class="mini">${Array.from({length:16},(_,k)=>{const r=k>>2; return `<i style="background:${r===0?s.a:(r%2?s.band:'#fff')}"></i>`;}).join('')}</div>`;
+  const row = (from, label) => `<h4>${label}</h4><div class="gal-row">${STYLES.slice(from,from+7).map((s,j)=>`<div class="gi-it" data-i="${from+j}" title="${s.name} (${s.color})">${mini(s)}</div>`).join('')}</div>`;
+  $('#gal').innerHTML = row(0,'فاتح') + row(7,'متوسط') + `<div class="gal-tip">💡 مرّري المؤشر فوق النمط لمعرفة اسمه</div>`;
+}
+
+/* =========================================================
+   بناء الشبكة ورسمها
+   ========================================================= */
+const grid = $('#grid');
+function buildGrid(){
+  let h = `<colgroup><col style="width:3rem">${COLS.split('').map(()=>'<col style="width:9rem">').join('')}</colgroup>`;
+  h += `<thead><tr><th class="corner" title="تحديد الكل">◢</th>${COLS.split('').map((L,c)=>`<th class="ch" data-c="${c}">${L}</th>`).join('')}</tr></thead><tbody>`;
+  for(let r=1;r<=NR;r++){
+    h += `<tr><th class="rh" data-r="${r}">${r}</th>`;
+    for(let c=0;c<NC;c++) h += `<td data-c="${c}" data-r="${r}"><span class="v"></span><span class="fa" title="فرز وتصفية">▼</span></td>`;
+    h += '</tr>';
+  }
+  grid.innerHTML = h + '</tbody>';
+}
+const tdOf = (c, r) => grid.querySelector(`td[data-c="${c}"][data-r="${r}"]`);
+
+function paint(){
+  const st = S.table ? STYLES[S.table.style] : null;
+  $$('td', grid).forEach(td => {
+    const c = +td.dataset.c, r = +td.dataset.r, d = S.cells[ref(c,r)] || {};
+    const v = d.v || '';
+    td.firstChild.textContent = v;
+    const t = inTable(c,r), hdr = t && r === S.table.r1;
+    td.className = [
+      d.b && 'b', d.i && 'i', d.u && 'u',
+      /^-?\d+([.,]\d+)?$/.test(v.trim()) && 'num',
+      inSel(c,r) && !(c===S.active.c && r===S.active.r && S.sel.length===1) && 'sel',
+      c===S.active.c && r===S.active.r && 'act',
+      hdr && 'th'
+    ].filter(Boolean).join(' ');
+    if(t){
+      const band = (r - S.table.r1) % 2 === 1;
+      td.style.background = hdr ? st.a : (band ? st.band : '#fff');
+      td.style.color = hdr ? '#fff' : '';
+      td.style.borderColor = hdr ? st.a : mix(st.a,.35);
+    } else { td.style.background = ''; td.style.color = ''; td.style.borderColor = ''; }
+  });
+  const fr = new Set(), fc = new Set(), rr = new Set(), cc = new Set();
+  S.sel.forEach(g => { for(let r=g.r1;r<=g.r2;r++){ rr.add(r); if(isFullRow(g)) fr.add(r); } for(let c=g.c1;c<=g.c2;c++){ cc.add(c); if(g.r1===1&&g.r2===NR) fc.add(c); } });
+  $$('th.rh', grid).forEach(th => { const r = +th.dataset.r; th.classList.toggle('hsel', rr.has(r)); th.classList.toggle('hfull', fr.has(r)); });
+  $$('th.ch', grid).forEach(th => { const c = +th.dataset.c; th.classList.toggle('hsel', cc.has(c)); th.classList.toggle('hfull', fc.has(c)); });
+  $('#nbox').value = ref(S.active.c, S.active.r);
+  if(document.activeElement !== $('#fx')) $('#fx').value = (S.cells[ref(S.active.c,S.active.r)]||{}).v || '';
+  // عدد الخلايا غير الفارغة في التحديد
+  let n = 0, cells = 0; S.sel.forEach(g => { for(let r=g.r1;r<=g.r2;r++) for(let c=g.c1;c<=g.c2;c++){ cells++; if(V(c,r)) n++; } });
+  $('#stCount').textContent = cells > 1 && n ? `العدد: ${n}` : '';
+  $('#stMode').textContent = S.editing ? 'إدخال' : 'جاهز';
+  $('#tabDesign').hidden = !S.table;
+  const d0 = S.cells[ref(S.active.c,S.active.r)] || {};
+  if(!S.editing && (document.activeElement === document.body || document.activeElement === catcher || !document.activeElement)) catcher.focus({ preventScroll:true });
+  $('#bBold').classList.toggle('on', !!d0.b); $('#bItal').classList.toggle('on', !!d0.i); $('#bUnd').classList.toggle('on', !!d0.u);
+}
+
+/* =========================================================
+   التحرير داخل الخلية
+   ========================================================= */
+const ed = document.createElement('input');
+ed.className = 'cell-ed'; ed.autocomplete = 'off'; ed.spellcheck = false;
+
+function startEdit(init, enterMode){
+  if(S.editing) return;
+  hideHint();
+  const { c, r } = S.active, td = tdOf(c,r);
+  S.editing = { enterMode, orig:V(c,r) };
+  td.appendChild(ed);
+  ed.value = init != null ? init : ((S.cells[ref(c,r)]||{}).v || '');
+  ed.focus(); ed.setSelectionRange(ed.value.length, ed.value.length);
+  $('#fx').value = ed.value; $('#stMode').textContent = 'إدخال';
+}
+function commitEdit(){
+  if(!S.editing) return;
+  const val = ed.value; S.editing = null; ed.remove();
+  setVal(S.active.c, S.active.r, val);
+}
+function cancelEdit(){ if(!S.editing) return; S.editing = null; ed.remove(); paint(); }
+
+function setVal(c, r, val){
+  const k = ref(c,r), old = (S.cells[k]||{}).v || '';
+  if(old === val){ paint(); return; }
+  snapshot(); cellD(k).v = val;
+  // توسيع الجدول تلقائيًا عند الكتابة في الصف أسفله مباشرة
+  const t = S.table;
+  if(t && val.trim() && r === t.r2 + 1 && c >= t.c1 && c <= t.c2){
+    t.r2++; toast('📈 أُضيف السجل الجديد إلى الجدول تلقائيًا!', 'ok');
+  }
+  // مراجعة أسماء الحقول في المهمة الأولى
+  if(TASKS[cur] && TASKS[cur].id === 'fields' && r === 1 && c < 4 && val.trim() && norm(val) !== norm(FIELDS[c]))
+    toast(`✍️ المطلوب في الخلية ${COLS[c]}1 هو: «${FIELDS[c]}»`, 'warn');
+  paint(); evaluate();
+}
+
+ed.addEventListener('input', () => { $('#fx').value = ed.value; });
+ed.addEventListener('blur', () => commitEdit());
+ed.addEventListener('keydown', e => {
+  e.stopPropagation();
+  const k = e.key;
+  if(k === 'Enter'){ e.preventDefault(); commitEdit(); enterMove(e.shiftKey); }
+  else if(k === 'Tab'){ e.preventDefault(); commitEdit(); tabMove(e.shiftKey); }
+  else if(k === 'Escape'){ e.preventDefault(); cancelEdit(); }
+  else if(S.editing && S.editing.enterMode && k.startsWith('Arrow')){ e.preventDefault(); commitEdit(); arrowMove(k, false); }
+});
+
+/* =========================================================
+   التنقل
+   ========================================================= */
+function moveTo(c, r, keepTab){
+  c = Math.max(0, Math.min(NC-1, c)); r = Math.max(1, Math.min(NR, r));
+  S.active = { c, r }; S.anchor = { c, r }; S.ext = null;
+  S.sel = [{ c1:c, c2:c, r1:r, r2:r }];
+  if(!keepTab) S.tabStart = null;
+  const td = tdOf(c,r); td && td.scrollIntoView({ block:'nearest', inline:'nearest' });
+  paint(); evaluate();
+}
+function tabMove(back){
+  if(S.tabStart == null) S.tabStart = S.active.c;
+  moveTo(S.active.c + (back ? -1 : 1), S.active.r, true);
+}
+function enterMove(back){
+  if(back){ moveTo(S.active.c, S.active.r - 1); return; }
+  const c = S.tabStart != null ? S.tabStart : S.active.c;
+  moveTo(c, S.active.r + 1);
+}
+function arrowMove(k, extend){
+  const d = { ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[1,0], ArrowRight:[-1,0] }[k]; // RTL: اليسار = العمود التالي
+  if(extend){
+    const e = S.ext || { ...S.active };
+    e.c = Math.max(0, Math.min(NC-1, e.c + d[0])); e.r = Math.max(1, Math.min(NR, e.r + d[1]));
+    S.ext = e; S.sel = [rng(S.anchor, e)]; paint(); evaluate();
+  } else moveTo(S.active.c + d[0], S.active.r + d[1]);
+}
+
+/* =========================================================
+   الفأرة / اللمس على الشبكة
+   ========================================================= */
+const mods = e => ({ shift: e.shiftKey || V_.shift, ctrl: e.ctrlKey || e.metaKey || V_.ctrl });
+
+grid.addEventListener('pointerdown', e => {
+  if(e.target.closest('.cell-ed')) return;
+  hideHint(); Sound.unlock();
+  if(e.target.closest('.fa')){ e.preventDefault(); commitEdit(); toast('🔽 أسهم الفرز والتصفية — سنستخدمها في الدرس القادم!'); return; }
+  const td = e.target.closest('td'), rh = e.target.closest('th.rh'), ch = e.target.closest('th.ch'), corner = e.target.closest('th.corner');
+  if(!td && !rh && !ch && !corner) return;
+  e.preventDefault();
+  commitEdit();
+  const m = mods(e);
+  S.tabStart = null;
+
+  if(td){
+    const p = { c:+td.dataset.c, r:+td.dataset.r };
+    const wasActive = p.c===S.active.c && p.r===S.active.r && S.sel.length===1 && S.sel[0].c1===S.sel[0].c2 && S.sel[0].r1===S.sel[0].r2;
+    if(m.shift){ S.ext = p; S.sel = [...(m.ctrl ? S.sel.slice(0,-1) : []), rng(S.anchor, p)]; }
+    else if(m.ctrl){ S.sel.push({ c1:p.c, c2:p.c, r1:p.r, r2:p.r }); S.active = p; S.anchor = p; }
+    else if(wasActive){ startEdit(null, false); return; }
+    else { S.active = p; S.anchor = p; S.ext = null; S.sel = [{ c1:p.c, c2:p.c, r1:p.r, r2:p.r }]; S.drag = 'cell'; }
+  }
+  else if(rh){
+    const r = +rh.dataset.r;
+    if(m.shift && S.rowAnchor != null){ S.sel = [rowRng(S.rowAnchor, r)]; if(V_.shift) vkey('shift'); }
+    else if(m.ctrl){
+      const i = S.sel.findIndex(g => isFullRow(g) && g.r1===r && g.r2===r);
+      if(i >= 0 && S.sel.length > 1) S.sel.splice(i,1);
+      else { if(!S.sel.every(isFullRow)) S.sel = []; S.sel.push(rowRng(r,r)); }
+      S.rowAnchor = r; S.active = { c:0, r }; S.anchor = { c:0, r };
+    }
+    else { S.sel = [rowRng(r,r)]; S.rowAnchor = r; S.active = { c:0, r }; S.anchor = { c:0, r }; S.drag = 'row'; }
+    Sound.click();
+  }
+  else if(ch){
+    const c = +ch.dataset.c;
+    S.sel = [{ c1:c, c2:c, r1:1, r2:NR }]; S.active = { c, r:1 }; S.anchor = { c, r:1 }; S.rowAnchor = null;
+  }
+  else if(corner){ S.sel = [{ c1:0, c2:NC-1, r1:1, r2:NR }]; S.active = { c:0, r:1 }; }
+  paint(); evaluate();
+});
+window.addEventListener('pointermove', e => {
+  if(!S.drag) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY); if(!el) return;
+  if(S.drag === 'cell'){
+    const td = el.closest('#grid td'); if(!td) return;
+    const p = { c:+td.dataset.c, r:+td.dataset.r };
+    S.ext = p; S.sel = [rng(S.anchor, p)]; paint();
+  } else {
+    const t = el.closest('#grid th.rh, #grid td'); if(!t) return;
+    S.sel = [rowRng(S.rowAnchor, +t.dataset.r)]; paint();
+  }
+});
+window.addEventListener('pointerup', () => { if(S.drag){ S.drag = null; evaluate(); } });
+grid.addEventListener('dblclick', e => { const td = e.target.closest('td'); if(td && !S.editing) startEdit(null, false); });
+
+/* =========================================================
+   لوحة المفاتيح
+   ========================================================= */
+document.addEventListener('keydown', e => {
+  if($('#ovStart').classList.contains('open')) { if(e.key === 'Enter'){ e.preventDefault(); startSim(); } return; }
+  if($('#dlgBack').classList.contains('open')){
+    if(e.key === 'Enter'){ e.preventDefault(); dlgOk(); } else if(e.key === 'Escape') closeDlg(); return;
+  }
+  if(e.target.matches('input') && e.target !== catcher) return;
+  const k = e.key, ctrl = e.ctrlKey || e.metaKey;
+  if(k === 'Escape'){ closeGal(); hideHint(); return; }
+  if(ctrl){
+    const lk = (e.code || '').replace('Key','').toLowerCase();
+    if(lk === 'b'){ e.preventDefault(); fmt('b'); }
+    else if(lk === 'i'){ e.preventDefault(); fmt('i'); }
+    else if(lk === 'u'){ e.preventDefault(); fmt('u'); }
+    else if(lk === 'z'){ e.preventDefault(); undo(); }
+    return;
+  }
+  if(k.startsWith('Arrow')){ e.preventDefault(); arrowMove(k, e.shiftKey); return; }
+  if(k === 'Tab'){ e.preventDefault(); tabMove(e.shiftKey); return; }
+  if(k === 'Enter'){ e.preventDefault(); enterMove(e.shiftKey); return; }
+  if(k === 'F2'){ e.preventDefault(); startEdit(null, false); return; }
+  if(k === 'Delete' || k === 'Backspace'){
+    e.preventDefault(); snapshot();
+    S.sel.forEach(g => { for(let r=g.r1;r<=g.r2;r++) for(let c=g.c1;c<=g.c2;c++){ const d = S.cells[ref(c,r)]; if(d) d.v = ''; } });
+    paint(); evaluate(); return;
+  }
+  if(k.length === 1 && !e.altKey && e.target !== catcher){ e.preventDefault(); startEdit(k, true); }
+});
+/* الكتابة عبر حقل مخفي: يدعم لوحات المفاتيح العربية وشاشات اللمس */
+const catcher = $('#catcher');
+catcher.addEventListener('input', () => { const v = catcher.value; catcher.value = ''; if(v && !S.editing) startEdit(v, true); });
+
+/* شريط الصيغة */
+const fx = $('#fx');
+fx.addEventListener('focus', () => { commitEdit(); hideHint(); });
+fx.addEventListener('keydown', e => {
+  e.stopPropagation();
+  if(e.key === 'Enter'){ e.preventDefault(); fx.blur(); }
+  else if(e.key === 'Escape'){ fx.value = V(S.active.c, S.active.r); fx.blur(); }
+});
+fx.addEventListener('blur', () => { if(fx.value !== ((S.cells[ref(S.active.c,S.active.r)]||{}).v || '')) setVal(S.active.c, S.active.r, fx.value); });
+
+/* =========================================================
+   الأوامر: غامق/مائل/تسطير — التنسيق كجدول
+   ========================================================= */
+function fmt(p){
+  commitEdit();
+  const a = S.cells[ref(S.active.c,S.active.r)] || {}, on = !a[p];
+  snapshot();
+  S.sel.forEach(g => { for(let r=g.r1;r<=Math.min(NR,g.r2);r++) for(let c=g.c1;c<=Math.min(NC-1,g.c2);c++) cellD(ref(c,r))[p] = on; });
+  Sound.click(); paint(); evaluate();
+}
+$('#bBold').onclick = () => fmt('b');
+$('#bItal').onclick = () => fmt('i');
+$('#bUnd').onclick = () => fmt('u');
+$$('[data-nop]').forEach(b => b.onclick = () => toast('😊 هذا الأمر غير مطلوب في هذا التمرين'));
+$$('#xtabs button').forEach(b => b.onclick = () => { if(!b.classList.contains('on')) toast(b.id === 'tabDesign' ? '🎨 تبويب «تصميم الجدول» يظهر عند الضغط داخل الجدول' : '📌 نحتاج في هذا الدرس تبويب «الصفحة الرئيسية»'); });
+$('#qSave').onclick = () => toast('💾 تم الحفظ: دفتر عناوين الطالبات.xlsx', 'ok');
+$('#qUndo').onclick = () => undo();
+
+function closeGal(){ $('#gal').classList.remove('open'); }
+$('#bFmt').onclick = e => {
+  e.stopPropagation(); commitEdit(); hideHint();
+  const g = $('#gal'); g.classList.toggle('open');
+  if(g.classList.contains('open')){ flags.gallery = true; evaluate(); }
+};
+document.addEventListener('pointerdown', e => { if(!e.target.closest('#gal,#bFmt')) closeGal(); });
+$('#gal').addEventListener('click', e => {
+  const it = e.target.closest('.gi-it'); if(!it) return;
+  closeGal(); hideHint();
+  const i = +it.dataset.i;
+  if(S.table && inTable(S.active.c, S.active.r) && S.sel.length === 1){
+    snapshot(); S.table.style = i; paint(); toast(`🎨 تغيّر النمط إلى: ${STYLES[i].name}`, 'ok'); evaluate(); return;
+  }
+  let g = null;
+  if(S.sel.length === 1){ const s = S.sel[0]; if(s.c1 !== s.c2 || s.r1 !== s.r2) g = { ...s }; }
+  if(g && isFullRow(g)){ const reg = currentRegion(S.active.c, S.active.r); g = reg; }
+  if(!g) g = currentRegion(S.active.c, S.active.r);
+  if(!g){ toast('⚠️ حددي خلايا البيانات أولًا ثم اختاري النمط', 'warn'); return; }
+  S.pending = { g, style:i };
+  $('#dRng').textContent = rngTxt(g);
+  $('#hdrChk').checked = false;
+  $('#dlgBack').classList.add('open');
+  flags.dialog = true; evaluate();
+});
+function closeDlg(){ $('#dlgBack').classList.remove('open'); S.pending = null; hideHint(); }
+function dlgOk(){
+  if(!S.pending) return;
+  if(!$('#hdrChk').checked){
+    toast('🏷️ فعّلي «يحتوي الجدول على رؤوس» حتى يعرف إكسل أن الصف الأول أسماء حقول', 'warn');
+    const l = $('#hdrLbl'); l.classList.remove('shake'); void l.offsetWidth; l.classList.add('shake'); l.style.background = '#fff2d8';
+    return;
+  }
+  snapshot();
+  const { g, style } = S.pending;
+  S.table = { ...g, style };
+  S.sel = [{ ...g }]; S.pending = null;
+  $('#dlgBack').classList.remove('open'); $('#hdrLbl').style.background = '';
+  hideHint(); paint();
+  toast('🎉 أصبحت البيانات جدولًا! لاحظي أسهم الفرز والتصفية 🔽', 'ok');
+  evaluate();
+}
+$('#dOk').onclick = dlgOk;
+$('#dCancel').onclick = closeDlg;
+$('#dX').onclick = closeDlg;
+$('#hdrChk').onchange = () => { $('#hdrLbl').style.background = ''; hideHint(); evaluate(); };
+
+/* مفاتيح السبورة */
+function vkey(name){
+  V_[name] = !V_[name];
+  $('#v' + name[0].toUpperCase() + name.slice(1)).classList.toggle('on', V_[name]);
+  if(V_[name]) { const o = name === 'shift' ? 'ctrl' : 'shift'; V_[o] = false; $('#v' + o[0].toUpperCase() + o.slice(1)).classList.remove('on'); }
+  Sound.click();
+}
+$('#vShift').onclick = () => vkey('shift');
+$('#vCtrl').onclick = () => vkey('ctrl');
+
+/* =========================================================
+   📝 المهام وخطواتها (كل خطوة لها تلميح يشير إلى مكانها)
+   ========================================================= */
+const cellT = (c, r) => () => tdOf(c, r);
+const rowT  = r => () => grid.querySelector(`th.rh[data-r="${r}"]`);
+const firstEmpty = r => () => { for(let c=0;c<4;c++) if(!V(c,r)) return tdOf(c,r); return tdOf(3,r); };
+const tableBase = () => (flags.base ??= (S.table ? S.table.r2 : 4));
+
+const TASKS = [
+  { id:'fields', icon:'✍️', title:'إنشاء حقول قاعدة البيانات',
+    desc:'أسماء الحقول تُكتب أفقيًا في الصف الأول، وكل اسم يصف عمودًا.',
+    steps:[
+      { t:'اضغطي على الخلية A1', h:'الخلية A1 أول خلية في أعلى يمين الورقة: العمود A والصف 1', tg:cellT(0,1), ok:()=> (S.active.c===0&&S.active.r===1) || !!V(0,1) },
+      ...FIELDS.map((f,i) => ({
+        t:`اكتبي «${f}» في ${COLS[i]}1 ثم اضغطي ${i<3?'Tab':'Enter'}`,
+        h: i<3 ? `اكتبي «${f}» ثم اضغطي مفتاح Tab ⇥ لتنتقلي إلى الخلية المجاورة ${COLS[i+1]}1` : `اكتبي «${f}» ثم اضغطي Enter ↵ لإنهاء الكتابة`,
+        tg:cellT(i,1), ok:()=> norm(V(i,1)) === norm(f)
+      }))
+    ],
+    done:()=> FIELDS.every((f,i) => norm(V(i,1)) === norm(f)), msg:'أنشأتِ 4 حقول: الاسم، اسم العائلة، الصف، رقم الفصل' },
+
+  { id:'bold', icon:'🅱️', title:'تمييز أسماء الحقول',
+    desc:'نجعل أسماء الحقول بارزة لتتميّز عن البيانات.',
+    steps:[
+      { t:'اضغطي على رقم الصف 1 لتحديد الصف كاملًا', h:'رقم الصف 1 في العمود الرمادي على يمين الورقة — الضغط عليه يحدد الصف كله', tg:rowT(1), ok:()=> { const s = rowsOnly(); return !!(s && s.has(1)); } },
+      { t:'اضغطي زر غامق B', h:'زر B في مجموعة «الخط» بتبويب الصفحة الرئيسية (أو Ctrl + B)', tg:()=>$('#bBold'), ok:()=> [0,1,2,3].every(c => (S.cells[ref(c,1)]||{}).b) }
+    ],
+    done:()=> [0,1,2,3].every(c => (S.cells[ref(c,1)]||{}).b), msg:'أصبحت أسماء الحقول بارزة 💪' },
+
+  { id:'rec1', icon:'📄', title:'إضافة السجل الأول',
+    desc:'السجل = صف واحد يحتوي كل معلومات طالبة واحدة.',
+    steps:[
+      { t:'اضغطي على الخلية A2', h:'الخلية A2 تحت «الاسم» مباشرة', tg:cellT(0,2), ok:()=> (S.active.c===0&&S.active.r===2) || !!V(0,2) },
+      { t:'اكتبي اسم طالبة ثم Tab', h:'مثال: نورة ثم اضغطي Tab ⇥', tg:cellT(0,2), ok:()=> !!V(0,2) },
+      { t:'اكتبي اسم العائلة في B2 ثم Tab', h:'مثال: العتيبي ثم Tab ⇥', tg:cellT(1,2), ok:()=> !!V(1,2) },
+      { t:'اكتبي الصف في C2 ثم Tab', h:'اكتبي الرقم 6 ثم Tab ⇥', tg:cellT(2,2), ok:()=> !!V(2,2) },
+      { t:'اكتبي رقم الفصل في D2 ثم Enter', h:'مثال: 1 ثم Enter ↵ — ستعودين تلقائيًا إلى A3 لبدء سجل جديد', tg:cellT(3,2), ok:()=> !!V(3,2) }
+    ],
+    done:()=> filled(2), msg:'أضفتِ السجل الأول 📄' },
+
+  { id:'rec2', icon:'➕', title:'إضافة سجلين جديدين',
+    desc:'كل طالبة في صفٍّ منفصل… الطالبة الجديدة في أول صف فارغ.',
+    steps:[
+      { t:'اكتبي سجل الطالبة الثانية في الصف 3', h:'ابدئي من A3 وتنقّلي بين الخلايا بمفتاح Tab ⇥ ثم Enter في النهاية', tg:firstEmpty(3), ok:()=> filled(3) },
+      { t:'اكتبي سجل الطالبة الثالثة في الصف 4', h:'ابدئي من A4: الاسم ← اسم العائلة ← الصف ← رقم الفصل', tg:firstEmpty(4), ok:()=> filled(4) }
+    ],
+    done:()=> filled(3) && filled(4), msg:'قاعدة البيانات فيها الآن 3 سجلات 🗂️' },
+
+  { id:'table', icon:'🎨', title:'التنسيق كجدول',
+    desc:'نخبر إكسل أن هذه البيانات جدول قاعدة بيانات.',
+    steps:[
+      { t:'حدّدي البيانات من A1 إلى D4', h:'اضغطي على A1 واسحبي حتى D4 — أو اضغطي A1 ثم Shift + D4', tg:cellT(0,1),
+        ok:()=> { const g = currentRegion(0,1), s = S.sel[0]; return !!S.table || (S.sel.length===1 && g && s.c1===g.c1 && s.c2===g.c2 && s.r1===g.r1 && s.r2===g.r2); } },
+      { t:'اضغطي «التنسيق كجدول» في مجموعة أنماط', h:'الصفحة الرئيسية ← أنماط ← التنسيق كجدول', tg:()=>$('#bFmt'), ok:()=> !!flags.gallery || !!S.table },
+      { t:'اختاري نمطًا يعجبكِ (مثل: أخضر — نمط جدول فاتح 14)', h:'اختاري أي لون تحبينه 🎨 — المقترح: الأخضر في آخر صف «فاتح»',
+        tg:()=> $('#gal').classList.contains('open') ? $(`.gi-it[data-i="${SUGGEST}"]`) : $('#bFmt'), ok:()=> !!flags.dialog || !!S.table },
+      { t:'فعّلي «يحتوي الجدول على رؤوس» ثم موافق', h:'حتى يعرف إكسل أن الصف الأول أسماء حقول وليس بيانات',
+        tg:()=> $('#dlgBack').classList.contains('open') ? ($('#hdrChk').checked ? $('#dOk') : $('#hdrLbl')) : $('#bFmt'), ok:()=> !!S.table }
+    ],
+    done:()=> !!S.table && S.table.c1===0 && S.table.r1===1 && S.table.c2>=3 && S.table.r2>=4, msg:'جدول منسّق مع أسهم الفرز والتصفية 🔽' },
+
+  { id:'newrec', icon:'🆕', title:'إضافة سجل إلى الجدول',
+    desc:'قاعدة البيانات ليست ثابتة؛ يمكننا إضافة طالبة جديدة في أي وقت.',
+    steps:[
+      { t:'اكتبي اسم طالبة جديدة في أول صف فارغ أسفل الجدول', h:'أول صف فارغ تحت الجدول مباشرة — لاحظي كيف يكبر الجدول وحده!', tg:()=> tdOf(0, Math.min(NR, tableBase()+1)), ok:()=> !!S.table && S.table.r2 > tableBase() },
+      { t:'أكملي بقية بيانات السجل', h:'اسم العائلة ← الصف ← رقم الفصل (تنقّلي بـ Tab ⇥)', tg:()=> firstEmpty(Math.min(NR, tableBase()+1))(), ok:()=> filled(tableBase()+1) }
+    ],
+    done:()=> !!S.table && S.table.r2 > tableBase() && filled(tableBase()+1), msg:'كبر الجدول تلقائيًا بالسجل الجديد 📈' },
+
+  { id:'one', icon:'🖱️', title:'تحديد سجل واحد',
+    desc:'لتحديد سجل كامل نضغط على رقم صفّه.',
+    steps:[
+      { t:'حدّدي سجل الطالبة الثانية بالضغط على رقم الصف 3', h:'اضغطي على الرقم 3 في العمود الرمادي على يمين الورقة', tg:rowT(3), ok:()=> eqSet(rowsOnly(), [3]) }
+    ],
+    done:()=> eqSet(rowsOnly(), [3]), msg:'حدّدتِ سجلًا واحدًا ✔' },
+
+  { id:'range', icon:'⇧', title:'تحديد سجلات متجاورة',
+    desc:'السجلات المتجاورة = صفوف متتالية، ونستخدم مفتاح Shift.',
+    steps:[
+      { t:'اضغطي على رقم الصف 2', h:'اضغطي على الرقم 2 لتحديد السجل الأول', tg:rowT(2), ok:()=> { const s = rowsOnly(); return !!(s && s.has(2)); } },
+      { t:'اضغطي Shift مع الاستمرار ثم رقم الصف 4', h:'على السبورة: فعّلي زر «⇧ Shift» في الأعلى ثم اضغطي الرقم 4', tg:()=> V_.shift ? rowT(4)() : $('#vShift'), ok:()=> eqSet(rowsOnly(), [2,3,4]) }
+    ],
+    done:()=> eqSet(rowsOnly(), [2,3,4]), msg:'حدّدتِ 3 سجلات متجاورة بمفتاح Shift ✔' },
+
+  { id:'multi', icon:'⌨️', title:'تحديد سجلات غير متجاورة',
+    desc:'السجلات غير المتجاورة = صفوف متفرقة، ونستخدم مفتاح Ctrl.',
+    steps:[
+      { t:'اضغطي على رقم الصف 2 (بدون Shift)', h:'إن كان زر Shift مفعّلًا أطفئيه أولًا، ثم اضغطي الرقم 2', tg:()=> V_.shift ? $('#vShift') : rowT(2)(), ok:()=> { const s = rowsOnly(); return !!(s && s.has(2) && !s.has(3)); } },
+      { t:'اضغطي Ctrl مع الاستمرار ثم رقم الصف 4', h:'على السبورة: فعّلي زر «Ctrl» في الأعلى ثم اضغطي الرقم 4', tg:()=> V_.ctrl ? rowT(4)() : $('#vCtrl'), ok:()=> eqSet(rowsOnly(), [2,4]) }
+    ],
+    done:()=> eqSet(rowsOnly(), [2,4]), msg:'حدّدتِ سجلين غير متجاورين بمفتاح Ctrl ✔' }
+];
+
+let cur = 0, tDone = [], sDone = [];
+function resetProgress(){ cur = 0; tDone = TASKS.map(() => false); sDone = TASKS.map(() => new Set()); for(const k in flags) delete flags[k]; }
+
+function focusTask(i){
+  if(i === cur) return;
+  cur = i; for(const k in flags) delete flags[k];
+  // للمهمة «إضافة سجل»: نحفظ آخر صف في الجدول لحظة البدء
+  hideHint(); renderTasks();
+}
+
+let advanceT;
+function evaluate(){
+  const t = TASKS[cur]; if(!t || tDone[cur]) return renderTasks();
+  if(t.id === 'newrec' && S.table) tableBase();
+  let changed = false;
+  t.steps.forEach((s, j) => { if(!sDone[cur].has(j) && s.ok()){ sDone[cur].add(j); changed = true; } });
+  if(t.done()){
+    tDone[cur] = true; t.steps.forEach((_, j) => sDone[cur].add(j));
+    Sound.task(); toast(`✅ أحسنتِ! ${t.msg}`, 'ok'); hideHint();
+    renderTasks();
+    clearTimeout(advanceT);
+    advanceT = setTimeout(() => {
+      if(tDone.every(Boolean)){ finale(); return; }
+      let n = TASKS.findIndex((_, k) => k > cur && !tDone[k]); if(n < 0) n = tDone.findIndex(d => !d);
+      cur = n; for(const k in flags) delete flags[k];
+      renderTasks(); evaluate();
+    }, 1100);
+    return;
+  }
+  if(changed){ Sound.step(); hideHint(); }
+  renderTasks();
+}
+
+function renderTasks(){
+  const n = tDone.filter(Boolean).length;
+  $('#pcount').textContent = `${n} / ${TASKS.length}`;
+  $('#pbar').style.width = (n / TASKS.length * 100) + '%';
+  const now = sDone[cur] ? TASKS[cur].steps.findIndex((_, j) => !sDone[cur].has(j)) : -1;
+  $('#tlist').innerHTML = TASKS.map((t, i) => `
+    <div class="task ${tDone[i]?'done':''} ${i===cur?'cur':''}" data-i="${i}">
+      <div class="tt"><span class="num">${tDone[i]?'✔':i+1}</span><b>${t.icon} ${t.title}</b><span class="st">${tDone[i]?'🌟':''}</span></div>
+      <div class="body">
+        <div class="desc">${t.desc}</div>
+        <ol class="steps">${t.steps.map((s, j) => `<li class="${sDone[i].has(j)?'ok':(j===now && !tDone[i]?'now':'')}"><span class="ck"></span><span class="tx">${s.t}</span><button class="sh" data-j="${j}" title="تلميح لهذه الخطوة">💡</button></li>`).join('')}</ol>
+        ${tDone[i] ? '' : `<div class="tact"><button class="btn sun js-hint">💡 تلميح</button><button class="btn js-skip">تخطّي ⟵</button></div>`}
+      </div>
+    </div>`).join('');
+  const c = $(`.task[data-i="${cur}"]`); c && c.scrollIntoView({ block:'nearest' });
+}
+$('#tlist').addEventListener('click', e => {
+  const card = e.target.closest('.task'); if(!card) return;
+  const i = +card.dataset.i;
+  if(e.target.closest('.sh')){ e.stopPropagation(); if(i !== cur) focusTask(i); showHint(TASKS[cur].steps[+e.target.closest('.sh').dataset.j]); return; }
+  if(e.target.closest('.js-hint')){ const t = TASKS[cur], j = t.steps.findIndex((_, k) => !sDone[cur].has(k)); showHint(t.steps[Math.max(0,j)]); return; }
+  if(e.target.closest('.js-skip')){ let n = TASKS.findIndex((_, k) => k > cur && !tDone[k]); if(n < 0) n = tDone.findIndex((d, k) => !d && k !== cur); if(n >= 0) focusTask(n); else toast('هذه آخر مهمة متبقية 💪'); return; }
+  if(i !== cur){ focusTask(i); evaluate(); }
+});
+
+/* =========================================================
+   💡 فقاعة التلميح
+   ========================================================= */
+let glowEl = null, hintT;
+function hideHint(){ $('#bubble').className = ''; if(glowEl){ glowEl.classList.remove('glow'); glowEl = null; } clearTimeout(hintT); }
+function showHint(step){
+  hideHint(); if(!step) return;
+  Sound.click();
+  const el = step.tg && step.tg();
+  const b = $('#bubble');
+  b.innerHTML = `<span class="bh">💡 تلميح</span>${step.h || step.t}`;
+  b.className = 'show';
+  if(el){
+    el.scrollIntoView({ block:'nearest', inline:'nearest' });
+    el.classList.add('glow'); glowEl = el;
+    const r = el.getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
+    let x = r.left + r.width/2 - bw/2; x = Math.max(10, Math.min(innerWidth - bw - 10, x));
+    let y = r.bottom + 14, cls = 'below';
+    if(y + bh > innerHeight - 10){ y = r.top - bh - 14; cls = 'above'; }
+    b.style.left = x + 'px'; b.style.top = y + 'px';
+    b.style.setProperty('--ax', Math.max(14, Math.min(bw - 14, r.left + r.width/2 - x)) + 'px');
+    b.classList.add(cls);
+  } else {
+    const g = $('#gwrap').getBoundingClientRect();
+    b.style.left = (g.left + g.width/2 - b.offsetWidth/2) + 'px'; b.style.top = (g.top + 20) + 'px';
+  }
+  hintT = setTimeout(hideHint, 9000);
+}
+window.addEventListener('resize', hideHint);
+
+/* =========================================================
+   البداية / النهاية / إعادة التشغيل
+   ========================================================= */
+function confetti(){
+  const L = $('#fx-layer'), cols = ['#7f55e0','#ffb93f','#1fbf9f','#ec5f93','#5b9bd5','#70ad47'];
+  for(let i=0;i<140;i++){
+    const d = document.createElement('i'); d.className = 'cf';
+    d.style.left = Math.random()*100 + 'vw'; d.style.background = cols[i % cols.length];
+    d.style.setProperty('--x', (Math.random()*200-100) + 'px'); d.style.setProperty('--r', (Math.random()*900) + 'deg');
+    d.style.setProperty('--d', (2.2 + Math.random()*1.8) + 's'); d.style.animationDelay = Math.random()*.6 + 's';
+    L.appendChild(d); setTimeout(() => d.remove(), 5000);
+  }
+}
+function finale(){ Sound.win(); confetti(); $('#ovEnd').classList.add('open'); }
+
+function startSim(){ Sound.unlock(); $('#ovStart').classList.remove('open'); setTimeout(() => showHint(TASKS[0].steps[0]), 400); }
+function resetAll(){
+  hideHint(); closeGal(); $('#dlgBack').classList.remove('open'); ed.remove();
+  S = freshState(); undoStack = []; resetProgress(); paint(); renderTasks();
+}
+$('#bStart').onclick = startSim;
+$('#bReset').onclick = () => { if(confirm('هل تريدين البدء من جديد؟ سيتم مسح البيانات.')) { resetAll(); toast('↺ بدأنا من جديد'); } };
+$('#bEndAgain').onclick = () => { $('#ovEnd').classList.remove('open'); resetAll(); };
+$('#bEndStay').onclick = () => $('#ovEnd').classList.remove('open');
+$('#bSound').onclick = () => { $('#bSound').textContent = Sound.toggle() ? '🔊' : '🔇'; };
+
+buildGrid(); buildGallery(); resetAll();
+</script>
+</body>
+</html>
