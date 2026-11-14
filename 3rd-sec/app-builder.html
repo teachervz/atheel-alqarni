@@ -850,8 +850,8 @@ body.prep-open #prep{transform:none}
 .rs-card h3{font-size:3.4vmin;color:var(--pdd)}
 .rs-card p{font-size:2.3vmin;color:var(--muted);line-height:1.6}
 .rs-card p b{color:var(--pd)}
-.rs-bar{width:100%;height:1.6vmin;border-radius:9px;background:var(--pss);overflow:hidden}
-.rs-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:9px}
+.rsm-bar{width:100%;height:1.6vmin;border-radius:9px;background:var(--pss);overflow:hidden}
+.rsm-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:9px}
 .rs-btns{display:flex;gap:1.4vmin;flex-wrap:wrap;justify-content:center;margin-top:1vmin}
 
 #printDoc{display:none}
@@ -997,7 +997,7 @@ body.print-mode #printDoc{display:block;max-width:1200px;margin:0 auto;padding:3
   <button id="scoreBtn" class="ib" title="نقاط المجموعات">🏆</button>
   <button id="fsBtn" class="ib" title="ملء الشاشة">⛶</button>
 </nav>
-<div id="hint"><span><kbd>Space</kbd> = التالي</span>|<span><kbd>← →</kbd> للتنقل</span>|<span><kbd>P</kbd> التحضير</span>|<span><kbd>G</kbd> الخريطة</span>|<span><kbd>ت</kbd> = تصفيق</span></div>
+<div id="hint"><span><kbd>Space</kbd> = التالي</span>|<span><kbd>← →</kbd> للتنقل</span>|<span><kbd>P</kbd> التحضير</span>|<span><kbd>G</kbd> الخريطة</span>|<span><kbd>ت</kbd> = تصفيق</span>|<span><kbd>ق</kbd> = قرعة</span></div>
 <div id="progress"><i></i></div>
 
 <!-- لوحة نقاط المجموعات -->
@@ -1034,13 +1034,18 @@ body.print-mode #printDoc{display:block;max-width:1200px;margin:0 auto;padding:3
 
 <!-- 🗂️ خريطة الشرائح + 👋 الاستكمال -->
 <div class="ov" id="ovw"><div class="ov-card ovw-card"><div class="ov-head">🗂️ خريطة الشرائح <span id="ovwStat"></span><button class="ov-x" data-close="ovw">✕</button></div><div class="ovw-prog"><i id="ovwBar"></i></div><div class="ovw-grid" id="ovwGrid"></div></div></div>
-<div class="ov" id="resume"><div class="ov-card rs-card"><div class="rs-ic">👋</div><h3 id="rsT"></h3><p id="rsP"></p><div class="rs-bar"><i id="rsBar"></i></div>
+<div class="ov" id="resume"><div class="ov-card rs-card"><div class="rs-ic">👋</div><h3 id="rsT"></h3><p id="rsP"></p><div class="rsm-bar"><i id="rsBar"></i></div>
   <div class="rs-btns"><button class="btn primary" id="rsGo"></button><button class="btn ghost" id="rsNew">↺ من البداية</button></div></div></div>
 <div id="printDoc"></div>
 
 <canvas id="fx"></canvas>
 
+<script src="../shared/roster.js"></script>
 <script>
+/* صف هذا الدرس في لوحة الإدارة (للتحضير والقرعة) */
+const LESSON_GRADE = 'الثالث ثانوي';
+Roster.use(LESSON_GRADE);
+
 /* ==========================================================================
    ⭐⭐ الجزء الأول: إعدادات الدرس — عدّلي المحتوى من هنا فقط ⭐⭐
    --------------------------------------------------------------------------
@@ -1073,7 +1078,7 @@ const LESSON = {
   heroTitle: 'بناء تطبيقات<br>الهاتف الذكي',   // العنوان الكبير في الشريحة الترحيبية
   lessonNo:  'الدرس الثاني',
   subject:   'التقنية الرقمية',
-  teacher:   '',
+  teacher:   'أ. أثيل القرني',
   school:    '',
   // 🏆 المجموعات الثماني المتنافسة — بأسماء من عالم بناء التطبيقات 🧩
   teams: [
@@ -1103,6 +1108,10 @@ const SLIDES = [
   { id:'hero', type:'title', anim:'zoom',
     subtitle:'مهمتكِ اليوم: أن تبني <b>أول تطبيق حقيقي</b> 📿 تطبيق <b>«مِسبحتي»</b> لعدّ التسبيح… ثم تفكّري: كيف أخدم <b>ديني ووطني ومجتمعي</b> بتطبيق؟',
     prep:{ min:1, goal:'g0', st:'الترحيب والتهيئة', t:'ترحّب المعلمة بالطالبات، وتعرض عنوان الدرس والمجموعات المتنافسة، وتطرح مهمة اليوم: بناء تطبيق «مِسبحتي».', s:'تستعد الطالبات مع مجموعاتهن.', ev:'—' } },
+
+  /* التحضير — أسماء الطالبات من لوحة الإدارة (admin/index.html) */
+  { id:'attendance', type:'attendance', tag:'📋 التحضير', title:'صباح الإبداع 📱 من حاضرة اليوم؟', anim:'slide',
+    prep:{ min:2, goal:'g0', st:'التحضير', t:'تختار المعلمة الشعبة وتحضّر الطالبات (حاضرة / متأخرة / غائبة).', s:'تستجيب الطالبات عند المناداة.', ev:'—' } },
 
   /* 2) أهداف الدرس */
   { id:'goals', type:'objectives', tag:'🎯 أهداف الدرس', title:'يُتوقع بنهاية هذا الدرس:',
@@ -1634,6 +1643,12 @@ R.title = {
       <span class="float f1">📿</span><span class="float f2">🧩</span><span class="float f3">🇸🇦</span><span class="float f4">⭐</span>
     </div></div>`,
   init:sec=>{ $('.start-btn',sec).onclick=()=>next(); }
+};
+
+/* التحضير (من لوحة الإدارة) */
+R.attendance = {
+  html:()=>`<div class="rs-host rv" style="flex:1;min-height:0"></div>`,
+  init:sec=>Roster.attendance($('.rs-host',sec), LESSON_GRADE)
 };
 
 /* اختيار من متعدد */
@@ -2327,23 +2342,9 @@ R.prog = {
 
 /* ---------------- 📚 الربط بالمكتبة: اسم المعلمة والمدرسة والفصل ---------------- */
 Object.assign(LESSON, Object.assign({ className:'', classId:'_', linked:false }, LESSON));
-(function(){
-  let L=null, S=null;
-  try{ L=JSON.parse(localStorage.getItem('reema-lesson')||'null'); }catch(e){}
-  try{ S=JSON.parse(localStorage.getItem('reema-library-v1')||'null'); }catch(e){}
-  if(S&&S.settings){ if(S.settings.teacher) LESSON.teacher='أ. '+S.settings.teacher; if(S.settings.school) LESSON.school=S.settings.school; }
-  // إذا فُتح العرض مباشرة (وليس من زر «ابدئي الدرس») نأخذ الفصل من إعدادات الدرس المحفوظة في المكتبة
-  if((!L || L.lessonId!==LESSON_ID) && S && Array.isArray(S.classes) && S.classes.length){
-    const cfg=(S.lessonCfg||{})[LESSON_ID]||{};
-    const c=S.classes.find(k=>k.id===cfg.classId)||S.classes.find(k=>k.id===(S.ui||{}).classId)||S.classes[0];
-    L={ lessonId:LESSON_ID, classId:c.id, className:c.name };
-  }
-  if(!L || L.lessonId!==LESSON_ID) return;
-  LESSON.linked=true;
-  if(L.teacher && L.teacher.trim()!=='أ.') LESSON.teacher=L.teacher;
-  if(L.school) LESSON.school=L.school;
-  LESSON.className=L.className||''; LESSON.classId=L.classId||L.className||'_';
-})();
+/* الشعبة الحالية = الشعبة المختارة في شريحة التحضير — التحضير والتقدم يُحفظان لكل شعبة */
+function syncClass(){ const c=Roster.current(); LESSON.className=c||''; LESSON.classId=c||'_'; LESSON.linked=!!c; }
+syncClass();
 
 /* 💾 التخزين المحلي (مشترك مع المكتبة) */
 const PREP_KEY='reema-prep', PROG_KEY='reema-progress';
@@ -2436,7 +2437,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('keyup',e=>{ if((e.key===' '||e.code==='Space')&&!e.target.matches('input,textarea,select')) e.preventDefault(); });
 // إزالة التركيز عن الأزرار بعد الضغط حتى لا يضغطها زر Space مرة أخرى
 document.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setTimeout(()=>b.blur(),0); });
-addEventListener('wheel',e=>{ if(!e.target.closest('#prep,.ov,#score,#printDoc')) e.preventDefault(); },{passive:false});
+addEventListener('wheel',e=>{ if(!e.target.closest('#prep,.ov,#score,#printDoc,.rs-host,.scroll')) e.preventDefault(); },{passive:false});
 
 /* سحب باللمس (للسبورة الذكية) */
 let tx=null, ty=null;
@@ -2446,6 +2447,8 @@ stage.addEventListener('touchend',e=>{ if(tx===null) return; const dx=e.changedT
 
 /* ---------------- 🎛️ أزرار الشريط ---------------- */
 $('#next').onclick=next; $('#prev').onclick=prev; $('#clapBtn').onclick=clap;
+Roster.drawButton($('#clapBtn'));
+Roster.onChange(()=>{ syncClass(); saveProgress(); if(document.body.classList.contains('prep-open')) fillPrep(); });
 $('#fsBtn').onclick=()=>{ if(!document.fullscreenElement) document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); else document.exitFullscreen(); };
 $('#homeBtn').addEventListener('click',()=>saveProgress());
 $$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.remove('open'));
