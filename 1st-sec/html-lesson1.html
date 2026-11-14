@@ -960,8 +960,11 @@ body.idle #hint{opacity:0}
 /* =========================================================
    💻 إضافات وحدة لغة ترميز النص التشعبي HTML
    ========================================================= */
+/* خط الكود: Consolas للاتيني و Cairo للعربي حتى تبقى الحروف متصلة */
+:root{--mono:Consolas,Menlo,Monaco,'Cairo',monospace}
+.hk{font-style:normal;color:#569CD6}.hv{font-style:normal;color:#CE9178}
 .tg{display:inline-block;direction:ltr;unicode-bidi:isolate;background:var(--ps);color:var(--pd);border-radius:10px;padding:0 10px;
-  font-family:Consolas,'Courier New',monospace;font-weight:800;font-size:.9em;line-height:1.35}
+  font-family:var(--mono);font-weight:800;font-size:.9em;line-height:1.35}
 .mv-poster::before{content:"🌐 💻 🏷️ 🔗 🌐 💻 🏷️ 🔗"}
 textarea{font-family:inherit;-webkit-user-select:text;user-select:text}
 
@@ -975,11 +978,11 @@ textarea{font-family:inherit;-webkit-user-select:text;user-select:text}
 .cd-ck.ok{background:var(--okS);color:#1E7A3A;border:2px solid var(--ok)}
 .cd-ck.ok::before{content:"✓ "}
 .cd-ed{flex:1;min-height:0;display:flex;flex-direction:column;background:#1E1E1E;border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
-.cd-tab{background:#2D2D2D;color:#CCCCCC;font-size:20px;padding:8px 20px;direction:ltr;display:flex;gap:12px;align-items:center;font-family:Consolas,'Courier New',monospace}
+.cd-tab{background:#2D2D2D;color:#CCCCCC;font-size:20px;padding:8px 20px;direction:ltr;display:flex;gap:12px;align-items:center;font-family:var(--mono)}
 .cd-tab b{background:#1E1E1E;color:#fff;padding:4px 16px;border-radius:8px 8px 0 0;font-weight:700}
 .cd-tab b::before{content:"<> ";color:#E37933}
 .cd-ta{flex:1;min-height:0;resize:none;border:0;outline:none;background:#1E1E1E;color:#9CDCFE;caret-color:#fff;
-  font:25px/1.6 Consolas,'Courier New',monospace;padding:14px 22px;direction:ltr;text-align:left;tab-size:2;white-space:pre;overflow:auto}
+  font:25px/1.6 var(--mono);padding:14px 22px;direction:ltr;text-align:left;tab-size:2;white-space:pre;overflow:auto}
 .cd-btns{display:flex;gap:10px;flex-wrap:wrap}
 .cd-btns .btn{font-size:22px;padding:8px 22px}
 .cd-prev{min-height:0}
@@ -988,7 +991,7 @@ textarea{font-family:inherit;-webkit-user-select:text;user-select:text}
 /* ---------- اكتشفي الأخطاء ---------- */
 .dbg-wrap{flex:1;display:grid;grid-template-columns:1.25fr .75fr;gap:30px;min-height:0}
 .dbg-code{background:#1E1E1E;border-radius:26px;padding:18px 0;overflow:auto;box-shadow:var(--shadow);direction:ltr;text-align:left}
-.dl{display:flex;width:100%;align-items:center;gap:0;font:26px/1.5 Consolas,'Courier New',monospace;color:#D4D4D4;text-align:left;padding:2px 22px 2px 0;
+.dl{display:flex;width:100%;align-items:center;gap:0;font:28px/1.5 var(--mono);color:#D4D4D4;text-align:left;padding:2px 22px 2px 0;
   border-left:6px solid transparent;transition:background .2s,border-color .2s;white-space:pre}
 .dl:hover{background:#2A2D2E}
 .dl .ln{width:66px;flex:none;color:#6E7681;text-align:right;padding-right:20px;font-size:21px}
@@ -1021,7 +1024,7 @@ textarea{font-family:inherit;-webkit-user-select:text;user-select:text}
 
 /* ---------- تشريح الوسم ---------- */
 .an-code{align-self:center;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;direction:ltr;background:#1E1E1E;border-radius:30px;padding:30px 40px 66px;box-shadow:var(--shadow);max-width:1700px}
-.an-p{position:relative;font:44px/1.5 Consolas,'Courier New',monospace;font-weight:700;color:var(--c);padding:2px 10px;border-radius:12px;border-bottom:5px solid var(--c);transition:background .2s,transform .2s;white-space:pre}
+.an-p{position:relative;font:44px/1.5 var(--mono);font-weight:700;color:var(--c);padding:2px 10px;border-radius:12px;border-bottom:5px solid var(--c);transition:background .2s,transform .2s;white-space:pre}
 .an-p:hover{background:#2D2D2D;transform:translateY(-4px)}
 .an-p.on{background:color-mix(in srgb,var(--c) 28%,#1E1E1E)}
 .an-p .an-l{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%) scale(.6);opacity:0;background:var(--c);color:#fff;font:800 19px/1.4 var(--font);
@@ -1285,12 +1288,12 @@ const SLIDES = [
       { c:'  <head>', icon:'🧠', t:'<head> قسم الترويسة', d:'الأوامر بين الوسمين &lt;head&gt; و &lt;/head&gt; تحدد كيف يفسّر المتصفح المستند وكيف يعرضه.' },
       { c:'    <title>Page title</title>', icon:'🏷️', t:'<title>', d:'تحدد النص الذي يظهر في <b>شريط العنوان</b> (التبويب) في نافذة المتصفح.' },
       { c:'    <meta charset="UTF-8" />', icon:'🔤', t:'<meta>', d:'معلومات إضافية عن الصفحة، و <b>UTF-8</b> يجعل الحروف العربية تظهر بشكل صحيح.' },
-      '  </head>',
+      '  <\/head>',
       { c:'  <body>', icon:'🖼️', t:'<body> قسم المحتوى', d:'هنا الموضوع الرئيس للصفحة: <b>كل</b> النصوص والصور والصوت والفيديو والروابط تقع بين &lt;body&gt; و &lt;/body&gt;.' },
       { c:'    <h1>هذا عنوان!</h1>', icon:'🔠', t:'<h1>', d:'عنوان رئيس يظهر بخط كبير وعريض.' },
       { c:'    <p>هذه فقرة.</p>', icon:'📝', t:'<p>', d:'فقرة نصية.' },
-      '  </body>',
-      { c:'</html>', icon:'🔚', t:'</html>', d:'نهاية المستند: كل شيء يجب أن يكون بين &lt;html&gt; و &lt;/html&gt;.' }
+      '  <\/body>',
+      { c:'<\/html>', icon:'🔚', t:'<\/html>', d:'نهاية المستند: كل شيء يجب أن يكون بين &lt;html&gt; و &lt;/html&gt;.' }
     ] },
 
   /* 20) سؤال */
@@ -1319,23 +1322,23 @@ const SLIDES = [
 <head>
   <title>Page title</title>
   <meta charset="UTF-8" />
-</head>
+<\/head>
 <body>
   <h1>هذا عنوان!</h1>
   <p>هذه فقرة.</p>
-</body>
-</html>`,
+<\/body>
+<\/html>`,
     solution:`<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <title>My web page</title>
   <meta charset="UTF-8" />
-</head>
+<\/head>
 <body>
   <h1>السلام عليكم !</h1>
   <p>صفحة الويب هي مستند مكتوب بلغة تمييز النص التشعبي (HTML) ويتم عرضه في مستعرض إنترنت.</p>
-</body>
-</html>` },
+<\/body>
+<\/html>` },
 
   /* 22) قسم */
   { type:'section', anim:'zoom', icon:'🔠', title:'العناوين والفقرات', subtitle:'من h1 إلى h6… ومن فقرة إلى فقرة' },
@@ -1349,7 +1352,7 @@ const SLIDES = [
 <head>
   <title>Page title</title>
   <meta charset="UTF-8" />
-</head>
+<\/head>
 <body>
   <h1>السلام عليكم !</h1>
   <h2>السلام عليكم !</h2>
@@ -1357,8 +1360,8 @@ const SLIDES = [
   <h4>السلام عليكم !</h4>
   <h5>السلام عليكم !</h5>
   <h6>السلام عليكم !</h6>
-</body>
-</html>` },
+<\/body>
+<\/html>` },
 
   /* 24) سؤال */
   { type:'mcq', tag:'❓ نصيحة ذكية', title:'أهم عنوان في الصفحة', anim:'fade',
@@ -1411,7 +1414,7 @@ const SLIDES = [
 <head>
   <title>Football Fan Page</title>
   <meta charset="UTF-8" />
-</head>
+<\/head>
 <body>
   <h1>تعمل كرة القدم على جمع الناس معًا</h1>
   <p>الهدف من حضور الجمهور في هذه اللعبة هو تشجيع اللاعبين في أثناء المباراة.</p>
@@ -1419,14 +1422,14 @@ const SLIDES = [
   <p>تُعدّ كرة القدم رياضة ذات تاريخ طويل.
   وُجدت أندية كرة القدم منذ القرن الخامس عشر.</p>
 
-</body>
-</html>`,
+<\/body>
+<\/html>`,
     solution:`<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <title>Football Fan Page</title>
   <meta charset="UTF-8" />
-</head>
+<\/head>
 <body>
   <h1>تعمل كرة القدم على جمع الناس معًا</h1>
   <p>الهدف من حضور الجمهور في هذه اللعبة هو تشجيع اللاعبين في أثناء المباراة.</p>
@@ -1437,8 +1440,8 @@ const SLIDES = [
   <h2>نبذة</h2>
   <p>من خلال هذه الصفحة يمكننا تبادل الأفكار والآراء<br>
   حول فريق كرة القدم الذي نشجعه.</p>
-</body>
-</html>` },
+<\/body>
+<\/html>` },
 
   /* 28) مطابقة الوسوم */
   { type:'match', tag:'🔗 طابقي', title:'وسوم HTML المستخدمة في الدرس',
@@ -1460,11 +1463,11 @@ const SLIDES = [
       { c:'<html dir="rtl" lang="ar">', fix:'<html dir="rtl" lang="ar">\n  <head>', why:'وسم البداية <b>&lt;head&gt;</b> مفقود! لدينا &lt;/head&gt; بلا بداية.' },
       '    <title> Page title</title>',
       '    <meta charset="UTF-8" />',
-      '  </head>',
+      '  <\/head>',
       '  <body>',
       { c:'    <h1>هذا عنوان! <h1>', fix:'    <h1>هذا عنوان!</h1>', why:'وسم النهاية يحتاج الرمز <b>"/"</b>: الصحيح &lt;/h1&gt;' },
       '    <p>هذه فقرة.</p>',
-      { c:'</html>', fix:'  </body>\n</html>', why:'نسينا إغلاق قسم المحتوى بـ <b>&lt;/body&gt;</b> قبل &lt;/html&gt;' }
+      { c:'<\/html>', fix:'  <\/body>\n<\/html>', why:'نسينا إغلاق قسم المحتوى بـ <b>&lt;/body&gt;</b> قبل &lt;/html&gt;' }
     ] },
 
   /* 30) صح أم خطأ */
@@ -2461,7 +2464,9 @@ R.blocks = {
    💻 قوالب خاصة بوحدة HTML
    ========================================================================== */
 const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const lineHTML = (c,k,cls='') => `<button class="dl ${cls}" data-k="${k}"><span class="ln">${k+1}</span><span class="cx">${esc(c)||' '}</span></button>`;
+// تلوين بسيط للكود مثل VS Code: الوسوم بالأزرق والقيم بالبرتقالي
+const hl = c => esc(c).replace(/"[^"]*"/g,m=>`<i class="hv">${m}</i>`).replace(/&lt;\/?[!\w-]+|\/?&gt;/g,m=>`<i class="hk">${m}</i>`);
+const lineHTML = (c,k,cls='') => `<button class="dl ${cls}" data-k="${k}"><span class="ln">${k+1}</span><span class="cx">${hl(c)||' '}</span></button>`;
 // تنسيق المعاينة داخل المتصفح المصغّر (تكبير ليناسب شاشة العرض)
 const PREVIEW_CSS = '<style>html{zoom:1.75}body{margin:12px 16px;font-family:"Times New Roman",Tahoma,serif;background:#fff;color:#000}img{max-width:100%;height:auto}</style>';
 
@@ -2479,7 +2484,9 @@ R.code = {
   init:(sec,s)=>{
     const ta=$('.cd-ta',sec), fr=$('iframe',sec), url=$('.br-url',sec); let done=false, t=null;
     const render=()=>{
-      const code=ta.value; fr.srcdoc=PREVIEW_CSS+code;
+      const code=ta.value; let page=code;
+      if(s.assets) Object.entries(s.assets).forEach(([k,v])=>{ page=page.split(k).join(v); });   // صور المعاينة
+      fr.srcdoc=PREVIEW_CSS+page;
       const m=code.match(/<title>([\s\S]*?)<\/title>/i); url.textContent='📄 '+((m&&m[1].trim())||s.file||'index.html');
       if(s.checks){
         let all=true;
@@ -2501,7 +2508,7 @@ R.debug = {
   html:s=>{ const bugs=s.lines.filter(l=>typeof l!=='string').length;
     return `${s.prompt?`<p class="lead rv" style="font-size:30px">${s.prompt}</p>`:''}<div class="dbg-wrap">
       <div class="dbg-code rv">${s.lines.map((l,k)=>{ const bug=typeof l!=='string', c=bug?l.c:l;
-        return lineHTML(c,k,bug?'bug':'').replace('</button>',bug?`<span class="fx">${esc(l.fix)||'⌫ (يُحذف هذا السطر)'}</span></button>`:'</button>'); }).join('')}</div>
+        return lineHTML(c,k,bug?'bug':'').replace('</button>',bug?`<span class="fx">${hl(l.fix)||'⌫ (يُحذف هذا السطر)'}</span></button>`:'</button>'); }).join('')}</div>
       <div class="dbg-side"><div class="dbg-count rv">🐞 الأخطاء المكتشفة: <b>0</b> / ${bugs}</div>
         <div class="dbg-info rv"><span class="ic">🔍</span>${s.startInfo||'اضغطي على السطر الذي تظنين أن فيه خطأ… كل خطأ تكتشفينه سيظهر تصحيحه!'}</div>
         <div class="center-row rv"><button class="btn ghost dbg-all">👀 إظهار كل الأخطاء</button></div></div></div>`; },
